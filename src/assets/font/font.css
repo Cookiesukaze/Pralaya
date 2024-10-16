@@ -1,0 +1,16 @@
+@font-face {
+    font-family: 'Atkinson';
+    src: url('./AtkinsonHyperlegible-Regular.ttf');
+}
+@font-face {
+    font-family: 'PT Sans';
+    src: url('./PTSans-Regular.ttf');
+}
+@font-face {
+    font-family: 'opposans';
+    src: url('./OPPOSans-M.ttf');
+}
+@font-face {
+    font-family: 'misans';
+    src: url('./MiSans-Regular.ttf');
+}
