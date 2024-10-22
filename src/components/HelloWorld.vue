@@ -1,11 +1,3 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-
-defineProps<{ msg: string }>()
-
-const count = ref(0)
-</script>
-
 <template>
   <h1>{{ msg }}</h1>
 
@@ -17,23 +9,42 @@ const count = ref(0)
     </p>
   </div>
 
-  <p>
-    Check out
-    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank"
-      >create-vue</a
-    >, the official Vue + Vite starter
+  <p v-if="IPData">
+    IP Data: {{ IPData.ip }}
   </p>
-  <p>
-    Learn more about IDE Support for Vue in the
-    <a
-      href="https://vuejs.org/guide/scaling-up/tooling.html#ide-support"
-      target="_blank"
-      >Vue Docs Scaling up Guide</a
-    >.
+
+  <p v-else>
+    Loading IP data...
   </p>
+
   <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
   <div class="read-the-docs">中文文字也实施效果</div>
 </template>
+
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { getIP } from '../api/method.js'
+
+const count = ref(0)
+const IPData = ref(null)
+
+const fetchIP = async () => {
+  try {
+    const response = await getIP()
+    IPData.value = response.data
+    console.log('IP获取:', IPData.value)
+  } catch (error) {
+    console.error('IP获取出错:', error)
+  }
+}
+
+onMounted(() => {
+  fetchIP()
+})
+</script>
+
+
 
 <style scoped>
 .read-the-docs {
