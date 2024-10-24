@@ -25,12 +25,16 @@
     <div>tailwind</div>
   </div>
 
+  <div class="h-20"></div>
+  <ListBoxTest ></ListBoxTest>
+
 </template>
 
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getIP } from '../api/method.js'
+import ListBoxTest from "./ListBoxTest.vue";
 
 const count = ref(0)
 const IPData = ref(null)
