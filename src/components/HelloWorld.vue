@@ -1,5 +1,4 @@
 <template>
-  <h1>{{ msg }}</h1>
 
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
@@ -19,6 +18,13 @@
 
   <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
   <div class="read-the-docs">中文文字也实施效果</div>
+
+  <div class="w-34 h-12">
+    <div>tailwind</div>
+    <div>tailwind</div>
+    <div>tailwind</div>
+  </div>
+
 </template>
 
 
