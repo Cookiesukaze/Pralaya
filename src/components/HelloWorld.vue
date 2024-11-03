@@ -28,6 +28,9 @@
   <div class="h-20"></div>
   <ListBoxTest ></ListBoxTest>
 
+  <div class="h-20"></div>
+  <FileSystemGraph ></FileSystemGraph>
+
 </template>
 
 
@@ -35,6 +38,7 @@
 import { ref, onMounted } from 'vue'
 import { getIP } from '../api/method.js'
 import ListBoxTest from "./ListBoxTest.vue";
+import FileSystemGraph from "./FileSystemGraph.vue";
 
 const count = ref(0)
 const IPData = ref(null)
