@@ -1,36 +1,36 @@
 <template>
-  <SideBar></SideBar>
 
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
-      中文文字也实施效果
-      <code>components/HelloWorld.vue</code> to test HMR
-    </p>
-  </div>
+  <MainPage></MainPage>
+<!--  <div class="card">-->
+<!--    <button type="button" @click="count++">count is {{ count }}</button>-->
+<!--    <p>-->
+<!--      中文文字也实施效果-->
+<!--      <code>components/HelloWorld.vue</code> to test HMR-->
+<!--    </p>-->
+<!--  </div>-->
 
-  <p v-if="IPData">
-    IP Data: {{ IPData.ip }}
-  </p>
+<!--  <p v-if="IPData">-->
+<!--    IP Data: {{ IPData.ip }}-->
+<!--  </p>-->
 
-  <p v-else>
-    Loading IP data...
-  </p>
+<!--  <p v-else>-->
+<!--    Loading IP data...-->
+<!--  </p>-->
 
-  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
-  <div class="read-the-docs">中文文字也实施效果</div>
+<!--  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>-->
+<!--  <div class="read-the-docs">中文文字也实施效果</div>-->
 
-  <div class="w-34 h-12">
-    <div>tailwind</div>
-    <div>tailwind</div>
-    <div>tailwind</div>
-  </div>
+<!--  <div class="w-34 h-12">-->
+<!--    <div>tailwind</div>-->
+<!--    <div>tailwind</div>-->
+<!--    <div>tailwind</div>-->
+<!--  </div>-->
 
-  <div class="h-20"></div>
-  <ListBoxTest ></ListBoxTest>
+<!--  <div class="h-20"></div>-->
+<!--  <ListBoxTest ></ListBoxTest>-->
 
-  <div class="h-20"></div>
-  <FileSystemGraph ></FileSystemGraph>
+<!--  <div class="h-20"></div>-->
+<!--  <FileSystemGraph ></FileSystemGraph>-->
 
 </template>
 
@@ -40,7 +40,7 @@ import { ref, onMounted } from 'vue'
 import { getIP } from '../api/method.js'
 import ListBoxTest from "./ListBoxTest.vue";
 import FileSystemGraph from "./FileSystemGraph.vue";
-import SideBar from "./SideBar.vue";
+import MainPage from "./MainPage.vue";
 
 const count = ref(0)
 const IPData = ref(null)
