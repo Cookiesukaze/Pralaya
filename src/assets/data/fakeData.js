@@ -1,9 +1,9 @@
 // 假数据 - 图表信息，添加 icon 字段
 export const graphs = [
-    { id: 1, name: 'Sales Graph', current: true, icon: 'BookmarkSquareIcon' },
-    { id: 2, name: 'Revenue Graph', current: false, icon: 'ChartBarIcon' },
-    { id: 3, name: 'User Growth Graph', current: false, icon: 'UserGroupIcon' },
-    { id: 4, name: 'Engagement Graph', current: false, icon: 'HeartIcon' },
+    { id: 1, name: 'Sales Graph', current: true, icon: 'BookmarkSquareIcon', description: '展示销售数据趋势图表。' },
+    { id: 2, name: 'Revenue Graph', current: false, icon: 'ChartBarIcon', description: '展示收入增长的图表。' },
+    { id: 3, name: 'User Growth Graph', current: false, icon: 'UserGroupIcon', description: '用户增长的详细分析图表。' },
+    { id: 4, name: 'Engagement Graph', current: false, icon: 'HeartIcon', description: '用户互动情况的可视化图表。' },
 ];
 
 // 假数据 - 用户信息

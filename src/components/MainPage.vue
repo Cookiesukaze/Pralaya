@@ -5,10 +5,15 @@
         :isSidebarCollapsed="isSidebarCollapsed"
         :graphs="graphs"
         :user="user"
-    :company="company"
-    @toggle-sidebar="toggleSidebar"
-    @select-graph="selectGraph"
+        :company="company"
+        @toggle-sidebar="toggleSidebar"
+        @select-graph="selectGraph"
     />
+
+    <!-- Topbar 组件，显示在侧边栏下方 -->
+    <div :class="isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'">
+      <Topbar :selectedGraph="selectedGraph" />
+    </div>
 
     <!-- GraphContent 组件 -->
     <GraphContent
@@ -22,6 +27,7 @@
 import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
 import GraphContent from './GraphContent.vue'
+import Topbar from './Topbar.vue'
 
 // 从 fakeData.js 导入假数据
 import { graphs as fakeGraphs, user as fakeUser, company as fakeCompany } from '../assets/data/fakeData'
