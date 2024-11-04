@@ -1,4 +1,5 @@
 <template>
+  <SideBar></SideBar>
 
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
@@ -39,6 +40,7 @@ import { ref, onMounted } from 'vue'
 import { getIP } from '../api/method.js'
 import ListBoxTest from "./ListBoxTest.vue";
 import FileSystemGraph from "./FileSystemGraph.vue";
+import SideBar from "./SideBar.vue";
 
 const count = ref(0)
 const IPData = ref(null)
