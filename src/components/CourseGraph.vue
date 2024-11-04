@@ -1,10 +1,16 @@
 <template>
-  <div ref="graphContainer" style="height: 600px; width: 100%;"></div>
+  <div style="position: relative;">
+    <div ref="graphContainer" style="height: 600px; width: 100%;"></div>
+    <GraphToolbar :onRefresh="refreshGraph" :onToggleFullscreen="toggleFullscreen" />
+    <GraphSearch :onSearch="searchNodes" ref="searchComponent" />
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick } from 'vue';
 import G6 from '@antv/g6';
+import GraphSearch from './graph/GraphSearch.vue';
+import GraphToolbar from './graph/GraphToolbar.vue';
 
 const props = defineProps({
   jsonPath: {
@@ -15,6 +21,7 @@ const props = defineProps({
 
 const graphContainer = ref(null);
 let graph = null;
+const searchComponent = ref(null);
 
 const graphFiles = import.meta.glob('../assets/data/sample-graph-data/*.json');
 
@@ -109,9 +116,51 @@ const loadGraphData = async () => {
   }
 };
 
+const searchNodes = (query) => {
+  const lowerCaseQuery = query.toLowerCase();
+
+  if (!lowerCaseQuery) {
+    graph.getNodes().forEach((node) => {
+      graph.setItemState(node, 'highlight', false);
+    });
+    return;
+  }
+
+  const foundNodes = graph.getNodes().filter((node) => {
+    const model = node.getModel();
+    return model.label.toLowerCase().includes(lowerCaseQuery);
+  });
+
+  graph.getNodes().forEach((node) => {
+    const model = node.getModel();
+    if (foundNodes.includes(node) || foundNodes.some(foundNode => foundNode.getModel().id === model.parentId)) {
+      graph.setItemState(node, 'highlight', true);
+    } else {
+      graph.setItemState(node, 'highlight', false);
+    }
+  });
+};
+
+const refreshGraph = () => {
+  loadGraphData();
+  if (searchComponent.value) {
+    searchComponent.value.query = ''; // Clear search input
+    searchNodes(''); // Ensure graph is reset
+  }
+};
+
+const toggleFullscreen = () => {
+  const elem = graphContainer.value;
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    elem.requestFullscreen();
+  }
+};
+
 const updateGraphSize = async () => {
   if (graph && graphContainer.value) {
-    await nextTick(); // Wait for DOM updates
+    await nextTick();
     const width = graphContainer.value.clientWidth;
     graph.changeSize(width, 600);
     console.log('CourseGraph: Updated graph width:', width);

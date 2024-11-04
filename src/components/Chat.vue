@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-100 px-2 py-2 flex flex-col items-center h-full">
+  <div class="bg-gray-100 px-0.5 py-0.5 flex flex-col items-center h-full">
     <div class="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden flex flex-col flex-grow">
       <div class="p-4 border-b">
         <h1 class="text-lg font-semibold">Chat</h1>
