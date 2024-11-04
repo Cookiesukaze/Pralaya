@@ -15,18 +15,19 @@
       <Topbar :selectedGraph="selectedGraph" />
     </div>
 
-    <!-- GraphContent 组件 -->
-    <GraphContent
+    <!-- CourseGraph 组件，传递 JSON 文件名 -->
+    <CourseGraph
         :isSidebarCollapsed="isSidebarCollapsed"
-        :selectedGraph="selectedGraph"
+        :jsonPath="jsonPath"
     />
+
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Sidebar from './Sidebar.vue'
-import GraphContent from './GraphContent.vue'
+import CourseGraph from './CourseGraph.vue'
 import Topbar from './Topbar.vue'
 
 // 从 fakeData.js 导入假数据
@@ -45,7 +46,8 @@ const user = ref(fakeUser)
 const company = ref(fakeCompany)
 
 // 当前选中的图表
-const selectedGraph = ref(graphs.value.find(g => g.current))
+// 如果没有 current 为 true 的图表，默认选中第一个图表
+const selectedGraph = ref(graphs.value.find(g => g.current) || graphs.value[0]);
 
 // 切换侧边栏折叠状态
 const toggleSidebar = () => {
@@ -61,6 +63,14 @@ const selectGraph = (id) => {
     selectedGraph.value = selected // 更新选中的图表
   }
 }
+
+// 动态计算 JSON 文件名
+const jsonPath = computed(() => {
+  if (selectedGraph.value && selectedGraph.value.id) {
+    return `${selectedGraph.value.id}.json`; // 传递文件名
+  }
+  return null;
+})
 </script>
 
 <style scoped>
