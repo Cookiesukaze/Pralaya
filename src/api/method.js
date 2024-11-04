@@ -39,3 +39,28 @@ export const fakePost = (data) => {
         }
     })
 }
+
+export const postChat = async (data, onChunkReceived) => {
+    const response = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let result = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('Chat: Received chunk:', chunk);
+        result += chunk;
+        onChunkReceived(chunk);
+    }
+
+    return result;
+};

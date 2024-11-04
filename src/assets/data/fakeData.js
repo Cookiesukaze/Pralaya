@@ -12,6 +12,13 @@ export const user = {
     avatar: 'https://plus.unsplash.com/premium_vector-1719858610325-a5b852ba245b?q=80&w=1800&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 };
 
+// 假数据 - 机器人信息
+export const bot = {
+    name: 'Bot',
+    avatar: 'https://plus.unsplash.com/premium_vector-1719858611561-809632498916?q=80&w=1800&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+};
+
+
 // 假数据 - 公司信息
 export const company = {
     name: '产品名',
