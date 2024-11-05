@@ -16,14 +16,13 @@
 
       <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow">
         <CourseGraph
-            ref="courseGraphRef"
-            :isSidebarCollapsed="isSidebarCollapsed"
-            :jsonPath="jsonPath"
+            ref="mainCourseGraphRef"
+        :isSidebarCollapsed="isSidebarCollapsed"
+        :jsonPath="jsonPath"
         />
       </div>
 
       <div class="w-80 bg-white border-l flex flex-col">
-        <!-- 传递 selectedGraph.id 给 Chat 组件 -->
         <Chat
             :messages="chatMessages"
             :userAvatar="userAvatar"
@@ -50,10 +49,10 @@ const bot = ref(fakeBot);
 const company = ref(fakeCompany);
 const selectedGraph = ref(graphs.value.find(g => g.current) || graphs.value[0]);
 
-const courseGraphRef = ref(null);
+const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
 
-const userAvatar = ref(fakeUser.avatar); // Assuming avatar is a property of user in fakeData
-const botAvatar = ref(fakeBot.avatar); // Replace with actual path or data
+const userAvatar = ref(fakeUser.avatar);
+const botAvatar = ref(fakeBot.avatar);
 const chatMessages = ref([
   { from: 'bot', text: 'Hello! How can I help you today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
 ]);
@@ -94,8 +93,10 @@ const courseGraphStyle = ref(calculateCourseGraphStyle());
 
 const updateGraphSize = () => {
   courseGraphStyle.value = calculateCourseGraphStyle();
-  if (courseGraphRef.value) {
-    courseGraphRef.value.updateGraphSize();
+  if (mainCourseGraphRef.value && typeof mainCourseGraphRef.value.updateGraphSize === 'function') { // 使用 mainCourseGraphRef
+    mainCourseGraphRef.value.updateGraphSize();  // 只有存在该函数时才调用
+  } else {
+    console.warn('MainPage: No updateGraphSize method available on the current graph component');
   }
 };
 

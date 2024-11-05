@@ -1,7 +1,7 @@
 <template>
   <div ref="outerContainer" style="position: relative;">
     <!-- Graph container -->
-    <div ref="knowledgeGraphRef" class="graph-container w-full"></div>
+    <div ref="treeGraphRef" class="graph-container w-full"></div>
     <!-- Toolbar and Search components -->
     <GraphToolbar
         :onRefresh="refreshGraph"
@@ -14,18 +14,18 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick, defineProps} from 'vue';
+import { defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import G6 from '@antv/g6';
-import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
+import GraphSearch from './GraphSearch.vue';
 
 const props = defineProps({
   jsonPath: String,
   onToggleGraphType: Function, // 添加此行
 });
 
-const outerContainer = ref(null);  // 定义最外层容器的引用
-const knowledgeGraphRef = ref(null);  // 定义图形容器引用
+const outerContainer = ref(null);
+const treeGraphRef = ref(null);
 let graph = null;
 const searchComponent = ref(null);
 const toolbarComponent = ref(null);
@@ -33,49 +33,34 @@ const toolbarComponent = ref(null);
 const graphFiles = import.meta.glob('../../assets/data/sample-graph-data/*.json');
 
 // 解析数据
-const parseData = (data, parentId = null, nodes = [], edges = []) => {
-  const nodeId = data.name;
-  nodes.push({
-    id: nodeId,
+const parseData = (data) => {
+  return {
+    id: data.name,
     label: data.name,
-  });
-
-  if (parentId) {
-    edges.push({
-      source: parentId,
-      target: nodeId,
-    });
-  }
-
-  if (data.children) {
-    data.children.forEach((child) => {
-      parseData(child, nodeId, nodes, edges);
-    });
-  }
-
-  return {nodes, edges};
+    children: data.children ? data.children.map(child => parseData(child)) : [],
+  };
 };
 
-// 初始化图形
+// 初始化图形为树形布局
 const initializeGraph = (graphData) => {
   if (graph) {
     graph.destroy();
   }
 
-  graph = new G6.Graph({
-    container: knowledgeGraphRef.value,
-    width: knowledgeGraphRef.value.clientWidth,
-    height: knowledgeGraphRef.value.clientHeight || 600,
+  graph = new G6.TreeGraph({
+    container: treeGraphRef.value,
+    width: treeGraphRef.value.clientWidth,
+    height: treeGraphRef.value.clientHeight || 600,
     layout: {
-      type: 'force',
-      preventOverlap: true,
-      nodeStrength: -1000,
-      edgeStrength: 10,
-      linkDistance: 70,
-
-      onLayoutEnd: () => {
-        centerGraph();
-      }
+      type: 'compactBox',  // 使用树形布局
+      direction: 'TB',     // 树形布局方向：从上到下
+      getId: function (d) {
+        return d.id;
+      },
+      getHeight: () => 16,
+      getWidth: () => 16,
+      getVGap: () => 40,   // 垂直间距
+      getHGap: () => 60,   // 水平间距
     },
     defaultNode: {
       size: 30,
@@ -93,6 +78,7 @@ const initializeGraph = (graphData) => {
       },
     },
     defaultEdge: {
+      type: 'polyline',
       style: {
         stroke: '#e2e2e2',
         endArrow: true,
@@ -105,12 +91,13 @@ const initializeGraph = (graphData) => {
 
   graph.data(graphData);
   graph.render();
+  graph.fitView(); // 适应视图大小
 };
 
 // 加载图形数据
 const loadGraphData = async () => {
   if (!props.jsonPath) {
-    console.warn('KnowledgeGraph: 没有传递 jsonPath');
+    console.warn('TreeGraph: 没有传递 jsonPath');
     return;
   }
 
@@ -124,19 +111,18 @@ const loadGraphData = async () => {
     }
 
     const rawData = await loadFile();
-    const {nodes, edges} = parseData(rawData.default);
-    const graphData = {nodes, edges};
+    const graphData = parseData(rawData.default);
 
     initializeGraph(graphData);
   } catch (error) {
-    console.error('KnowledgeGraph: 加载图表数据出错:', error);
+    console.error('TreeGraph: 加载图表数据出错:', error);
   }
 };
 
 // 居中图形
 const centerGraph = () => {
   if (graph) {
-    graph.fitCenter();
+    graph.fitView();
   }
 };
 
@@ -158,7 +144,7 @@ const searchNodes = (query) => {
 
   graph.getNodes().forEach((node) => {
     const model = node.getModel();
-    if (foundNodes.includes(node) || foundNodes.some(foundNode => foundNode.getModel().id === model.parentId)) {
+    if (foundNodes.includes(node)) {
       graph.setItemState(node, 'highlight', true);
     } else {
       graph.setItemState(node, 'highlight', false);
@@ -238,25 +224,23 @@ document.addEventListener('fullscreenchange', () => {
 
 // 更新图形尺寸
 const updateGraphSize = async () => {
-  if (graph && knowledgeGraphRef.value) {
+  if (graph && treeGraphRef.value) {
     await nextTick();
-    const width = knowledgeGraphRef.value.clientWidth;
+    const width = treeGraphRef.value.clientWidth;
     const height = document.fullscreenElement ? window.innerHeight : 600;
     graph.changeSize(width, height);
     centerGraph();
-    console.log('KnowledgeGraph: Updated graph size:', width, height);
+    console.log('TreeGraph: Updated graph size:', width, height);
   }
 };
 
 // 暴露方法
 defineExpose({
-
   updateGraphSize,
   centerGraph,
   refreshGraph,
   toggleFullscreen
 });
-
 
 // 生命周期钩子：挂载时加载数据
 onMounted(() => {

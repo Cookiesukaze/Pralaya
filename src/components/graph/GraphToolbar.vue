@@ -1,21 +1,27 @@
 <template>
   <div class="toolbar">
-    <button @click="onRefresh" aria-label="Refresh">
+    <button @click="props.onRefresh" aria-label="Refresh">
       <ArrowPathIcon class="icon" />
     </button>
-    <button @click="onToggleFullscreen" aria-label="Fullscreen">
+    <button @click="props.onToggleFullscreen" aria-label="Fullscreen">
       <ArrowsPointingOutIcon class="icon" />
+    </button>
+    <button @click="props.onToggleGraphType" aria-label="Toggle Graph Type">
+      <ArrowsRightLeftIcon class="icon" />
     </button>
   </div>
 </template>
 
 <script setup>
-import { ArrowPathIcon, ArrowsPointingOutIcon } from '@heroicons/vue/24/outline';
+import { ArrowPathIcon, ArrowsPointingOutIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   onRefresh: Function,
   onToggleFullscreen: Function,
+  onToggleGraphType: Function,
 });
+
+console.log('GraphToolbar : props: ', props);
 </script>
 
 <style scoped>
@@ -47,11 +53,11 @@ button:hover {
 .icon {
   width: 24px;
   height: 24px;
-  color: #4b5563; /* text-gray-400 */
+  color: #4b5563;
   transition: color 0.3s;
 }
 
 button:hover .icon {
-  color: #6366f1; /* text-indigo-600 */
+  color: #6366f1;
 }
 </style>
