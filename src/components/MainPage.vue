@@ -23,7 +23,13 @@
       </div>
 
       <div class="w-80 bg-white border-l flex flex-col">
-        <Chat :messages="chatMessages" :userAvatar="userAvatar" :botAvatar="botAvatar" />
+        <!-- 传递 selectedGraph.id 给 Chat 组件 -->
+        <Chat
+            :messages="chatMessages"
+            :userAvatar="userAvatar"
+            :botAvatar="botAvatar"
+            :selectedGraphId="selectedGraph.id"
+        />
       </div>
     </div>
   </div>

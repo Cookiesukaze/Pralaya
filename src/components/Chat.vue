@@ -48,7 +48,8 @@ export default {
   props: {
     messages: Array,
     userAvatar: String,
-    botAvatar: String
+    botAvatar: String,
+    selectedGraphId: String // 新增的 props
   },
   data() {
     return {
@@ -71,12 +72,16 @@ export default {
         try {
           let botMessage = null;
 
-          await postChat({ message: userMessage }, (chunk) => {
+          // 发送消息时，附加 selectedGraphId
+          await postChat({
+            message: userMessage,
+            graphId: this.selectedGraphId // 传递选中的图表 ID
+          }, (chunk) => {
             if (!botMessage) {
               botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
               this.messages.push(botMessage);
             }
-            botMessage.text += chunk; // Directly update reactive object
+            botMessage.text += chunk; // 逐块更新消息
             this.scrollToBottom();
           });
         } catch (error) {

@@ -46,7 +46,7 @@ export const postChat = async (data, onChunkReceived) => {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data) // 这里的 data 包含 message 和 graphId
     });
 
     const reader = response.body.getReader();
