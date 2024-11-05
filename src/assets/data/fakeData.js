@@ -22,5 +22,5 @@ export const bot = {
 // 假数据 - 公司信息
 export const company = {
     name: '产品名',
-    logo: 'https://plus.unsplash.com/premium_vector-1712595408151-8ea5d93477e2?q=80&w=1800&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    logo: 'https://pic.imgdb.cn/item/672985c3d29ded1a8c5c11b0.png',
 };
