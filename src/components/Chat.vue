@@ -21,7 +21,8 @@
                 :class="{'bg-gray-200': message.from !== 'user', 'bg-blue-500 text-white': message.from === 'user'}"
                 class="p-2 rounded-lg"
             >
-              <p class="text-sm" :class="{'text-gray-700': message.from !== 'user'}">{{ message.text }}</p>
+              <!-- 使用 v-html 来渲染包含换行符的消息 -->
+              <p class="text-sm break-words" :class="{'text-gray-700': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
             </div>
             <span class="text-xs text-gray-500" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
           </div>
@@ -99,6 +100,10 @@ export default {
         const container = this.$refs.messageContainer;
         container.scrollTop = container.scrollHeight;
       });
+    },
+    // 新增的格式化方法，用于替换换行符为 <br>
+    formatMessage(text) {
+      return text.replace(/\n/g, '<br>');
     }
   },
   updated() {
@@ -129,5 +134,12 @@ body {
 
 .max-w-md {
   box-sizing: border-box;
+}
+
+/* 新增的 CSS */
+.break-words {
+  word-wrap: break-word; /* 用于长单词的自动换行 */
+  overflow-wrap: break-word; /* 现代浏览器支持 */
+  word-break: break-all; /* 防止长链接超出容器宽度 */
 }
 </style>
