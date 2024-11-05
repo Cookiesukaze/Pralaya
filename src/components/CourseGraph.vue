@@ -1,6 +1,6 @@
 <template>
   <div style="position: relative;">
-    <div ref="graphContainer" style="height: 600px; width: 100%;"></div>
+    <div ref="graphContainer" class="graph-container w-full"></div>
     <GraphToolbar :onRefresh="refreshGraph" :onToggleFullscreen="toggleFullscreen" />
     <GraphSearch :onSearch="searchNodes" ref="searchComponent" />
   </div>
@@ -56,10 +56,17 @@ const initializeGraph = (graphData) => {
   graph = new G6.Graph({
     container: graphContainer.value,
     width: graphContainer.value.clientWidth,
-    height: 600,
+    height: graphContainer.value.clientHeight || 600,
     layout: {
       type: 'force',
       preventOverlap: true,
+      nodeStrength: -1000,
+      edgeStrength: 10,
+      linkDistance: 70,
+
+      onLayoutEnd: () => {
+        centerGraph();
+      }
     },
     defaultNode: {
       size: 30,
@@ -116,6 +123,12 @@ const loadGraphData = async () => {
   }
 };
 
+const centerGraph = () => {
+  if (graph) {
+    graph.fitCenter();
+  }
+};
+
 const searchNodes = (query) => {
   const lowerCaseQuery = query.toLowerCase();
 
@@ -154,26 +167,42 @@ const toggleFullscreen = () => {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   } else {
-    elem.requestFullscreen();
+    elem.requestFullscreen().then(() => {
+      elem.classList.add('fullscreen');
+      updateGraphSize();
+    });
   }
 };
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    graphContainer.value.classList.remove('fullscreen');
+  }
+  updateGraphSize();
+});
 
 const updateGraphSize = async () => {
   if (graph && graphContainer.value) {
     await nextTick();
     const width = graphContainer.value.clientWidth;
-    graph.changeSize(width, 600);
-    console.log('CourseGraph: Updated graph width:', width);
+    const height = document.fullscreenElement ? window.innerHeight : 600;
+    graph.changeSize(width, height);
+    centerGraph();
+    console.log('CourseGraph: Updated graph size:', width, height);
   }
 };
 
 defineExpose({
   updateGraphSize,
+  centerGraph
 });
 
 onMounted(() => {
   loadGraphData();
-  updateGraphSize();
+  nextTick(() => {
+    updateGraphSize();
+    centerGraph();
+  });
   window.addEventListener('resize', updateGraphSize);
 });
 
@@ -189,5 +218,13 @@ watch(() => props.jsonPath, (newPath) => {
 </script>
 
 <style scoped>
-/* 样式 */
+.graph-container {
+  @apply transition-colors duration-300;
+  height: 600px;
+}
+
+.fullscreen {
+  @apply bg-white;
+  height: 100vh;
+}
 </style>
