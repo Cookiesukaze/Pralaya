@@ -13,6 +13,17 @@ export const fakeGet = (data) => {
     })
 }
 
+export const getAllGraph = () => {
+    return axios({
+        url: "/graph",
+        method: "get",
+        config: {
+            headers: {},
+            timeout: 3000
+        }
+    });
+}
+
 export const getIP = () => {
     return axios({
         url: "https://uapis.cn/api/myip.php",

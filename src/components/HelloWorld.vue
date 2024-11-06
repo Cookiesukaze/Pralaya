@@ -37,13 +37,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getIP } from '../api/method.js'
+import {getAllGraph, getIP} from '../api/method.js'
 import ListBoxTest from "./ListBoxTest.vue";
 import FileSystemGraph from "./FileSystemGraph.vue";
 import MainPage from "./MainPage.vue";
 
 const count = ref(0)
 const IPData = ref(null)
+const allGraphData = ref(null)
 
 const fetchIP = async () => {
   try {
@@ -55,8 +56,19 @@ const fetchIP = async () => {
   }
 }
 
+const fetchAllGraph = async () => {
+  try {
+    const response = await getAllGraph()
+    allGraphData.value = response.data
+    console.log('图获取:', allGraphData.value)
+  } catch (error) {
+    console.error('图获取出错:', error)
+  }
+}
+
 onMounted(() => {
   fetchIP()
+  fetchAllGraph()
 })
 </script>
 
