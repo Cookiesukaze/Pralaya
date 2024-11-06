@@ -24,6 +24,28 @@ export const getAllGraph = () => {
     });
 }
 
+export const getAllUser = () => {
+    return axios({
+        url: "/user",
+        method: "get",
+        config: {
+            headers: {},
+            timeout: 3000
+        }
+    });
+}
+
+export const getUser = () => {
+    return axios({
+        url: "/user/1",
+        method: "get",
+        config: {
+            headers: {},
+            timeout: 3000
+        }
+    });
+}
+
 export const getIP = () => {
     return axios({
         url: "https://uapis.cn/api/myip.php",

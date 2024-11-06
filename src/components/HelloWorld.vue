@@ -42,33 +42,33 @@ import ListBoxTest from "./ListBoxTest.vue";
 import FileSystemGraph from "./FileSystemGraph.vue";
 import MainPage from "./MainPage.vue";
 
-const count = ref(0)
-const IPData = ref(null)
-const allGraphData = ref(null)
+// const count = ref(0)
+// const IPData = ref(null)
+// const allGraphData = ref(null)
 
-const fetchIP = async () => {
-  try {
-    const response = await getIP()
-    IPData.value = response.data
-    console.log('IP获取:', IPData.value)
-  } catch (error) {
-    console.error('IP获取出错:', error)
-  }
-}
-
-const fetchAllGraph = async () => {
-  try {
-    const response = await getAllGraph()
-    allGraphData.value = response.data
-    console.log('图获取:', allGraphData.value)
-  } catch (error) {
-    console.error('图获取出错:', error)
-  }
-}
+// const fetchIP = async () => {
+//   try {
+//     const response = await getIP()
+//     IPData.value = response.data
+//     console.log('IP获取:', IPData.value)
+//   } catch (error) {
+//     console.error('IP获取出错:', error)
+//   }
+// }
+//
+// const fetchAllGraph = async () => {
+//   try {
+//     const response = await getAllGraph()
+//     allGraphData.value = response.data
+//     console.log('图获取:', allGraphData.value)
+//   } catch (error) {
+//     console.error('图获取出错:', error)
+//   }
+// }
 
 onMounted(() => {
-  fetchIP()
-  fetchAllGraph()
+  // fetchIP()
+  // fetchAllGraph()
 })
 </script>
 

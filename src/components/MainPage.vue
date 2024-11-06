@@ -27,7 +27,7 @@
             :messages="chatMessages"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
-            :selectedGraphId="selectedGraph.id"
+            :selectedGraphId="String(selectedGraph.graph_id)"
         />
       </div>
     </div>
@@ -51,7 +51,7 @@ const selectedGraph = ref(graphs.value.find(g => g.current) || graphs.value[0]);
 
 const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
 
-const userAvatar = ref(fakeUser.avatar);
+const userAvatar = ref(fakeUser.user_avatar);
 const botAvatar = ref(fakeBot.avatar);
 const chatMessages = ref([
   { from: 'bot', text: 'Hello! How can I help you today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
@@ -64,7 +64,7 @@ const toggleSidebar = () => {
 
 const selectGraph = (id) => {
   graphs.value.forEach(graph => graph.current = false);
-  const selected = graphs.value.find(graph => graph.id === id);
+  const selected = graphs.value.find(graph => graph.graph_id === id);
   if (selected) {
     selected.current = true;
     selectedGraph.value = selected;
@@ -72,7 +72,7 @@ const selectGraph = (id) => {
 };
 
 const jsonPath = computed(() => {
-  return selectedGraph.value && selectedGraph.value.id ? `${selectedGraph.value.id}.json` : null;
+  return selectedGraph.value && selectedGraph.value.graph_id ? `${selectedGraph.value.graph_id}.json` : null;
 });
 
 const topbarClass = computed(() => {
@@ -96,7 +96,7 @@ const updateGraphSize = () => {
   if (mainCourseGraphRef.value && typeof mainCourseGraphRef.value.updateGraphSize === 'function') { // 使用 mainCourseGraphRef
     mainCourseGraphRef.value.updateGraphSize();  // 只有存在该函数时才调用
   } else {
-    console.warn('MainPage: No updateGraphSize method available on the current graph component');
+    // console.warn('MainPage: No updateGraphSize method available on the current graph component');
   }
 };
 
