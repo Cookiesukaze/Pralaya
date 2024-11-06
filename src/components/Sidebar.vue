@@ -1,6 +1,6 @@
 <template>
   <div :class="isSidebarCollapsed ? 'lg:w-20' : 'lg:w-72'" class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300">
-    <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-4 sidebar-hide-scrollbar">
+    <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-themeBorderGrey125 bg-white px-4 sidebar-hide-scrollbar">
       <div class="flex h-16 shrink-0 items-center justify-between">
         <img v-if="!isSidebarCollapsed" class="h-8 w-auto" :src="company.logo" alt="Company logo" />
 
@@ -8,7 +8,7 @@
                 :class="[
                   'group flex items-center justify-center',
                   isSidebarCollapsed ? 'p-3' : 'px-4 py-2',
-                  'rounded-md text-gray-400 hover:text-indigo-600 hover:bg-gray-50'
+                  'rounded-md text-themeFontGrey hover:text-themeBlue hover:bg-themeGrey25'
                 ]">
           <ChevronDoubleLeftIcon v-if="!isSidebarCollapsed" class="h-6 w-6 shrink-0" />
           <ChevronDoubleRightIcon v-else class="h-6 w-6 shrink-0" />
@@ -18,19 +18,19 @@
       <nav class="flex flex-1 flex-col overflow-hidden">
         <ul role="list" class="flex flex-1 flex-col gap-y-7 overflow-hidden">
           <li>
-            <div v-if="!isSidebarCollapsed" class="text-xs font-semibold leading-6 text-gray-400">Your Graph</div>
+            <div v-if="!isSidebarCollapsed" class="text-xs font-semibold leading-6 text-themeFontGrey">Your Graph</div>
             <ul role="list" class="-mx-2 mt-2 space-y-1 list-none">
               <li v-for="graph in graphs" :key="graph.id">
                 <a @click="selectGraph(graph.id)"
                    :class="[
-                     graph.current ? 'bg-gray-100 text-indigo-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50',
+                     graph.current ? 'bg-themeGrey25 text-themeBlue' : 'text-themeFontBlack hover:text-themeBlue hover:bg-themeGrey25',
                      'group flex items-center',
                      isSidebarCollapsed ? 'justify-center p-3' : 'gap-x-3 px-4 py-2',
                      'rounded-md text-sm leading-6 font-semibold'
                    ]">
                   <component
                       :is="iconComponents[graph.icon]"
-                      :class="[graph.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600', 'h-6 w-6 shrink-0']"
+                      :class="[graph.current ? 'text-themeBlue' : 'text-themeFontGrey group-hover:text-themeBlue ', 'h-6 w-6 shrink-0']"
                       aria-hidden="true"
                   />
                   <span v-if="!isSidebarCollapsed" class="truncate">{{ graph.name }}</span>
@@ -42,13 +42,13 @@
       </nav>
 
       <div v-if="!isSidebarCollapsed" class="flex justify-center mt-auto mb-1 px-6">
-        <button class="w-full border border-indigo-600 text-indigo-600 rounded-md px-4 py-2 hover:bg-indigo-50">创建新的图谱</button>
+        <button class="w-full border text-themeBlue rounded-md px-4 py-2 hover:bg-themeGrey25 theme-grey-button">创建新的图谱</button>
       </div>
 
       <li class="-mx-6 mb-2 list-none">
-        <a href="#" class="flex items-center gap-x-4 px-6 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50">
-          <img v-if="!isSidebarCollapsed" class="h-8 w-8 rounded-full bg-gray-50" :src="user.avatar" alt="User avatar" />
-          <img v-else class="h-8 w-8 rounded-full bg-gray-50 mx-auto" :src="user.avatar" alt="User avatar" />
+        <a href="#" class="flex items-center gap-x-4 px-6 py-2 text-sm font-semibold leading-6 text-themeFontBlack hover:bg-themeGrey25">
+          <img v-if="!isSidebarCollapsed" class="h-8 w-8 rounded-full bg-themeGrey25" :src="user.avatar" alt="User avatar" />
+          <img v-else class="h-8 w-8 rounded-full bg-themeGrey25 mx-auto" :src="user.avatar" alt="User avatar" />
           <span v-if="!isSidebarCollapsed" class="sr-only">Your profile</span>
           <span v-if="!isSidebarCollapsed" aria-hidden="true">{{ user.name }}</span>
         </a>

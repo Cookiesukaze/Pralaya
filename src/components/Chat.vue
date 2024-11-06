@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-gray-100 px-0.5 py-0.5 flex flex-col items-center h-full">
-    <div class="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden flex flex-col flex-grow">
-      <div class="p-4 border-b">
-        <h1 class="text-lg font-semibold">Chat</h1>
+  <div class="bg-themeBorderGrey px-0.5 py-0.5 flex flex-col items-center h-full">
+    <div class="max-w-md w-full bg-white shadow-themeShadowGrey125-1 rounded-lg overflow-hidden flex flex-col flex-grow">
+      <div class="p-4 border-b border-themeBorderGrey">
+        <h1 class="text-lg font-semibold text-themeFontBlack">Chat</h1>
       </div>
 
       <div class="p-4 flex-grow overflow-y-scroll message-container" ref="messageContainer">
@@ -12,30 +12,30 @@
             :class="{'flex justify-end': message.from === 'user', 'flex': message.from !== 'user'}"
             class="mb-4"
         >
-          <div v-if="message.from !== 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300">
+          <div v-if="message.from !== 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-themeGrey25">
             <img :src="botAvatar" alt="Bot Avatar" class="h-8 w-8 rounded-full"/>
           </div>
 
           <div :class="{'ml-3': message.from !== 'user', 'mr-3': message.from === 'user'}">
             <div
-                :class="{'bg-gray-200': message.from !== 'user', 'bg-blue-500 text-white': message.from === 'user'}"
+                :class="{'bg-themeGrey25': message.from !== 'user', 'bg-themeBlue text-white': message.from === 'user'}"
                 class="p-2 rounded-lg"
             >
               <!-- 使用 v-html 来渲染包含换行符的消息 -->
-              <p class="text-sm break-words" :class="{'text-gray-700': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
+              <p class="text-sm break-words" :class="{'text-themeFontBlack': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
             </div>
-            <span class="text-xs text-gray-500" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
+            <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
           </div>
 
-          <div v-if="message.from === 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300">
+          <div v-if="message.from === 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-themeGrey25">
             <img :src="userAvatar" alt="User Avatar" class="h-8 w-8 rounded-full"/>
           </div>
         </div>
       </div>
 
-      <div class="p-4 border-t flex">
-        <input v-model="newMessage" @keyup.enter="sendMessage" class="w-full p-2 border rounded-lg" type="text" placeholder="Type a message...">
-        <button @click="sendMessage" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Send</button>
+      <div class="p-4 border-t border-themeBorderGrey flex">
+        <input v-model="newMessage" @keyup.enter="sendMessage" class="w-full p-2 border  rounded-lg theme-grey-input" type="text" placeholder="Type a message...">
+        <button @click="sendMessage" class="ml-2 px-4 py-2 text-white rounded-lg theme-button">Send</button>
       </div>
     </div>
   </div>
@@ -142,4 +142,6 @@ body {
   overflow-wrap: break-word; /* 现代浏览器支持 */
   word-break: break-all; /* 防止长链接超出容器宽度 */
 }
+
+
 </style>

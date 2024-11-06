@@ -1,13 +1,27 @@
 <template>
-  <div class="toolbar">
-    <button @click="props.onRefresh" aria-label="Refresh">
-      <ArrowPathIcon class="icon" />
+  <div class="absolute top-2.5 right-2.5 flex gap-2.5 p-2.5 bg-white shadow-md rounded-xl z-10">
+    <button
+        @click="props.onRefresh"
+        aria-label="Refresh"
+        class="bg-transparent border-none cursor-pointer p-1.5 rounded-full transition-colors duration-300 hover:bg-themeGrey25"
+    >
+      <ArrowPathIcon class="w-6 h-6 text-themeFontGrey transition-colors duration-300 hover:text-themeBlue" />
     </button>
-    <button @click="props.onToggleFullscreen" aria-label="Fullscreen">
-      <ArrowsPointingOutIcon class="icon" />
+
+    <button
+        @click="props.onToggleFullscreen"
+        aria-label="Fullscreen"
+        class="bg-transparent border-none cursor-pointer p-1.5 rounded-full transition-colors duration-300 hover:bg-themeGrey25"
+    >
+      <ArrowsPointingOutIcon class="w-6 h-6 text-themeFontGrey transition-colors duration-300 hover:text-indigo-500" />
     </button>
-    <button @click="props.onToggleGraphType" aria-label="Toggle Graph Type">
-      <ArrowsRightLeftIcon class="icon" />
+
+    <button
+        @click="props.onToggleGraphType"
+        aria-label="Toggle Graph Type"
+        class="bg-transparent border-none cursor-pointer p-1.5 rounded-full transition-colors duration-300 hover:bg-themeGrey25"
+    >
+      <ArrowsRightLeftIcon class="w-6 h-6 text-themeFontGrey transition-colors duration-300 hover:text-indigo-500" />
     </button>
   </div>
 </template>
@@ -23,41 +37,3 @@ const props = defineProps({
 
 console.log('GraphToolbar : props: ', props);
 </script>
-
-<style scoped>
-.toolbar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.icon {
-  width: 24px;
-  height: 24px;
-  color: #4b5563;
-  transition: color 0.3s;
-}
-
-button:hover .icon {
-  color: #6366f1;
-}
-</style>
