@@ -18,6 +18,7 @@ import {onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick, definePr
 import G6 from '@antv/g6';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
+import './graph.css'
 
 const props = defineProps({
   jsonPath: String,
@@ -107,6 +108,7 @@ const initializeGraph = (graphData) => {
 
   graph.data(graphData);
   graph.render();
+
 };
 
 // 加载图形数据
@@ -222,9 +224,9 @@ document.addEventListener('fullscreenchange', () => {
       // 搜索框全屏样式
       searchEl.style.position = 'fixed';
       searchEl.style.bottom = '10px';
-      searchEl.style.left = '10px';
+      searchEl.style.left = '2%';
       searchEl.style.zIndex = '10000';
-      searchEl.style.width = '100%';  // 设置宽度为100%
+      searchEl.style.width = '96%';  // 设置宽度为100%
       searchEl.style.padding = '10px';  // 添加一些内边距
       searchEl.style.boxSizing = 'border-box';  // 确保 padding 不影响宽度
     } else {
@@ -293,60 +295,3 @@ watch(() => props.jsonPath, (newPath) => {
 });
 </script>
 
-<style scoped>
-.graph-container {
-  height: 600px;
-  position: relative;
-  z-index: 1; /* 确保图形层级较低 */
-}
-
-.fullscreen {
-  background-color: white;
-  height: 100vh;
-  position: relative;
-  z-index: 1; /* 确保图形层级较低 */
-}
-
-/* 工具栏的全屏浮动样式 */
-.toolbar-fullscreen {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 10000; /* 提高 z-index，确保在图形之上 */
-}
-
-/* 搜索框的全屏浮动样式 */
-.search-fullscreen {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  z-index: 10000; /* 提高 z-index，确保在图形之上 */
-  width: 100%; /* 在全屏模式下让搜索框宽度占满 */
-  padding: 10px; /* 添加一些内边距 */
-  box-sizing: border-box; /* 确保 padding 不影响宽度 */
-}
-
-/* 默认的工具栏样式 */
-.toolbar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 10px;
-  z-index: 2; /* 确保在图形上方 */
-}
-
-/* 默认的搜索框样式 */
-.search-bar {
-  margin-top: 10px;
-}
-
-input {
-  width: 100%;
-  padding: 5px;
-}
-
-.graph-container::backdrop {
-  background-color: transparent; /* 使 backdrop 透明 */
-}
-</style>

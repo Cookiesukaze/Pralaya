@@ -18,6 +18,7 @@ import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextT
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
+import './graph.css'
 
 const props = defineProps({
   jsonPath: String,
@@ -98,7 +99,7 @@ const initializeGraph = (graphData) => {
 
 // 加载图形数据
 const loadGraphData = async () => {
-  console.log("TreeGraph: get graph data: " + props.graphs);
+  console.log("TreeGraph: get graph data: " , props.graphs);
 
   if (!props.jsonPath) {
     console.warn('TreeGraph: 没有传递 jsonPath');
@@ -281,60 +282,4 @@ watch(() => props.jsonPath, (newPath) => {
 });
 </script>
 
-<style scoped>
-.graph-container {
-  height: 600px;
-  position: relative;
-  z-index: 1; /* 确保图形层级较低 */
-}
 
-.fullscreen {
-  background-color: white;
-  height: 100vh;
-  position: relative;
-  z-index: 1; /* 确保图形层级较低 */
-}
-
-/* 工具栏的全屏浮动样式 */
-.toolbar-fullscreen {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 10000; /* 提高 z-index，确保在图形之上 */
-}
-
-/* 搜索框的全屏浮动样式 */
-.search-fullscreen {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  z-index: 10000; /* 提高 z-index，确保在图形之上 */
-  width: 100%; /* 在全屏模式下让搜索框宽度占满 */
-  padding: 10px; /* 添加一些内边距 */
-  box-sizing: border-box; /* 确保 padding 不影响宽度 */
-}
-
-/* 默认的工具栏样式 */
-.toolbar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 10px;
-  z-index: 2; /* 确保在图形上方 */
-}
-
-/* 默认的搜索框样式 */
-.search-bar {
-  margin-top: 10px;
-}
-
-input {
-  width: 100%;
-  padding: 5px;
-}
-
-.graph-container::backdrop {
-  background-color: transparent; /* 使 backdrop 透明 */
-}
-</style>
