@@ -27,7 +27,7 @@
 
       <div class="w-80 bg-white border-l flex flex-col">
         <Chat
-            v-if="selectedGraph"
+            v-if="selectedGraph && userAvatar"
             :messages="chatMessages"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
@@ -60,7 +60,7 @@ const selectedGraph = ref(null);
 
 const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
 
-const userAvatar = ref(fakeUser.avatar);
+const userAvatar = ref(fakeUser.value.avatar);
 const botAvatar = ref(fakeBot.avatar);
 const chatMessages = ref([
   { from: 'bot', text: 'Hello! How can I help you today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }

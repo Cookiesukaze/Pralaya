@@ -59,6 +59,7 @@ export default {
   },
   methods: {
     async sendMessage() {
+      console.log('Chat: User Avatar:', this.userAvatar);
       if (this.newMessage.trim() !== '') {
         this.messages.push({
           from: 'user',
