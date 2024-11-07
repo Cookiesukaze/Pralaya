@@ -137,14 +137,13 @@ document.addEventListener('fullscreenchange', () => {
     const isFullscreen = !!document.fullscreenElement;
     // 处理样式和工具栏的变化
     handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
-    if (!isFullscreen) {
-      // 用户按下 ESC 退出全屏时，移除 fullscreen 类
+    if (!isFullscreen) {      // 用户按下 ESC 退出全屏时，移除 fullscreen 类
       console.log("ESC key pressed: exit fullscreen");
       knowledgeGraphRef.value.classList.remove('fullscreen');
       outerContainer.value.classList.remove('fullscreen');
     }
-    updateGraphSize();// 更新图表大小
-  }, 100);  // 延迟 100ms 确保 fullscreen 状态已更新
+  }, 200);  // 延迟确保 fullscreen 状态已更新
+  setTimeout(()=>{refreshGraph();},200) //强制刷新一次
 });
 
 // 更新图表大小
