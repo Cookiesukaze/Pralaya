@@ -13,7 +13,7 @@
 
 <script setup>
 import {ref, onMounted, onBeforeUnmount, nextTick, defineExpose, defineProps, toRefs, watch} from 'vue';
-import { toggleFullscreen, handleFullscreenChange } from './utils/fullscreenUtils';
+import {toggleFullscreen, handleFullscreenChange, createDebouncedFullscreenToggle} from './utils/fullscreenUtils';
 import {initializeGraph, parseGraphData, updateGraphSize} from './utils/graphUtils';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
@@ -71,30 +71,12 @@ const loadGraphData = async () => {
   }
 };
 
-// 定义防抖后的全屏切换函数
-const debouncedToggleFullscreen = debounce(async () => {
-  try {
-    if (document.fullscreenElement) {
-      // 如果已经在全屏状态，退出全屏
-      await toggleFullscreen(outerContainer.value);
-      console.log("knowledge graph: exit fullscreen:", knowledgeGraphRef.value.classList);
-      knowledgeGraphRef.value.classList.remove('fullscreen');
-      outerContainer.value.classList.remove('fullscreen');
-    } else {
-      // 进入全屏状态
-      outerContainer.value.classList.add('fullscreen');
-      knowledgeGraphRef.value.classList.add('fullscreen');
-      await toggleFullscreen(outerContainer.value);
-    }
-    // 更新图表大小
-    await updateGraphSize();
-  } catch (error) {
-    console.error("Error during fullscreen toggle:", error);
-  }
-}, 100);
 // 使用防抖后的函数
-const handleToggleFullscreen = debouncedToggleFullscreen;
-
+const handleToggleFullscreen = createDebouncedFullscreenToggle(
+    knowledgeGraphRef, // 图表的 ref
+    outerContainer, // 容器的 ref
+    () => updateGraphSize(graph, knowledgeGraphRef, outerContainer) // 更新尺寸的回调函数
+);
 
 // 搜索节点
 const searchNodes = (query) => {

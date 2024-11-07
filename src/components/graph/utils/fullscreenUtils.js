@@ -3,6 +3,8 @@
 
 // fullscreenUtils.js
 
+import {debounce} from "lodash";
+
 export const toggleFullscreen = async (element) => {
     try {
         if (document.fullscreenElement) {
@@ -60,4 +62,24 @@ export const handleFullscreenChange = (toolbarComponent, searchComponent, outerC
     if (!document.fullscreenElement) {
         outerContainer.classList.remove('fullscreen');
     }
+};
+
+// 创建防抖的全屏切换函数
+export const createDebouncedFullscreenToggle = (graphRef, containerRef, updateGraphSize) => {
+    return debounce(async () => {
+        try {
+            if (document.fullscreenElement) {
+                await toggleFullscreen(containerRef.value);
+                graphRef.value.classList.remove('fullscreen');
+                containerRef.value.classList.remove('fullscreen');
+            } else {
+                containerRef.value.classList.add('fullscreen');
+                graphRef.value.classList.add('fullscreen');
+                await toggleFullscreen(containerRef.value);
+            }
+            await updateGraphSize();
+        } catch (error) {
+            console.error("Error during fullscreen toggle:", error);
+        }
+    }, 100);
 };

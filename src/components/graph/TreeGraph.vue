@@ -13,7 +13,7 @@
 
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
-import {handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
+import {createDebouncedFullscreenToggle, handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
 import {initializeTreeGraph, parseData, updateGraphSize} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
@@ -106,29 +106,12 @@ const refreshGraph = () => {
   }
 };
 
-// 定义防抖后的全屏切换函数
-const debouncedToggleFullscreen = debounce(async () => {
-  try {
-    if (document.fullscreenElement) {
-      // 如果已经在全屏状态，退出全屏
-      await toggleFullscreen(outerContainer.value);
-      console.log("tree graph: exit fullscreen:", treeGraphRef.value.classList);
-      treeGraphRef.value.classList.remove('fullscreen');
-      outerContainer.value.classList.remove('fullscreen');
-    } else {
-      // 进入全屏状态
-      outerContainer.value.classList.add('fullscreen');
-      treeGraphRef.value.classList.add('fullscreen');
-      await toggleFullscreen(outerContainer.value);
-    }
-    // 更新图表大小
-    await updateGraphSize();
-  } catch (error) {
-    console.error("Error during fullscreen toggle:", error);
-  }
-}, 100);
 // 使用防抖后的函数
-const handleToggleFullscreen = debouncedToggleFullscreen;
+const handleToggleFullscreen = createDebouncedFullscreenToggle(
+    treeGraphRef, // 图表的 ref
+    outerContainer, // 容器的 ref
+    () => updateGraphSize(graph, treeGraphRef, outerContainer) // 更新尺寸的回调函数
+);
 
 // 监听全屏事件并确保更新样式和图表
 document.addEventListener('fullscreenchange', () => {
