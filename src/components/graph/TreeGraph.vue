@@ -14,7 +14,7 @@
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
 import {handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
-import {initializeTreeGraph, parseData} from './utils/graphUtils';
+import {initializeTreeGraph, parseData, updateGraphSize} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
@@ -145,16 +145,6 @@ document.addEventListener('fullscreenchange', () => {
   setTimeout(()=>{refreshGraph();},200) //强制刷新一次
 });
 
-// 更新图形尺寸
-const updateGraphSize = async () => {
-  if (graph && treeGraphRef.value) {
-    await nextTick();
-    const width = treeGraphRef.value.clientWidth;
-    const height = outerContainer.value.clientHeight; // 使用 outerContainer 的高度
-    graph.changeSize(width, height);
-    graph.fitCenter();
-  }
-};
 
 // 暴露方法
 defineExpose({

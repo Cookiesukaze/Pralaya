@@ -14,7 +14,7 @@
 <script setup>
 import {ref, onMounted, onBeforeUnmount, nextTick, defineExpose, defineProps, toRefs, watch} from 'vue';
 import { toggleFullscreen, handleFullscreenChange } from './utils/fullscreenUtils';
-import { initializeGraph, parseGraphData } from './utils/graphUtils';
+import {initializeGraph, parseGraphData, updateGraphSize} from './utils/graphUtils';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
 import './graph.css';
@@ -146,16 +146,6 @@ document.addEventListener('fullscreenchange', () => {
   setTimeout(()=>{refreshGraph();},200) //强制刷新一次
 });
 
-// 更新图表大小
-const updateGraphSize = async () => {
-  if (graph && knowledgeGraphRef.value) {
-    await nextTick();
-    const width = knowledgeGraphRef.value.clientWidth;
-    const height = outerContainer.value.clientHeight; // 使用 outerContainer 的高度
-    graph.changeSize(width, height);
-    graph.fitCenter();
-  }
-};
 
 const onFullscreenChange = () => {
   updateGraphSize(); // 监听全屏变化时更新大小

@@ -2,6 +2,7 @@
 
 // 通用的解析数据函数
 import G6 from "@antv/g6";
+import {nextTick} from "vue";
 
 export const parseGraphData = (data, parentId = null, nodes = [], edges = []) => {
     const nodeId = data.name;
@@ -132,3 +133,14 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
 
     return graph;
     };
+
+// 通用图表尺寸更新函数
+export const updateGraphSize = async (graph, graphRef, containerRef) => {
+    if (graph && graphRef.value) {
+        await nextTick();
+        const width = graphRef.value.clientWidth;
+        const height = containerRef.value.clientHeight;
+        graph.changeSize(width, height);
+        graph.fitCenter();
+    }
+};
