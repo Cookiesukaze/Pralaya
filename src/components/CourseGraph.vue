@@ -35,9 +35,9 @@ const currentGraphRef = computed(() => {
 });
 
 const toggleGraphType = () => {
+  updateGraphSize();
   console.log('CourseGraph: Graph type toggled');
   selectedGraphType.value = selectedGraphType.value === 'knowledge' ? 'tree' : 'knowledge';
-  nextTick(updateGraphSize);
 };
 
 const refreshGraph = () => {
