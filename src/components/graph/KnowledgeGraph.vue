@@ -80,8 +80,10 @@ const handleToggleFullscreen = async () => {
   if (document.fullscreenElement) {
     await document.exitFullscreen();
     outerContainer.value.classList.remove('fullscreen');
+    knowledgeGraphRef.value.classList.remove('fullscreen');
   } else {
     outerContainer.value.classList.add('fullscreen');
+    knowledgeGraphRef.value.classList.add('fullscreen');
     toggleFullscreen(outerContainer.value);
   }
   console.log('Fullscreen mode:', !!document.fullscreenElement);
