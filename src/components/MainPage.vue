@@ -1,6 +1,7 @@
 <template>
   <div class="flex flex-col h-screen">
-    <div :class="topbarClass">
+<!--    selectGraph有数据了才能被渲染，防止提前渲染-->
+    <div :class="topbarClass" v-if="selectedGraph">
       <Topbar :selectedGraph="selectedGraph" />
     </div>
 
@@ -16,18 +17,21 @@
 
       <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow">
         <CourseGraph
+            v-if="graphs.length > 0"
             ref="mainCourseGraphRef"
-        :isSidebarCollapsed="isSidebarCollapsed"
-        :jsonPath="jsonPath"
+          :isSidebarCollapsed="isSidebarCollapsed"
+          :jsonPath="jsonPath"
+          :graphs="graphs"
         />
       </div>
 
       <div class="w-80 bg-white border-l flex flex-col">
         <Chat
+            v-if="selectedGraph"
             :messages="chatMessages"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
-            :selectedGraphId="String(selectedGraph.graph_id)"
+            :selectedGraphId="selectedGraph?.id?.toString() || '1'"
         />
       </div>
     </div>
@@ -39,7 +43,12 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import Sidebar from './Sidebar.vue';
 import CourseGraph from './CourseGraph.vue';
 import Topbar from './Topbar.vue';
-import { graphs as fakeGraphs, user as fakeUser, company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
+// import { graphs as fakeGraphs, user as fakeUser, company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
+// import { fetchGraph, fetchUser} from '../services/dataManager';
+import { company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
+import { graph as fakeGraphs, user as fakeUser, fetchGraph, fetchUser} from '../services/dataManager';
+
+
 import Chat from "./Chat.vue";
 
 const isSidebarCollapsed = ref(false);
@@ -47,11 +56,11 @@ const graphs = ref(fakeGraphs);
 const user = ref(fakeUser);
 const bot = ref(fakeBot);
 const company = ref(fakeCompany);
-const selectedGraph = ref(graphs.value.find(g => g.current) || graphs.value[0]);
+const selectedGraph = ref(null);
 
 const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
 
-const userAvatar = ref(fakeUser.user_avatar);
+const userAvatar = ref(fakeUser.avatar);
 const botAvatar = ref(fakeBot.avatar);
 const chatMessages = ref([
   { from: 'bot', text: 'Hello! How can I help you today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
@@ -63,16 +72,19 @@ const toggleSidebar = () => {
 };
 
 const selectGraph = (id) => {
+  console.log("MainPage: Selecting graph with id:", id);
   graphs.value.forEach(graph => graph.current = false);
-  const selected = graphs.value.find(graph => graph.graph_id === id);
+  const selected = graphs.value.find(graph => graph.id === id);
   if (selected) {
     selected.current = true;
     selectedGraph.value = selected;
+    console.log("MainPage: New selected graph:", selectedGraph.value);
   }
 };
 
 const jsonPath = computed(() => {
-  return selectedGraph.value && selectedGraph.value.graph_id ? `${selectedGraph.value.graph_id}.json` : null;
+  console.log("MainPage: Computing jsonPath, selectedGraph:", selectedGraph.value);
+  return selectedGraph.value?.id ? `${selectedGraph.value.id}.json` : `1.json`;
 });
 
 const topbarClass = computed(() => {
@@ -100,9 +112,19 @@ const updateGraphSize = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchGraph();
+  await fetchUser();
+  console.log("MainPage: Graphs on mounted:", graphs.value);
+
+  // 确保 graphs 有数据后再设置 selectedGraph
+  if (graphs.value && graphs.value.length > 0) {
+    selectedGraph.value = graphs.value.find(g => g.current) || graphs.value[0];
+    console.log("Selected graph:", selectedGraph.value); // 添加日志
+  }
+
   window.addEventListener('resize', updateGraphSize);
-  updateGraphSize(); // Initial update
+  updateGraphSize();
 });
 
 onBeforeUnmount(() => {

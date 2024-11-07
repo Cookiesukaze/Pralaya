@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick, defineProps} from 'vue';
+import {onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick, defineProps, toRefs} from 'vue';
 import G6 from '@antv/g6';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
@@ -22,7 +22,9 @@ import GraphToolbar from './GraphToolbar.vue';
 const props = defineProps({
   jsonPath: String,
   onToggleGraphType: Function, // 添加此行
+  graphs: Array,
 });
+const { graphs } = toRefs(props);  // 记得导入 toRefs
 
 const outerContainer = ref(null);  // 定义最外层容器的引用
 const knowledgeGraphRef = ref(null);  // 定义图形容器引用
@@ -109,6 +111,8 @@ const initializeGraph = (graphData) => {
 
 // 加载图形数据
 const loadGraphData = async () => {
+  console.log("KnowledgeGraph: get graph data: " , graphs.value);
+
   if (!props.jsonPath) {
     console.warn('KnowledgeGraph: 没有传递 jsonPath');
     return;
@@ -117,15 +121,26 @@ const loadGraphData = async () => {
   const filePath = `../../assets/data/sample-graph-data/${props.jsonPath}`.replace(/\/{2,}/g, '/');
 
   try {
-    const loadFile = graphFiles[filePath];
+    // 检查 graphs 中是否存在 content 字段
+    const graphWithContent = graphs.value.find(graph => graph.id.toString() === props.jsonPath.split('.')[0]);
 
-    if (!loadFile) {
-      throw new Error(`文件 ${filePath} 未找到`);
+    let rawData;
+    if (graphWithContent && graphWithContent.content) {
+      rawData = JSON.parse(graphWithContent.content);
+      console.log('KnowledgeGraph: 使用 props.graphs 中的内容',rawData);
+    } else {
+      // 从本地文件加载
+      const loadFile = graphFiles[filePath];
+      if (!loadFile) {
+        throw new Error(`文件 ${filePath} 未找到`);
+      }
+      rawData = await loadFile();
+      rawData = rawData.default;
+      console.log('KnowledgeGraph: 使用 本地文件的 json ',rawData);
     }
 
-    const rawData = await loadFile();
-    const {nodes, edges} = parseData(rawData.default);
-    const graphData = {nodes, edges};
+    const { nodes, edges } = parseData(rawData);
+    const graphData = { nodes, edges };
 
     initializeGraph(graphData);
   } catch (error) {

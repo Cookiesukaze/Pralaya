@@ -20,8 +20,8 @@
           <li>
             <div v-if="!isSidebarCollapsed" class="text-xs font-semibold leading-6 text-themeFontGrey">Your Graph</div>
             <ul role="list" class="-mx-2 mt-2 space-y-1 list-none">
-              <li v-for="graph in graphs" :key="graph.graph_id">
-                <a @click="selectGraph(graph.graph_id)"
+              <li v-for="graph in graphs" :key="graph.id">
+                <a @click="selectGraph(graph.id)"
                    :class="[
                      graph.current ? 'bg-themeGrey25 text-themeBlue' : 'text-themeFontBlack hover:text-themeBlue hover:bg-themeGrey25',
                      'group flex items-center',
@@ -29,11 +29,11 @@
                      'rounded-md text-sm leading-6 font-semibold'
                    ]">
                   <component
-                      :is="iconComponents[graph.graph_icon]"
+                      :is="iconComponents[graph.icon]"
                       :class="[graph.current ? 'text-themeBlue' : 'text-themeFontGrey group-hover:text-themeBlue ', 'h-6 w-6 shrink-0']"
                       aria-hidden="true"
                   />
-                  <span v-if="!isSidebarCollapsed" class="truncate">{{ graph.graph_name }}</span>
+                  <span v-if="!isSidebarCollapsed" class="truncate">{{ graph.name }}</span>
                 </a>
               </li>
             </ul>
@@ -47,10 +47,10 @@
 
       <li class="-mx-6 mb-2 list-none">
         <a href="#" class="flex items-center gap-x-4 px-6 py-2 text-sm font-semibold leading-6 text-themeFontBlack hover:bg-themeGrey25">
-          <img v-if="!isSidebarCollapsed" class="h-8 w-8 rounded-full bg-themeGrey25" :src="user.user_avatar" alt="User avatar" />
-          <img v-else class="h-8 w-8 rounded-full bg-themeGrey25 mx-auto" :src="user.user_avatar" alt="User avatar" />
+          <img v-if="!isSidebarCollapsed" class="h-8 w-8 rounded-full bg-themeGrey25" :src="user.avatar" alt="User avatar" />
+          <img v-else class="h-8 w-8 rounded-full bg-themeGrey25 mx-auto" :src="user.avatar" alt="User avatar" />
           <span v-if="!isSidebarCollapsed" class="sr-only">Your profile</span>
-          <span v-if="!isSidebarCollapsed" aria-hidden="true">{{ user.user_name }}</span>
+          <span v-if="!isSidebarCollapsed" aria-hidden="true">{{ user.name }}</span>
         </a>
       </li>
     </div>

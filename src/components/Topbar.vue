@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-between items-center bg-white shadow-themeShadowGrey125-2 px-6 py-4">
     <!-- 当前图表的名字 -->
-    <div class="text-lg font-semibold text-themeFontBlack">{{ selectedGraph.graph_name }}</div>
+    <div class="text-lg font-semibold text-themeFontBlack">{{ selectedGraph.name }}</div>
 
     <!-- 右侧的下拉菜单 -->
     <div class="relative">
@@ -15,10 +15,10 @@
         <div class="px-4 py-2 text-sm">
           <!-- 动态图标 -->
           <component
-              :is="iconComponents[selectedGraph.graph_icon]"
+              :is="iconComponents[selectedGraph.icon]"
               class="h-8 w-8 mx-auto text-themeFontBlack"
           />
-          <p class="text-center mt-2 text-themeFontGrey">{{ selectedGraph.graph_description }}</p>
+          <p class="text-center mt-2 text-themeFontGrey">{{ selectedGraph.description }}</p>
           <button class="mt-4 w-full px-4 py-2 text-white rounded-md text-sm shadow-sm hover:bg-themeBlue theme-button">
             编辑图谱
           </button>

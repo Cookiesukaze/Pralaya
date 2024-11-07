@@ -1,21 +1,24 @@
 <template>
   <div class="graph-wrapper">
     <component
+        v-if="props.graphs && props.graphs.length > 0"
         :is="currentGraphComponent"
         :jsonPath="jsonPath"
         :onToggleGraphType="toggleGraphType"
         :ref="currentGraphRef"
+        :graphs="props.graphs"
     />
   </div>
 </template>
 
 <script setup>
-import {ref, computed, nextTick} from 'vue';
+import {ref, computed, nextTick, onMounted} from 'vue';
 import KnowledgeGraph from './graph/KnowledgeGraph.vue';
 import TreeGraph from './graph/TreeGraph.vue';
 
 const props = defineProps({
   jsonPath: String,
+  graphs: Array,
 });
 
 const knowledgeGraphRef = ref(null);
@@ -32,13 +35,13 @@ const currentGraphRef = computed(() => {
 });
 
 const toggleGraphType = () => {
-  console.log('Graph type toggled');
+  console.log('CourseGraph: Graph type toggled');
   selectedGraphType.value = selectedGraphType.value === 'knowledge' ? 'tree' : 'knowledge';
   nextTick(updateGraphSize);
 };
 
 const refreshGraph = () => {
-  console.log('Graph refreshed');
+  console.log('CourseGraph: Graph refreshed');
   const currentRef = selectedGraphType.value === 'knowledge' ? knowledgeGraphRef : treeGraphRef;
   if (currentRef.value && currentRef.value.refreshGraph) {
     currentRef.value.refreshGraph();
@@ -46,7 +49,7 @@ const refreshGraph = () => {
 };
 
 const toggleFullscreen = () => {
-  console.log('Fullscreen toggled');
+  console.log('CourseGraph: Fullscreen toggled');
   const currentRef = selectedGraphType.value === 'knowledge' ? knowledgeGraphRef : treeGraphRef;
   if (currentRef.value && currentRef.value.toggleFullscreen) {
     currentRef.value.toggleFullscreen();
@@ -62,6 +65,10 @@ const updateGraphSize = () => {
     console.warn('Course Graph: No updateGraphSize method available on the current graph component');
   }
 };
+
+onMounted(() => {
+  console.log('CourseGraph: Initial graphs:', props.graphs);
+});
 </script>
 
 <style scoped>

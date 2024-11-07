@@ -10,8 +10,13 @@ const ipInfo = ref(null);
 const fetchGraph = async () => {
     try {
         const response = await getAllGraph();
-        graph.value = response.data;
+        //添加一个current字段
+        graph.value = response.data.map((item, index) => ({
+            ...item,
+            current: index === 0
+        }));
         console.log('dataManager: graph:', graph.value);
+
     } catch (error) {
         console.error('dataManager: Error fetching graph:', error);
         graph.value = fakeGraph; // 使用假数据
