@@ -19,6 +19,7 @@ import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
 import './graph.css'
+import {debounce} from "lodash";
 
 const props = defineProps({
   jsonPath: String,
@@ -65,8 +66,6 @@ const loadGraphData = async () => {
     // 解析和初始化图表
     const graphData = parseData(rawData);
     graph = initializeTreeGraph(treeGraphRef.value, graphData);
-    // initializeGraph(graphData);
-
   } catch (error) {
     console.error('TreeGraph: 加载图表数据出错:', error);
   }
@@ -107,24 +106,43 @@ const refreshGraph = () => {
   }
 };
 
-// 切换全屏模式
-const handleToggleFullscreen = async () => {
-  if (document.fullscreenElement) {
-    await document.exitFullscreen();
-    outerContainer.value.classList.remove('fullscreen');
-    treeGraphRef.value.classList.remove('fullscreen');
-  } else {
-    outerContainer.value.classList.add('fullscreen');
-    treeGraphRef.value.classList.add('fullscreen');
-    toggleFullscreen(outerContainer.value);
+// 定义防抖后的全屏切换函数
+const debouncedToggleFullscreen = debounce(async () => {
+  try {
+    if (document.fullscreenElement) {
+      // 如果已经在全屏状态，退出全屏
+      await toggleFullscreen(outerContainer.value);
+      console.log("tree graph: exit fullscreen:", treeGraphRef.value.classList);
+      treeGraphRef.value.classList.remove('fullscreen');
+      outerContainer.value.classList.remove('fullscreen');
+    } else {
+      // 进入全屏状态
+      outerContainer.value.classList.add('fullscreen');
+      treeGraphRef.value.classList.add('fullscreen');
+      await toggleFullscreen(outerContainer.value);
+    }
+    // 更新图表大小
+    await updateGraphSize();
+  } catch (error) {
+    console.error("Error during fullscreen toggle:", error);
   }
-  updateGraphSize();
-};
+}, 100);
+// 使用防抖后的函数
+const handleToggleFullscreen = debouncedToggleFullscreen;
 
-// 监听全屏模式变化
+// 监听全屏事件并确保更新样式和图表
 document.addEventListener('fullscreenchange', () => {
-  handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
-  updateGraphSize();
+  setTimeout(() => {
+    const isFullscreen = !!document.fullscreenElement;
+    // 处理样式和工具栏的变化
+    handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
+    if (!isFullscreen) {      // 用户按下 ESC 退出全屏时，移除 fullscreen 类
+      console.log("ESC key pressed: exit fullscreen");
+      treeGraphRef.value.classList.remove('fullscreen');
+      outerContainer.value.classList.remove('fullscreen');
+    }
+  }, 200);  // 延迟确保 fullscreen 状态已更新
+  setTimeout(()=>{refreshGraph();},200) //强制刷新一次
 });
 
 // 更新图形尺寸
@@ -132,7 +150,7 @@ const updateGraphSize = async () => {
   if (graph && treeGraphRef.value) {
     await nextTick();
     const width = treeGraphRef.value.clientWidth;
-    const height = document.fullscreenElement ? window.innerHeight : 600;
+    const height = outerContainer.value.clientHeight; // 使用 outerContainer 的高度
     graph.changeSize(width, height);
     graph.fitCenter();
   }
