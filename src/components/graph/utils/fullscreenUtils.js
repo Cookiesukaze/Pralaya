@@ -57,7 +57,6 @@ export const handleFullscreenChange = (toolbarComponent, searchComponent, outerC
 
         }
     }
-
     if (!document.fullscreenElement) {
         outerContainer.classList.remove('fullscreen');
     }
