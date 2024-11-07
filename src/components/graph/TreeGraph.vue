@@ -129,49 +129,7 @@ const toggleFullscreen = () => {
 
 // 监听全屏模式变化
 document.addEventListener('fullscreenchange', () => {
-  const isFullscreen = !!document.fullscreenElement;
-
-  // 更新工具栏和搜索框的浮动状态
-  if (toolbarComponent.value && searchComponent.value) {
-    const toolbarEl = toolbarComponent.value.$el;
-    const searchEl = searchComponent.value.$el;
-
-    if (isFullscreen) {
-      // 工具栏全屏样式
-      toolbarEl.style.position = 'fixed';
-      toolbarEl.style.top = '10px';
-      toolbarEl.style.right = '10px';
-      toolbarEl.style.zIndex = '10000';
-
-      // 搜索框全屏样式
-      searchEl.style.position = 'fixed';
-      searchEl.style.bottom = '10px';
-      searchEl.style.left = '10px';
-      searchEl.style.zIndex = '10000';
-      searchEl.style.width = '100%';  // 设置宽度为100%
-      searchEl.style.padding = '10px';  // 添加一些内边距
-      searchEl.style.boxSizing = 'border-box';  // 确保 padding 不影响宽度
-    } else {
-      // 退出全屏时恢复默认的样式
-      toolbarEl.style.position = '';
-      toolbarEl.style.top = '';
-      toolbarEl.style.right = '';
-      toolbarEl.style.zIndex = '';
-
-      searchEl.style.position = '';
-      searchEl.style.bottom = '';
-      searchEl.style.left = '';
-      searchEl.style.zIndex = '';
-      searchEl.style.width = '';  // 恢复默认宽度
-      searchEl.style.padding = '';  // 恢复默认 padding
-      searchEl.style.boxSizing = '';  // 恢复默认 box-sizing
-    }
-  }
-
-  if (!document.fullscreenElement) {
-    outerContainer.value.classList.remove('fullscreen');
-  }
-
+  handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
   updateGraphSize();
 });
 
