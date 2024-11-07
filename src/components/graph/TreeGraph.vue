@@ -14,7 +14,7 @@
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
 import {createDebouncedFullscreenToggle, handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
-import {initializeTreeGraph, parseData, updateGraphSize} from './utils/graphUtils';
+import {GraphSearchUtil, initializeTreeGraph, parseData, updateGraphSize} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
@@ -71,30 +71,9 @@ const loadGraphData = async () => {
   }
 };
 
-// 搜索节点
+//搜索节点
 const searchNodes = (query) => {
-  const lowerCaseQuery = query.toLowerCase();
-
-  if (!lowerCaseQuery) {
-    graph.getNodes().forEach((node) => {
-      graph.setItemState(node, 'highlight', false);
-    });
-    return;
-  }
-
-  const foundNodes = graph.getNodes().filter((node) => {
-    const model = node.getModel();
-    return model.label.toLowerCase().includes(lowerCaseQuery);
-  });
-
-  graph.getNodes().forEach((node) => {
-    const model = node.getModel();
-    if (foundNodes.includes(node)) {
-      graph.setItemState(node, 'highlight', true);
-    } else {
-      graph.setItemState(node, 'highlight', false);
-    }
-  });
+  GraphSearchUtil.searchNodes(graph, query);
 };
 
 // 刷新图形

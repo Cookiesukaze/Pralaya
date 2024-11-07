@@ -136,7 +136,7 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
 
 // 通用图表尺寸更新函数
 export const updateGraphSize = async (graph, graphRef, containerRef) => {
-    if (graph && graphRef.value) {
+    if (graph && graphRef) {
         await nextTick();
         const width = graphRef.value.clientWidth;
         const height = containerRef.value.clientHeight;
@@ -144,3 +144,30 @@ export const updateGraphSize = async (graph, graphRef, containerRef) => {
         graph.fitCenter();
     }
 };
+
+// searchUtils.js 为了不丢失graph的上下文，必须写成类再调用类方法
+export class GraphSearchUtil {
+    static searchNodes(graph, query) {
+        const lowerCaseQuery = query.toLowerCase();
+
+        if (!lowerCaseQuery) {
+            graph.getNodes().forEach((node) => {
+                graph.setItemState(node, 'highlight', false);
+            });
+            return;
+        }
+
+        const foundNodes = graph.getNodes().filter((node) => {
+            const model = node.getModel();
+            return model.label.toLowerCase().includes(lowerCaseQuery);
+        });
+
+        graph.getNodes().forEach((node) => {
+            if (foundNodes.includes(node)) {
+                graph.setItemState(node, 'highlight', true);
+            } else {
+                graph.setItemState(node, 'highlight', false);
+            }
+        });
+    }
+}
