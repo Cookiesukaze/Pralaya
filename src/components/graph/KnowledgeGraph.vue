@@ -14,7 +14,7 @@
 <script setup>
 import {ref, onMounted, onBeforeUnmount, nextTick, defineExpose, defineProps, toRefs, watch} from 'vue';
 import { toggleFullscreen, handleFullscreenChange } from './utils/fullscreenUtils';
-import { initializeGraph, parseGraphData, searchNodes } from './utils/graphUtils';
+import { initializeGraph, parseGraphData } from './utils/graphUtils';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
 import './graph.css';
@@ -82,6 +82,32 @@ const handleToggleFullscreen = async () => {
     toggleFullscreen(outerContainer.value);
   }
   updateGraphSize();
+};
+
+// 搜索节点
+const searchNodes = (query) => {
+  const lowerCaseQuery = query.toLowerCase();
+
+  if (!lowerCaseQuery) {
+    graph.getNodes().forEach((node) => {
+      graph.setItemState(node, 'highlight', false);
+    });
+    return;
+  }
+
+  const foundNodes = graph.getNodes().filter((node) => {
+    const model = node.getModel();
+    return model.label.toLowerCase().includes(lowerCaseQuery);
+  });
+
+  graph.getNodes().forEach((node) => {
+    const model = node.getModel();
+    if (foundNodes.includes(node)) {
+      graph.setItemState(node, 'highlight', true);
+    } else {
+      graph.setItemState(node, 'highlight', false);
+    }
+  });
 };
 
 // 刷新图表

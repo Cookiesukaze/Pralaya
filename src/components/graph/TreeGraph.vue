@@ -3,7 +3,7 @@
     <div ref="treeGraphRef" class="graph-container w-full"></div>
     <GraphToolbar
         :onRefresh="refreshGraph"
-        :onToggleFullscreen="toggleFullscreen"
+        :onToggleFullscreen="handleToggleFullscreen"
         :onToggleGraphType="onToggleGraphType"
         ref="toolbarComponent"
     />
@@ -13,7 +13,7 @@
 
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
-import { handleFullscreenChange } from './utils/fullscreenUtils';
+import {handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
 import {initializeTreeGraph, parseData} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
@@ -72,13 +72,6 @@ const loadGraphData = async () => {
   }
 };
 
-// 居中图形
-const centerGraph = () => {
-  if (graph) {
-    graph.fitView();
-  }
-};
-
 // 搜索节点
 const searchNodes = (query) => {
   const lowerCaseQuery = query.toLowerCase();
@@ -115,16 +108,17 @@ const refreshGraph = () => {
 };
 
 // 切换全屏模式
-const toggleFullscreen = () => {
-  const elem = outerContainer.value;  // 使用最外层容器作为全屏对象
+const handleToggleFullscreen = async () => {
   if (document.fullscreenElement) {
-    document.exitFullscreen();
+    await document.exitFullscreen();
+    outerContainer.value.classList.remove('fullscreen');
+    treeGraphRef.value.classList.remove('fullscreen');
   } else {
-    elem.requestFullscreen().then(() => {
-      elem.classList.add('fullscreen');
-      updateGraphSize();
-    });
+    outerContainer.value.classList.add('fullscreen');
+    treeGraphRef.value.classList.add('fullscreen');
+    toggleFullscreen(outerContainer.value);
   }
+  updateGraphSize();
 };
 
 // 监听全屏模式变化
@@ -140,17 +134,16 @@ const updateGraphSize = async () => {
     const width = treeGraphRef.value.clientWidth;
     const height = document.fullscreenElement ? window.innerHeight : 600;
     graph.changeSize(width, height);
-    centerGraph();
-    console.log('TreeGraph: Updated graph size:', width, height);
+    graph.fitCenter();
   }
 };
 
 // 暴露方法
 defineExpose({
   updateGraphSize,
-  centerGraph,
   refreshGraph,
-  toggleFullscreen
+  toggleFullscreen: handleToggleFullscreen,
+
 });
 
 // 生命周期钩子：挂载时加载数据
@@ -158,7 +151,6 @@ onMounted(() => {
   loadGraphData();
   nextTick(() => {
     updateGraphSize();
-    centerGraph();
   });
   window.addEventListener('resize', updateGraphSize);
 });

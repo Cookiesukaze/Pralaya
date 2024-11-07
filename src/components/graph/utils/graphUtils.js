@@ -80,33 +80,6 @@ export const initializeGraph = (container, graphData, options = {}) => {
 
 
 
-// 通用的搜索节点函数
-export const searchNodes = (graph, query) => {
-    const lowerCaseQuery = query.toLowerCase();
-
-    if (!lowerCaseQuery) {
-        graph.getNodes().forEach((node) => {
-            graph.setItemState(node, 'highlight', false);
-        });
-        return;
-    }
-
-    const foundNodes = graph.getNodes().filter((node) => {
-        const model = node.getModel();
-        return model.label.toLowerCase().includes(lowerCaseQuery);
-    });
-
-    graph.getNodes().forEach((node) => {
-        const model = node.getModel();
-        if (foundNodes.includes(node)) {
-            graph.setItemState(node, 'highlight', true);
-        } else {
-            graph.setItemState(node, 'highlight', false);
-        }
-    });
-};
-
-
 // 初始化树形图函数，支持通过 options 传递额外配置
 export const initializeTreeGraph = (container, graphData, options = {}) => {
 
