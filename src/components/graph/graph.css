@@ -6,15 +6,20 @@
 
 .fullscreen {
     background-color: white;
-    height: 100vh;
+    height: 100vh !important;
     position: relative;
     z-index: 1; /* 确保图形层级较低 */
 }
 
+:fullscreen .outer-container {
+    height: 100vh !important;  /* 设置为视口的高度 */
+}
+
+
 /* 工具栏的全屏浮动样式 */
 .toolbar-fullscreen {
     position: fixed;
-    top: 10px;
+    bot: 10px;
     right: 10px;
     z-index: 10000; /* 提高 z-index，确保在图形之上 */
 }

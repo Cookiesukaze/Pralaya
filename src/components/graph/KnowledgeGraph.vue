@@ -5,7 +5,7 @@
     <!-- Toolbar and Search components -->
     <GraphToolbar
         :onRefresh="refreshGraph"
-        :onToggleFullscreen="toggleFullscreen"
+        :onToggleFullscreen="handleToggleFullscreen"
         :onToggleGraphType="onToggleGraphType"
         ref="toolbarComponent"
     />
@@ -14,107 +14,30 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, onBeforeUnmount, defineExpose, nextTick, defineProps, toRefs} from 'vue';
-import G6 from '@antv/g6';
+import { ref, onMounted, onBeforeUnmount, nextTick, defineExpose, defineProps, toRefs } from 'vue';
+import { toggleFullscreen, handleFullscreenChange } from './utils/fullscreenUtils';
+import { initializeGraph, parseGraphData, searchNodes } from './utils/graphUtils';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
-import './graph.css'
+import './graph.css';
 
 const props = defineProps({
   jsonPath: String,
-  onToggleGraphType: Function, // 添加此行
+  onToggleGraphType: Function,  // 添加此行
   graphs: Array,
 });
-const { graphs } = toRefs(props);  // 记得导入 toRefs
 
-const outerContainer = ref(null);  // 定义最外层容器的引用
-const knowledgeGraphRef = ref(null);  // 定义图形容器引用
+const { graphs } = toRefs(props);
+const outerContainer = ref(null);
+const knowledgeGraphRef = ref(null);
 let graph = null;
 const searchComponent = ref(null);
 const toolbarComponent = ref(null);
 
 const graphFiles = import.meta.glob('../../assets/data/sample-graph-data/*.json');
 
-// 解析数据
-const parseData = (data, parentId = null, nodes = [], edges = []) => {
-  const nodeId = data.name;
-  nodes.push({
-    id: nodeId,
-    label: data.name,
-  });
-
-  if (parentId) {
-    edges.push({
-      source: parentId,
-      target: nodeId,
-    });
-  }
-
-  if (data.children) {
-    data.children.forEach((child) => {
-      parseData(child, nodeId, nodes, edges);
-    });
-  }
-
-  return {nodes, edges};
-};
-
-// 初始化图形
-const initializeGraph = (graphData) => {
-  if (graph) {
-    graph.destroy();
-  }
-
-  graph = new G6.Graph({
-    container: knowledgeGraphRef.value,
-    width: knowledgeGraphRef.value.clientWidth,
-    height: knowledgeGraphRef.value.clientHeight || 600,
-    layout: {
-      type: 'force',
-      preventOverlap: true,
-      nodeStrength: -1000,
-      edgeStrength: 10,
-      linkDistance: 70,
-
-      onLayoutEnd: () => {
-        centerGraph();
-      }
-    },
-    defaultNode: {
-      size: 30,
-      style: {
-        fill: '#40a9ff',
-        stroke: '#096dd9',
-      },
-      labelCfg: {
-        position: 'bottom',
-        offset: 5,
-        style: {
-          fontSize: 12,
-          fill: '#000',
-        },
-      },
-    },
-    defaultEdge: {
-      style: {
-        stroke: '#e2e2e2',
-        endArrow: true,
-      },
-    },
-    modes: {
-      default: ['drag-canvas', 'zoom-canvas'],
-    },
-  });
-
-  graph.data(graphData);
-  graph.render();
-
-};
-
 // 加载图形数据
 const loadGraphData = async () => {
-  console.log("KnowledgeGraph: get graph data: " , graphs.value);
-
   if (!props.jsonPath) {
     console.warn('KnowledgeGraph: 没有传递 jsonPath');
     return;
@@ -129,7 +52,6 @@ const loadGraphData = async () => {
     let rawData;
     if (graphWithContent && graphWithContent.content) {
       rawData = JSON.parse(graphWithContent.content);
-      console.log('KnowledgeGraph: 使用 props.graphs 中的内容',rawData);
     } else {
       // 从本地文件加载
       const loadFile = graphFiles[filePath];
@@ -138,160 +60,82 @@ const loadGraphData = async () => {
       }
       rawData = await loadFile();
       rawData = rawData.default;
-      console.log('KnowledgeGraph: 使用 本地文件的 json ',rawData);
     }
 
-    const { nodes, edges } = parseData(rawData);
-    const graphData = { nodes, edges };
+    // 每次加载图表之前，销毁已有的图表实例
+    if (graph) {
+      graph.destroy();
+    }
 
-    initializeGraph(graphData);
+    // 解析和初始化图表
+    const { nodes, edges } = parseGraphData(rawData);
+    graph = initializeGraph(knowledgeGraphRef.value, { nodes, edges });
   } catch (error) {
     console.error('KnowledgeGraph: 加载图表数据出错:', error);
   }
 };
 
-// 居中图形
-const centerGraph = () => {
-  if (graph) {
-    graph.fitCenter();
+// 全屏切换
+const handleToggleFullscreen = async () => {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    outerContainer.value.classList.remove('fullscreen');
+  } else {
+    outerContainer.value.classList.add('fullscreen');
+    toggleFullscreen(outerContainer.value);
   }
+  console.log('Fullscreen mode:', !!document.fullscreenElement);
+  updateGraphSize();
 };
 
-// 搜索节点
-const searchNodes = (query) => {
-  const lowerCaseQuery = query.toLowerCase();
-
-  if (!lowerCaseQuery) {
-    graph.getNodes().forEach((node) => {
-      graph.setItemState(node, 'highlight', false);
-    });
-    return;
-  }
-
-  const foundNodes = graph.getNodes().filter((node) => {
-    const model = node.getModel();
-    return model.label.toLowerCase().includes(lowerCaseQuery);
-  });
-
-  graph.getNodes().forEach((node) => {
-    const model = node.getModel();
-    if (foundNodes.includes(node) || foundNodes.some(foundNode => foundNode.getModel().id === model.parentId)) {
-      graph.setItemState(node, 'highlight', true);
-    } else {
-      graph.setItemState(node, 'highlight', false);
-    }
-  });
-};
-
-// 刷新图形
+// 刷新图表
 const refreshGraph = () => {
   loadGraphData();
   if (searchComponent.value) {
-    searchComponent.value.query = ''; // 清除搜索框输入
-    searchNodes(''); // 确保图形重置
+    searchComponent.value.query = '';  // 清空搜索输入框
+    searchNodes(graph, '');  // 确保搜索状态重置
   }
 };
 
-// 切换全屏模式
-const toggleFullscreen = () => {
-  const elem = outerContainer.value;  // 使用最外层容器作为全屏对象
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  } else {
-    elem.requestFullscreen().then(() => {
-      elem.classList.add('fullscreen');
-      updateGraphSize();
-    });
-  }
-};
-
-// 监听全屏模式变化
+// 监听全屏事件
 document.addEventListener('fullscreenchange', () => {
-  const isFullscreen = !!document.fullscreenElement;
-
-  // 更新工具栏和搜索框的浮动状态
-  if (toolbarComponent.value && searchComponent.value) {
-    const toolbarEl = toolbarComponent.value.$el;
-    const searchEl = searchComponent.value.$el;
-
-    if (isFullscreen) {
-      // 工具栏全屏样式
-      toolbarEl.style.position = 'fixed';
-      toolbarEl.style.top = '10px';
-      toolbarEl.style.right = '10px';
-      toolbarEl.style.zIndex = '10000';
-
-      // 搜索框全屏样式
-      searchEl.style.position = 'fixed';
-      searchEl.style.bottom = '10px';
-      searchEl.style.left = '2%';
-      searchEl.style.zIndex = '10000';
-      searchEl.style.width = '96%';  // 设置宽度为100%
-      searchEl.style.padding = '10px';  // 添加一些内边距
-      searchEl.style.boxSizing = 'border-box';  // 确保 padding 不影响宽度
-    } else {
-      // 退出全屏时恢复默认的样式
-      toolbarEl.style.position = '';
-      toolbarEl.style.top = '';
-      toolbarEl.style.right = '';
-      toolbarEl.style.zIndex = '';
-
-      searchEl.style.position = '';
-      searchEl.style.bottom = '';
-      searchEl.style.left = '';
-      searchEl.style.zIndex = '';
-      searchEl.style.width = '';  // 恢复默认宽度
-      searchEl.style.padding = '';  // 恢复默认 padding
-      searchEl.style.boxSizing = '';  // 恢复默认 box-sizing
-    }
-  }
-
-  if (!document.fullscreenElement) {
-    outerContainer.value.classList.remove('fullscreen');
-  }
-
+  handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
   updateGraphSize();
 });
 
-// 更新图形尺寸
+// 更新图表大小
 const updateGraphSize = async () => {
   if (graph && knowledgeGraphRef.value) {
     await nextTick();
     const width = knowledgeGraphRef.value.clientWidth;
-    const height = document.fullscreenElement ? window.innerHeight : 600;
+    const height = outerContainer.value.clientHeight; // 使用 outerContainer 的高度
     graph.changeSize(width, height);
-    centerGraph();
-    console.log('KnowledgeGraph: Updated graph size:', width, height);
+    graph.fitCenter();
   }
 };
 
 // 暴露方法
 defineExpose({
-
   updateGraphSize,
-  centerGraph,
   refreshGraph,
-  toggleFullscreen
+  toggleFullscreen: handleToggleFullscreen,
 });
 
+const onFullscreenChange = () => {
+  updateGraphSize(); // 监听全屏变化时更新大小
+};
 
-// 生命周期钩子：挂载时加载数据
+// 在 onMounted 中添加事件监听器
 onMounted(() => {
-  updateGraphSize();//必须在前
-  loadGraphData();
+  updateGraphSize();
+  document.addEventListener('fullscreenchange', onFullscreenChange);
   window.addEventListener('resize', updateGraphSize);
+  loadGraphData();
 });
 
-// 生命周期钩子：移除事件监听器
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateGraphSize);
-});
-
-// 监听 jsonPath 的变化
-watch(() => props.jsonPath, (newPath) => {
-  if (newPath) {
-    loadGraphData();
-  }
+  document.removeEventListener('fullscreenchange', onFullscreenChange);
 });
 </script>
 
