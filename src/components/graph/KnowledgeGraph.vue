@@ -275,11 +275,8 @@ defineExpose({
 
 // 生命周期钩子：挂载时加载数据
 onMounted(() => {
+  updateGraphSize();//必须在前
   loadGraphData();
-  nextTick(() => {
-    updateGraphSize();
-    centerGraph();
-  });
   window.addEventListener('resize', updateGraphSize);
 });
 
