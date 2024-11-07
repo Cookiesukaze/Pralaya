@@ -53,8 +53,6 @@ export const handleFullscreenChange = (toolbarComponent, searchComponent, outerC
             searchEl.style.width = '';
             searchEl.style.padding = '';
             searchEl.style.boxSizing = '';
-
-
         }
     }
     if (!document.fullscreenElement) {

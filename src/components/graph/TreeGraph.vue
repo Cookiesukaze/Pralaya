@@ -1,8 +1,6 @@
 <template>
   <div ref="outerContainer" style="position: relative;">
-    <!-- Graph container -->
     <div ref="treeGraphRef" class="graph-container w-full"></div>
-    <!-- Toolbar and Search components -->
     <GraphToolbar
         :onRefresh="refreshGraph"
         :onToggleFullscreen="toggleFullscreen"
@@ -15,6 +13,8 @@
 
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
+import { handleFullscreenChange } from './utils/fullscreenUtils';
+import {initializeTreeGraph, parseData} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
@@ -26,88 +26,21 @@ const props = defineProps({
   graphs: Array,
 });
 const { graphs } = toRefs(props);  // 记得导入 toRefs
-
 const outerContainer = ref(null);
 const treeGraphRef = ref(null);
 let graph = null;
 const searchComponent = ref(null);
 const toolbarComponent = ref(null);
-
 const graphFiles = import.meta.glob('../../assets/data/sample-graph-data/*.json');
-
-// 解析数据
-const parseData = (data) => {
-  return {
-    id: data.name,
-    label: data.name,
-    children: data.children ? data.children.map(child => parseData(child)) : [],
-  };
-};
-
-// 初始化图形为树形布局
-const initializeGraph = (graphData) => {
-  if (graph) {
-    graph.destroy();
-  }
-
-  graph = new G6.TreeGraph({
-    container: treeGraphRef.value,
-    width: treeGraphRef.value.clientWidth,
-    height: treeGraphRef.value.clientHeight || 600,
-    layout: {
-      type: 'compactBox',  // 使用树形布局
-      direction: 'TB',     // 树形布局方向：从上到下
-      getId: function (d) {
-        return d.id;
-      },
-      getHeight: () => 16,
-      getWidth: () => 16,
-      getVGap: () => 40,   // 垂直间距
-      getHGap: () => 60,   // 水平间距
-    },
-    defaultNode: {
-      size: 30,
-      style: {
-        fill: '#40a9ff',
-        stroke: '#096dd9',
-      },
-      labelCfg: {
-        position: 'bottom',
-        offset: 5,
-        style: {
-          fontSize: 12,
-          fill: '#000',
-        },
-      },
-    },
-    defaultEdge: {
-      type: 'polyline',
-      style: {
-        stroke: '#e2e2e2',
-        endArrow: true,
-      },
-    },
-    modes: {
-      default: ['drag-canvas', 'zoom-canvas'],
-    },
-  });
-
-  graph.data(graphData);
-  graph.render();
-  graph.fitView(); // 适应视图大小
-};
 
 // 加载图形数据
 const loadGraphData = async () => {
   console.log("TreeGraph: get graph data: " , props.graphs);
-
   if (!props.jsonPath) {
     console.warn('TreeGraph: 没有传递 jsonPath');
     return;
   }
-
   const filePath = `../../assets/data/sample-graph-data/${props.jsonPath}`.replace(/\/{2,}/g, '/');
-
   try {
     // 检查 graphs 中是否存在 content 字段
     const graphWithContent = graphs.value.find(graph => graph.id.toString() === props.jsonPath.split('.')[0]);
@@ -125,12 +58,15 @@ const loadGraphData = async () => {
       rawData = await loadFile();
       rawData = rawData.default;
       console.log('TreeGraph: 使用 本地文件的 json',rawData);
-
     }
-
+    if (graph) {    // 每次加载图表之前，销毁已有的图表实例
+      graph.destroy();
+    }
+    // 解析和初始化图表
     const graphData = parseData(rawData);
+    graph = initializeTreeGraph(treeGraphRef.value, graphData);
+    // initializeGraph(graphData);
 
-    initializeGraph(graphData);
   } catch (error) {
     console.error('TreeGraph: 加载图表数据出错:', error);
   }
