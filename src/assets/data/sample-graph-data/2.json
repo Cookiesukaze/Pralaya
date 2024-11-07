@@ -1,129 +1,147 @@
 {
-  "name": "旅行计划",
+  "name": "旅游指南",
   "children": [
     {
-      "name": "目的地选择",
+      "name": "欧洲旅行",
       "children": [
         {
-          "name": "城市旅行",
-          "question": "哪些城市适合旅行？",
-          "kb": "false",
-          "web": "true",
-          "description": "一些受欢迎的城市旅行目的地包括巴黎、纽约、东京等，这些城市拥有丰富的文化、历史和美食体验。",
-          "keywords": ["巴黎", "纽约", "东京", "文化", "美食"]
+          "name": "法国",
+          "children": [
+            {
+              "name": "巴黎",
+              "children": [],
+              "origin": "旅游指南, 欧洲旅行, 法国, 巴黎",
+              "question": "巴黎有哪些著名景点？",
+              "kb": "true",
+              "web": "true",
+              "description": "巴黎是法国的首都，以埃菲尔铁塔、卢浮宫和香榭丽舍大街等著名景点闻名全球。",
+              "keyword_relations": [
+                {
+                  "keyword": "埃菲尔铁塔",
+                  "relation": "景点"
+                },
+                {
+                  "keyword": "卢浮宫",
+                  "relation": "博物馆"
+                }
+              ]
+            },
+            {
+              "name": "尼斯",
+              "children": [],
+              "origin": "旅游指南, 欧洲旅行, 法国, 尼斯",
+              "question": "尼斯的旅游亮点是什么？",
+              "kb": "false",
+              "web": "true",
+              "description": "尼斯位于法国南部，以蔚蓝海岸和丰富的历史文化吸引着游客。",
+              "keyword_relations": [
+                {
+                  "keyword": "蔚蓝海岸",
+                  "relation": "海滩"
+                },
+                {
+                  "keyword": "艺术博物馆",
+                  "relation": "文化"
+                }
+              ]
+            }
+          ]
         },
         {
-          "name": "自然风光",
-          "question": "哪些地方适合欣赏自然风光？",
-          "kb": "true",
-          "web": "false",
-          "description": "适合欣赏自然风光的地方包括瑞士阿尔卑斯山、新西兰南岛和加拿大班夫国家公园。",
-          "keywords": ["瑞士", "阿尔卑斯山", "新西兰南岛", "班夫国家公园", "自然风光"]
+          "name": "意大利",
+          "children": [
+            {
+              "name": "罗马",
+              "children": [],
+              "origin": "旅游指南, 欧洲旅行, 意大利, 罗马",
+              "question": "罗马有哪些必游景点？",
+              "kb": "true",
+              "web": "false",
+              "description": "罗马是意大利的首都，以古罗马遗址、斗兽场、梵蒂冈等著称，是历史爱好者的理想旅游目的地。",
+              "keyword_relations": [
+                {
+                  "keyword": "斗兽场",
+                  "relation": "历史遗址"
+                },
+                {
+                  "keyword": "梵蒂冈",
+                  "relation": "宗教"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "name": "交通方式",
+      "name": "亚洲旅行",
       "children": [
         {
-          "name": "飞机",
-          "question": "如何选择合适的航班？",
-          "kb": "true",
-          "web": "true",
-          "description": "选择航班时需要考虑价格、飞行时间、转机次数和航空公司的服务质量等因素。",
-          "keywords": ["航班", "价格", "飞行时间", "转机", "航空公司"]
+          "name": "日本",
+          "children": [
+            {
+              "name": "东京",
+              "children": [],
+              "origin": "旅游指南, 亚洲旅行, 日本, 东京",
+              "question": "东京有哪些知名景点？",
+              "kb": "true",
+              "web": "false",
+              "description": "东京是日本的首都，以东京塔、浅草寺和新宿购物区著称，既有现代都市感，也保留了传统文化。",
+              "keyword_relations": [
+                {
+                  "keyword": "东京塔",
+                  "relation": "地标"
+                },
+                {
+                  "keyword": "浅草寺",
+                  "relation": "文化遗产"
+                }
+              ]
+            },
+            {
+              "name": "京都",
+              "children": [],
+              "origin": "旅游指南, 亚洲旅行, 日本, 京都",
+              "question": "为什么京都是文化旅游的热门选择？",
+              "kb": "false",
+              "web": "true",
+              "description": "京都是日本的古都，以其保存完好的寺庙、神社和花园闻名，是日本文化的象征。",
+              "keyword_relations": [
+                {
+                  "keyword": "金阁寺",
+                  "relation": "寺庙"
+                },
+                {
+                  "keyword": "祗园",
+                  "relation": "传统街区"
+                }
+              ]
+            }
+          ]
         },
         {
-          "name": "火车",
-          "question": "火车旅行有哪些优点？",
-          "kb": "false",
-          "web": "true",
-          "description": "火车旅行通常更加舒适，可以欣赏沿途风景，且不需要经历繁琐的安检程序。",
-          "keywords": ["火车", "舒适", "风景", "安检", "便捷"]
-        }
-      ]
-    },
-    {
-      "name": "住宿选择",
-      "children": [
-        {
-          "name": "酒店",
-          "question": "如何选择合适的酒店？",
-          "kb": "true",
-          "web": "false",
-          "description": "选择酒店时，可以考虑位置、价格、设施以及用户评价，确保住宿体验舒适且便利。",
-          "keywords": ["酒店", "位置", "价格", "设施", "评价"]
-        },
-        {
-          "name": "民宿",
-          "question": "民宿和酒店相比有哪些不同？",
-          "kb": "false",
-          "web": "true",
-          "description": "民宿通常更有当地特色，价格相对便宜，适合喜欢融入当地文化的游客。",
-          "keywords": ["民宿", "当地特色", "价格", "文化体验", "个性化"]
-        }
-      ]
-    },
-    {
-      "name": "行程安排",
-      "children": [
-        {
-          "name": "每日行程",
-          "question": "如何安排每日行程？",
-          "kb": "true",
-          "web": "true",
-          "description": "每日行程的安排应合理分配时间，确保参观重点景点，并留出充足的休息和自由活动时间。",
-          "keywords": ["行程", "时间管理", "景点", "休息", "自由活动"]
-        },
-        {
-          "name": "自由行与跟团游",
-          "question": "自由行和跟团游的区别是什么？",
-          "kb": "false",
-          "web": "true",
-          "description": "自由行更加灵活，适合喜欢个性化行程的游客；跟团游则更省心，特别适合不熟悉目的地的游客。",
-          "keywords": ["自由行", "跟团游", "灵活", "省心", "个性化"]
-        }
-      ]
-    },
-    {
-      "name": "旅行预算",
-      "children": [
-        {
-          "name": "交通预算",
-          "question": "如何规划交通预算？",
-          "kb": "true",
-          "web": "false",
-          "description": "交通预算应包括机票、火车票、当地交通等费用，建议提前预定以获取优惠价格。",
-          "keywords": ["交通预算", "机票", "火车票", "当地交通", "预定"]
-        },
-        {
-          "name": "餐饮预算",
-          "question": "如何合理规划餐饮预算？",
-          "kb": "false",
-          "web": "true",
-          "description": "餐饮预算应根据目的地的消费水平进行规划，可以在高档餐厅和本地小吃之间取得平衡。",
-          "keywords": ["餐饮预算", "消费水平", "高档餐厅", "本地小吃", "平衡"]
-        }
-      ]
-    },
-    {
-      "name": "旅行必备物品",
-      "children": [
-        {
-          "name": "文件与证件",
-          "question": "旅行时需要携带哪些文件和证件？",
-          "kb": "true",
-          "web": "false",
-          "description": "旅行时应携带护照、签证、身份证以及机票和酒店预订单等重要文件，建议备份电子版本。",
-          "keywords": ["护照", "签证", "身份证", "机票", "酒店预订单"]
-        },
-        {
-          "name": "个人物品",
-          "question": "旅行时需要携带哪些个人物品？",
-          "kb": "false",
-          "web": "true",
-          "description": "常见的个人物品包括牙刷、毛巾、换洗衣物、充电器和药品等，应根据目的地和天气情况做适当调整。",
-          "keywords": ["个人物品", "牙刷", "充电器", "药品", "换洗衣物"]
+          "name": "泰国",
+          "children": [
+            {
+              "name": "曼谷",
+              "children": [],
+              "origin": "旅游指南, 亚洲旅行, 泰国, 曼谷",
+              "question": "曼谷有哪些值得体验的活动？",
+              "kb": "true",
+              "web": "true",
+              "description": "曼谷是泰国的首都，以大皇宫、卧佛寺以及夜市和美食闻名，是东南亚最热门的旅游城市之一。",
+              "keyword_relations": [
+                {
+                  "keyword": "大皇宫",
+                  "relation": "历史建筑"
+                },
+                {
+                  "keyword": "夜市",
+                  "relation": "美食"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

@@ -6,19 +6,41 @@
       "children": [
         {
           "name": "Java语言的产生和发展历史",
+          "children": [],
+          "origin": "面向对象程序设计, Java语言概述, Java语言的产生和发展历史",
           "question": "Java语言的产生和发展历史",
           "kb": "false",
           "web": "true",
-          "description": "Java语言是由Sun公司的詹姆斯·高斯林团队于1991年开发，1995年正式发布。",
-          "keywords": ["面向对象", "跨平台", "詹姆斯·高斯林", "Sun公司", "1995年发布"]
+          "description": "Java语言由Sun公司开发，最初命名为Oak，1995年正式发布。",
+          "keyword_relations": [
+            {
+              "keyword": "面向对象",
+              "relation": "编程范式"
+            },
+            {
+              "keyword": "跨平台",
+              "relation": "特性"
+            }
+          ]
         },
         {
           "name": "Java语言的特点及优势",
+          "children": [],
+          "origin": "面向对象程序设计, Java语言概述, Java语言的特点及优势",
           "question": "Java语言的特点及优势",
           "kb": "true",
           "web": "false",
-          "description": "Java语言支持面向对象编程，特点包括平台无关性、简单易学、安全可靠。",
-          "keywords": ["面向对象", "平台无关性", "简单易学", "安全可靠", "多线程"]
+          "description": "Java是一种面向对象、平台无关的编程语言，支持多线程。",
+          "keyword_relations": [
+            {
+              "keyword": "面向对象",
+              "relation": "核心特性"
+            },
+            {
+              "keyword": "平台无关性",
+              "relation": "优势"
+            }
+          ]
         }
       ]
     },
@@ -30,84 +52,48 @@
           "children": [
             {
               "name": "标识符的命名原则",
+              "children": [],
+              "origin": "面向对象程序设计, Java语言编程基础, 标识符和关键字, 标识符的命名原则",
               "question": "Java中标识符的命名原则",
-              "kb": "true",
-              "web": "false",
-              "description": "Java中标识符的命名原则包括以字母、$或_开头，大小写敏感，不能是关键字。",
-              "keywords": ["字母开头", "大小写敏感", "不可用关键字"]
+              "kb": "false",
+              "web": "true",
+              "description": "标识符需以字母、$或_开头，且不可使用关键字。",
+              "keyword_relations": [
+                {
+                  "keyword": "字母开头",
+                  "relation": "要求"
+                },
+                {
+                  "keyword": "不可用关键字",
+                  "relation": "限制"
+                }
+              ]
             }
           ]
         },
         {
           "name": "Java的基本数据类型",
-          "question": "Java基本数据类型的分类",
-          "kb": "false",
-          "web": "true",
-          "description": "Java基本数据类型分为整数类型、浮点类型、字符类型和布尔类型。",
-          "keywords": ["整数类型", "浮点类型", "字符类型", "布尔类型"]
-        }
-      ]
-    },
-    {
-      "name": "类和对象",
-      "children": [
-        {
-          "name": "类和对象的基本概念",
-          "question": "类和对象的基本概念",
-          "kb": "true",
-          "web": "false",
-          "description": "类是面向对象程序设计中的模板，定义了具有相同属性和方法的对象。",
-          "keywords": ["类模板", "对象实例", "属性", "方法"]
-        },
-        {
-          "name": "静态成员",
-          "question": "类和对象的静态成员",
-          "kb": "false",
-          "web": "true",
-          "description": "静态成员是类中用static关键字声明的成员，被类的所有对象共享。",
-          "keywords": ["static关键字", "共享数据", "类名访问"]
-        }
-      ]
-    },
-    {
-      "name": "继承与多态",
-      "children": [
-        {
-          "name": "Java语言中类的继承的含义",
-          "question": "继承的语法和子类的构造方法",
-          "kb": "true",
-          "web": "false",
-          "description": "继承是Java中通过extends关键字实现的类间属性和方法的继承。",
-          "keywords": ["extends", "super", "构造方法", "属性继承"]
-        },
-        {
-          "name": "多态与动态绑定",
-          "question": "多态与动态绑定的概念和应用",
-          "kb": "true",
-          "web": "false",
-          "description": "多态与动态绑定是允许同一操作在不同对象上表现出不同行为的机制。",
-          "keywords": ["多态", "动态绑定", "方法重写"]
-        }
-      ]
-    },
-    {
-      "name": "数组与字符串",
-      "children": [
-        {
-          "name": "数组和数组元素的概念",
-          "question": "数组和数组元素的概念",
-          "kb": "true",
-          "web": "true",
-          "description": "数组是按一定顺序排列的相同类型数据的集合，通过索引访问每个元素。",
-          "keywords": ["数据集合", "相同类型", "索引访问"]
-        },
-        {
-          "name": "字符串类String",
-          "question": "字符串类String的相关信息",
-          "kb": "false",
-          "web": "true",
-          "description": "String类提供了处理不可变字符序列的多种方法。",
-          "keywords": ["不可变性", "字符序列", "字符串操作"]
+          "children": [
+            {
+              "name": "分类",
+              "children": [],
+              "origin": "面向对象程序设计, Java语言编程基础, Java的基本数据类型, 分类",
+              "question": "Java基本数据类型的分类",
+              "kb": "false",
+              "web": "true",
+              "description": "Java基本数据类型分为整型、浮点型、字符型和布尔型。",
+              "keyword_relations": [
+                {
+                  "keyword": "整型",
+                  "relation": "分类"
+                },
+                {
+                  "keyword": "浮点型",
+                  "relation": "分类"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

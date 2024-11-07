@@ -27,12 +27,13 @@
 
       <div class="w-80 bg-white border-l flex flex-col">
         <Chat
-            v-if="selectedGraph && userAvatar"
+            v-if="selectedGraph"
             :messages="chatMessages"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
             :selectedGraphId="selectedGraph?.id?.toString() || '1'"
         />
+<!--        TODO: v-if="selectedGraph && userAvatar的问题"-->
       </div>
     </div>
   </div>
