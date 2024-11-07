@@ -1,14 +1,16 @@
 // fullscreenUtils.js
 
 
+// fullscreenUtils.js
+
 export const toggleFullscreen = async (element) => {
     try {
         if (document.fullscreenElement) {
             console.log('Exiting fullscreen');
-            await document.exitFullscreen();
+            await document.exitFullscreen(); // 确保退出全屏的异步操作完成
         } else {
             console.log('Requesting fullscreen for element:', element);
-            await element.requestFullscreen();
+            await element.requestFullscreen(); // 确保进入全屏的异步操作完成
         }
     } catch (error) {
         console.error('Error toggling fullscreen:', error);

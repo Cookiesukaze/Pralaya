@@ -18,6 +18,7 @@ import { initializeGraph, parseGraphData } from './utils/graphUtils';
 import GraphSearch from './GraphSearch.vue';
 import GraphToolbar from './GraphToolbar.vue';
 import './graph.css';
+import { debounce } from 'lodash'; // 引入 lodash 的 debounce 函数
 
 const props = defineProps({
   jsonPath: String,
@@ -70,19 +71,30 @@ const loadGraphData = async () => {
   }
 };
 
-// 全屏切换
-const handleToggleFullscreen = async () => {
-  if (document.fullscreenElement) {
-    await document.exitFullscreen();
-    outerContainer.value.classList.remove('fullscreen');
-    knowledgeGraphRef.value.classList.remove('fullscreen');
-  } else {
-    outerContainer.value.classList.add('fullscreen');
-    knowledgeGraphRef.value.classList.add('fullscreen');
-    toggleFullscreen(outerContainer.value);
+// 定义防抖后的全屏切换函数
+const debouncedToggleFullscreen = debounce(async () => {
+  try {
+    if (document.fullscreenElement) {
+      // 如果已经在全屏状态，退出全屏
+      await toggleFullscreen(outerContainer.value);
+      console.log("knowledge graph: exit fullscreen:", knowledgeGraphRef.value.classList);
+      knowledgeGraphRef.value.classList.remove('fullscreen');
+      outerContainer.value.classList.remove('fullscreen');
+    } else {
+      // 进入全屏状态
+      outerContainer.value.classList.add('fullscreen');
+      knowledgeGraphRef.value.classList.add('fullscreen');
+      await toggleFullscreen(outerContainer.value);
+    }
+    // 更新图表大小
+    await updateGraphSize();
+  } catch (error) {
+    console.error("Error during fullscreen toggle:", error);
   }
-  updateGraphSize();
-};
+}, 100);
+// 使用防抖后的函数
+const handleToggleFullscreen = debouncedToggleFullscreen;
+
 
 // 搜索节点
 const searchNodes = (query) => {
@@ -119,10 +131,20 @@ const refreshGraph = () => {
   }
 };
 
-// 监听全屏事件
+// 监听全屏事件并确保更新样式和图表
 document.addEventListener('fullscreenchange', () => {
-  handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
-  updateGraphSize();
+  setTimeout(() => {
+    const isFullscreen = !!document.fullscreenElement;
+    // 处理样式和工具栏的变化
+    handleFullscreenChange(toolbarComponent.value, searchComponent.value, outerContainer.value);
+    if (!isFullscreen) {
+      // 用户按下 ESC 退出全屏时，移除 fullscreen 类
+      console.log("ESC key pressed: exit fullscreen");
+      knowledgeGraphRef.value.classList.remove('fullscreen');
+      outerContainer.value.classList.remove('fullscreen');
+    }
+    updateGraphSize();// 更新图表大小
+  }, 100);  // 延迟 100ms 确保 fullscreen 状态已更新
 });
 
 // 更新图表大小
