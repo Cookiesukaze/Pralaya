@@ -48,11 +48,13 @@ export const parseGraphData = (data, parentId = null, nodes = [], edges = []) =>
     return { nodes, edges };
 };
 export const initializeGraph = (container, graphData, options = {}) => {
-    addTooltipStyles();
+    addTooltipStyles();//tooltip
+    const grid = new G6.Grid();//网格
     const graph = new G6.Graph({
         container,
         width: container.clientWidth,
         height: container.clientHeight || 600,
+        plugins: [grid],
         defaultNode: {
             size: 30,
             style: {
@@ -161,11 +163,13 @@ export const parseTreeGraphData = (data) => {
 };
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {
-    addTooltipStyles();
+    addTooltipStyles();//tooltip
+    const grid = new G6.Grid();//网格
     const graph = new G6.TreeGraph({
         container: container,
         width: container.clientWidth,
         height: container.clientHeight || 600,
+        plugins: [grid],
         ...options,
         layout: {
             type: 'compactBox',
@@ -306,6 +310,7 @@ export class GraphSearchUtil {
     }
 }
 
+// tooltip（描述浮窗）效果
 export const tooltipStyles = `
     .g6-tooltip {
         border: 1px solid #e2e2e2;
@@ -318,7 +323,7 @@ export const tooltipStyles = `
     }
 `;
 
-// 添加样式到文档
+// 添加tooltip到文档
 export const addTooltipStyles = () => {
     // 检查是否已经添加过样式
     if (!document.querySelector('#g6-tooltip-styles')) {
@@ -328,3 +333,4 @@ export const addTooltipStyles = () => {
         document.head.appendChild(style);
     }
 };
+
