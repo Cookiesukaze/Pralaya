@@ -1,5 +1,4 @@
 <!-- EditPage.vue -->
-<!-- EditPage.vue -->
 <template>
   <div class="flex h-screen">
     <!-- 返回按钮 -->
@@ -22,6 +21,7 @@
     <!-- 预留区域 -->
     <div class="w-2/5 h-screen">
       <!-- 预留区域内容 -->
+      <GraphEditor></GraphEditor>
     </div>
   </div>
 </template>
@@ -33,6 +33,7 @@ import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import InfoForm from "./EditPage/InfoForm.vue";
 import { graph as graphs, fetchGraph } from '../services/dataManager';
 import  './form/utils/scrollbar.css'
+import GraphEditor from "./EditPage/GraphEditor.vue";
 
 const route = useRoute();
 const router = useRouter();
