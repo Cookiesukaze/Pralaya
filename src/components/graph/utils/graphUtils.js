@@ -6,33 +6,63 @@ import {nextTick} from "vue";
 
 export const parseGraphData = (data, parentId = null, nodes = [], edges = []) => {
     const nodeId = data.name;
-    nodes.push({
+    nodes.push({    // 添加当前节点
         id: nodeId,
         label: data.name,
     });
-
-    if (parentId) {
+    if (parentId) {    // 如果存在父节点，添加边
         edges.push({
             source: parentId,
             target: nodeId,
         });
     }
-
-    if (data.children) {
+    if (data.children) {    // 处理子节点
         data.children.forEach((child) => {
             parseGraphData(child, nodeId, nodes, edges);
         });
     }
-
+    if (data.keyword_relations) {    // 处理 keyword_relations 中的 keyword 作为子节点
+        data.keyword_relations.forEach((relationObj, index) => {
+            const keywordId = `${nodeId}-keyword-${index}`; // 保证ID唯一性
+            const keywordLabel = relationObj.keyword;
+            const relationLabel = relationObj.relation;
+            // 创建 keyword 节点
+            nodes.push({
+                id: keywordId,
+                label: keywordLabel,
+            });
+            // 创建带有 relation 的边
+            edges.push({
+                source: nodeId,
+                target: keywordId,
+                label: relationLabel,  // 添加边上的标签
+            });
+        });
+    }
     return { nodes, edges };
 };
 
-export const parseData = (data) => {
-    return {
+export const parseTreeGraphData = (data) => {
+    const node = {
         id: data.name,
         label: data.name,
-        children: data.children ? data.children.map(child => parseData(child)) : [],
+        children: []
     };
+    if (data.children) {    // 处理子节点
+        node.children = data.children.map(child => parseTreeGraphData(child));
+    }
+    // 处理 keyword_relations，将 keyword 作为子节点并附加 relation 信息
+    if (data.keyword_relations) {
+        data.keyword_relations.forEach((relationObj, index) => {
+            const keywordNode = {
+                id: `${data.name}-keyword-${index}`,  // 确保 ID 唯一
+                label: relationObj.keyword,
+                relation: relationObj.relation
+            };
+            node.children.push(keywordNode);
+        });
+    }
+    return node;
 };
 
 // 通用的初始化图形函数
@@ -43,9 +73,9 @@ export const initializeGraph = (container, graphData, options = {}) => {
         layout: {
             type: 'force',
             preventOverlap: true,
-            nodeStrength: -1000,
-            edgeStrength: 10,
-            linkDistance: 70,
+            nodeStrength: -2000,
+            edgeStrength: 5,
+            linkDistance: 100,
         },
         defaultNode: {
             size: 30,
@@ -64,8 +94,14 @@ export const initializeGraph = (container, graphData, options = {}) => {
         },
         defaultEdge: {
             style: {
-                stroke: '#e2e2e2',
-                endArrow: true,
+                stroke: '#e2e2e2', // 边的颜色
+            },
+            labelCfg: {
+                autoRotate: true,  // 让标签随边的方向自动旋转
+                style: {
+                    fill: '#000',    // 标签颜色
+                    fontSize: 12,    // 标签字体大小
+                },
             },
         },
         modes: {

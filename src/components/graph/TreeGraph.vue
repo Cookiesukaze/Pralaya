@@ -14,7 +14,7 @@
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
 import {createDebouncedFullscreenToggle, handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
-import {GraphSearchUtil, initializeTreeGraph, parseData, updateGraphSize} from './utils/graphUtils';
+import {GraphSearchUtil, initializeTreeGraph, parseTreeGraphData, updateGraphSize} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
@@ -64,7 +64,7 @@ const loadGraphData = async () => {
       graph.destroy();
     }
     // 解析和初始化图表
-    const graphData = parseData(rawData);
+    const graphData = parseTreeGraphData(rawData);
     graph = initializeTreeGraph(treeGraphRef.value, graphData);
   } catch (error) {
     console.error('TreeGraph: 加载图表数据出错:', error);
