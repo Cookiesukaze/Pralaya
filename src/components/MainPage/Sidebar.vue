@@ -42,7 +42,9 @@
       </nav>
 
       <div v-if="!isSidebarCollapsed" class="flex justify-center mt-auto mb-1 px-6">
-        <button class="w-full border text-themeBlue rounded-md px-4 py-2 hover:bg-themeGrey25 theme-grey-button">创建新的图谱</button>
+        <button @click="createNewGraph" class="w-full border text-themeBlue rounded-md px-4 py-2 hover:bg-themeGrey25 theme-grey-button">
+          创建新的图谱
+        </button>
       </div>
 
       <li class="-mx-6 mb-2 list-none">
@@ -60,6 +62,7 @@
 <script setup>
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon } from '@heroicons/vue/24/outline'
 import { defineProps, defineEmits } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   isSidebarCollapsed: Boolean,
@@ -83,6 +86,11 @@ const toggleSidebar = () => {
 
 const selectGraph = (id) => {
   emit('select-graph', id)
+}
+
+const router = useRouter()
+const createNewGraph = () => {
+  router.push({ name: 'CreatePage' })
 }
 </script>
 

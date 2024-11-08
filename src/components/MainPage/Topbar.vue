@@ -19,7 +19,7 @@
               class="h-8 w-8 mx-auto text-themeFontBlack"
           />
           <p class="text-center mt-2 text-themeFontGrey">{{ selectedGraph.description }}</p>
-          <button class="mt-4 w-full px-4 py-2 text-white rounded-md text-sm shadow-sm hover:bg-themeBlue theme-button">
+          <button @click="editGraph" class="mt-4 w-full px-4 py-2 text-white rounded-md text-sm shadow-sm hover:bg-themeBlue theme-button">
             编辑图谱
           </button>
         </div>
@@ -29,17 +29,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
-import { defineProps } from 'vue'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
+import { defineProps } from 'vue';
 
 // 从父组件接收当前选中的图表
 const props = defineProps({
   selectedGraph: Object
-})
+});
 
 // 控制下拉菜单的显示状态
-const isDropdownOpen = ref(false)
+const isDropdownOpen = ref(false);
 
 // 图标映射
 const iconComponents = {
@@ -47,29 +48,37 @@ const iconComponents = {
   ChartBarIcon,
   UserGroupIcon,
   HeartIcon
-}
+};
 
 // 延迟定时器
-let closeTimeout = null
+let closeTimeout = null;
+const router = useRouter();
 
 // 打开下拉菜单
 const openDropdown = () => {
-  clearTimeout(closeTimeout)  // 清除可能存在的关闭延迟
-  isDropdownOpen.value = true
-}
+  clearTimeout(closeTimeout);
+  isDropdownOpen.value = true;
+};
 
 // 延迟关闭下拉菜单
 const scheduleCloseDropdown = () => {
   // 设置一定的延迟，例如 200 毫秒
   closeTimeout = setTimeout(() => {
-    isDropdownOpen.value = false
-  }, 200)
-}
+    isDropdownOpen.value = false;
+  }, 200);
+};
 
 // 取消关闭下拉菜单
 const cancelCloseDropdown = () => {
-  clearTimeout(closeTimeout)  // 清除定时器，防止关闭菜单
-}
+  clearTimeout(closeTimeout);
+};
+
+// 编辑按钮的点击跳转
+const editGraph = () => {
+  if (props.selectedGraph && props.selectedGraph.id) {
+    router.push({ name: 'EditPage', params: { id: props.selectedGraph.id } });
+  }
+};
 </script>
 
 <style scoped>
