@@ -27,7 +27,7 @@
 
       <div class="w-80 bg-white border-l flex flex-col">
         <Chat
-            v-if="selectedGraph"
+            v-if="selectedGraph && userAvatar"
             :messages="chatMessages"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
@@ -121,8 +121,11 @@ onMounted(async () => {
   // 确保 graphs 有数据后再设置 selectedGraph
   if (graphs.value && graphs.value.length > 0) {
     selectedGraph.value = graphs.value.find(g => g.current) || graphs.value[0];
-    console.log("Selected graph:", selectedGraph.value); // 添加日志
+    console.log("Selected graph:", selectedGraph.value);
   }
+
+  // 确保 userAvatar 在 mounted 时被正确设置
+  userAvatar.value = fakeUser.value.avatar;
 
   window.addEventListener('resize', updateGraphSize);
   updateGraphSize();
