@@ -71,6 +71,8 @@
             :upload-progress="uploadProgress"
             @file-upload="handleFileUpload"
         />
+        <!-- 添加这一行来显示文件相关的错误信息 -->
+        <p v-if="errors.files" class="mt-1 text-sm text-red-600">{{ errors.files }}</p>
       </div>
     </div>
 
@@ -181,7 +183,8 @@ const {
 
 // 表单提交
 const submitForm = async () => {
-  if (!validateForm(formData)) return
+  if (!validateForm(formData, files.value)) return
+
 
   try {
     const fileListData = {
@@ -194,9 +197,9 @@ const submitForm = async () => {
 
     const formPayload = {
       ...formData,
-      icon: selectedIcon.value?.name,
+      icon: selectedIcon.value?.name || '', // 如果没选择图标，使用空字符串
       filenameList: JSON.stringify(fileListData),
-      prompt: formData.promptText
+      prompt: formData.promptText || '' // 如果没有提示词，使用空字符串
     }
 
     if (isEditing) {
