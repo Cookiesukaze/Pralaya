@@ -50,88 +50,16 @@ export const parseGraphData = (data, parentId = null, nodes = [], edges = []) =>
 
 export const initializeGraph = (container, graphData, options = {}) => {
     addTooltipStyles();
-    const grid = new G6.Grid();
 
     const graph = new G6.Graph({
-        container,
-        width: container.clientWidth,
-        height: container.clientHeight || 600,
-        plugins: [grid],
-        defaultNode: {
-            size: 30,
-            style: {
-                fill: '#40a9ff',
-                stroke: '#096dd9',
-            },
-            labelCfg: {
-                position: 'bottom',
-                offset: 5,
-                style: {
-                    fontSize: 12,
-                    fill: '#000',
-                },
-            }
-        },
-        defaultEdge: {
-            style: {
-                stroke: '#e2e2e2',
-                lineAppendWidth: 3
-            },
-            labelCfg: {
-                autoRotate: true,
-                style: {
-                    fill: '#000',
-                    fontSize: 12,
-                },
-            }
-        },
-        // 添加状态样式
-        nodeStateStyles: {
-            highlight: {
-                opacity: 1,
-                lineWidth: 2,
-            },
-            dark: {
-                opacity: 0.2,
-            }
-        },
-        edgeStateStyles: {
-            highlight: {
-                stroke: '#999',
-                lineWidth: 2,
-            },
-            dark: {
-                opacity: 0.2,
-            }
-        },
+        ...getCommonConfig(container),
         modes: {
-            default: ['drag-canvas', 'zoom-canvas', 'drag-node',
-                {
-                    type: 'tooltip',
-                    formatText(model) {
-                        if (model.description && model.description.trim() !== '') {
-                            return `描述: ${model.description}`;
-                        }
-                        return null;
-                    },
-                    shouldBegin(e) {
-                        const node = e.item.getModel();
-                        return !!(node.description && node.description.trim() !== '');
-                    }
-                },
-                {
-                    type: 'edge-tooltip',
-                    formatText(model) {
-                        if (model.description && model.description.trim() !== '') {
-                            return model.description;
-                        }
-                        return null;
-                    },
-                    shouldBegin(e) {
-                        const edge = e.item.getModel();
-                        return !!(edge.description && edge.description.trim() !== '');
-                    }
-                }
+            default: [
+                'drag-canvas',
+                'zoom-canvas',
+                'drag-node',
+                getTooltipBehavior(),
+                getEdgeTooltipBehavior()
             ]
         },
         layout: {
@@ -141,61 +69,10 @@ export const initializeGraph = (container, graphData, options = {}) => {
             edgeStrength: 5,
             linkDistance: 100,
         },
+        ...options
     });
 
-    // 清除所有状态的函数
-    const clearAllStats = () => {
-        graph.setAutoPaint(false);
-        graph.getNodes().forEach(function(node) {
-            graph.clearItemStates(node);
-        });
-        graph.getEdges().forEach(function(edge) {
-            graph.clearItemStates(edge);
-        });
-        graph.paint();
-        graph.setAutoPaint(true);
-    };
-
-    // 添加节点交互事件
-    graph.on('node:mouseenter', function(e) {
-        const item = e.item;
-        graph.setAutoPaint(false);
-
-        // 将所有节点设置为暗状态
-        graph.getNodes().forEach(function(node) {
-            graph.clearItemStates(node);
-            graph.setItemState(node, 'dark', true);
-        });
-
-        // 高亮当前节点
-        graph.setItemState(item, 'dark', false);
-        graph.setItemState(item, 'highlight', true);
-
-        // 处理边和相关节点
-        graph.getEdges().forEach(function(edge) {
-            if (edge.getSource() === item) {
-                graph.setItemState(edge.getTarget(), 'dark', false);
-                graph.setItemState(edge.getTarget(), 'highlight', true);
-                graph.setItemState(edge, 'highlight', true);
-                edge.toFront();
-            } else if (edge.getTarget() === item) {
-                graph.setItemState(edge.getSource(), 'dark', false);
-                graph.setItemState(edge.getSource(), 'highlight', true);
-                graph.setItemState(edge, 'highlight', true);
-                edge.toFront();
-            } else {
-                graph.setItemState(edge, 'highlight', false);
-            }
-        });
-
-        graph.paint();
-        graph.setAutoPaint(true);
-    });
-
-    // 添加鼠标离开和画布点击事件
-    graph.on('node:mouseleave', clearAllStats);
-    graph.on('canvas:click', clearAllStats);
-
+    bindCommonEvents(graph);
     graph.data(graphData);
     graph.render();
 
@@ -233,38 +110,25 @@ export const parseTreeGraphData = (data) => {
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {
     addTooltipStyles();
-    const grid = new G6.Grid();
+
     const graph = new G6.TreeGraph({
-        container: container,
-        width: container.clientWidth,
-        height: container.clientHeight || 600,
-        plugins: [grid],
-        ...options,
+        ...getCommonConfig(container),
+        modes: {
+            default: [
+                'drag-canvas',
+                'zoom-canvas',
+                getTooltipBehavior(),
+                getEdgeTooltipBehavior()
+            ]
+        },
         layout: {
             type: 'compactBox',
             direction: 'TB',
-            getId: function getId(d) {
-                return d.id;
-            },
+            getId: d => d.id,
             getHeight: () => 16,
             getWidth: () => 16,
             getVGap: () => 40,
             getHGap: () => 60,
-        },
-        defaultNode: {
-            size: 30,
-            style: {
-                fill: '#40a9ff',
-                stroke: '#096dd9',
-            },
-            labelCfg: {
-                position: 'bottom',
-                offset: 5,
-                style: {
-                    fontSize: 12,
-                    fill: '#000',
-                },
-            },
         },
         defaultEdge: {
             type: 'cubic-horizontal',
@@ -286,119 +150,18 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
                 },
             },
         },
-        // 添加状态样式
-        nodeStateStyles: {
-            highlight: {
-                opacity: 1,
-                lineWidth: 2,
-            },
-            dark: {
-                opacity: 0.2,
-            }
-        },
-        edgeStateStyles: {
-            highlight: {
-                stroke: '#999',
-                lineWidth: 2,
-            },
-            dark: {
-                opacity: 0.2,
-            }
-        },
-        modes: {
-            default: ['drag-canvas', 'zoom-canvas',
-                {
-                    type: 'tooltip',
-                    formatText(model) {
-                        if (model.description && model.description.trim() !== '') {
-                            return model.description;
-                        }
-                        return null;
-                    },
-                    shouldBegin(e) {
-                        const node = e.item.getModel();
-                        return !!(node.description && node.description.trim() !== '');
-                    }
-                },
-                {
-                    type: 'edge-tooltip',
-                    formatText(model) {
-                        if (model.description) {
-                            return model.description;
-                        }
-                        return null;
-                    }
-                }
-            ],
-        },
+        ...options
     });
 
-    // 清除所有状态的函数
-    const clearAllStats = () => {
-        graph.setAutoPaint(false);
-        graph.getNodes().forEach(function(node) {
-            graph.clearItemStates(node);
-        });
-        graph.getEdges().forEach(function(edge) {
-            graph.clearItemStates(edge);
-        });
-        graph.paint();
-        graph.setAutoPaint(true);
-    };
+    bindCommonEvents(graph);
 
-    // 添加节点交互事件
-    graph.on('node:mouseenter', function(e) {
-        const item = e.item;
-        graph.setAutoPaint(false);
-
-        // 将所有节点设置为暗状态
-        graph.getNodes().forEach(function(node) {
-            graph.clearItemStates(node);
-            graph.setItemState(node, 'dark', true);
-        });
-
-        // 高亮当前节点
-        graph.setItemState(item, 'dark', false);
-        graph.setItemState(item, 'highlight', true);
-
-        // 获取与当前节点相关的边和节点
-        const edges = item.getEdges();
-        edges.forEach(edge => {
-            const source = edge.getSource();
-            const target = edge.getTarget();
-
-            // 高亮相连的节点
-            if (source === item) {
-                graph.setItemState(target, 'dark', false);
-                graph.setItemState(target, 'highlight', true);
-            } else {
-                graph.setItemState(source, 'dark', false);
-                graph.setItemState(source, 'highlight', true);
-            }
-
-            // 高亮边
-            graph.setItemState(edge, 'highlight', true);
-            edge.toFront();
-        });
-
-        graph.paint();
-        graph.setAutoPaint(true);
-    });
-
-    // 添加鼠标离开和画布点击事件
-    graph.on('node:mouseleave', clearAllStats);
-    graph.on('canvas:click', clearAllStats);
-
-    // 自定义边的配置
     graph.edge(edge => {
-        const config = {
-            ...edge
-        };
+        const config = { ...edge };
         const targetNode = graph.findById(edge.target).getModel();
         if (targetNode.edgeLabel) {
             config.label = targetNode.edgeLabel;
         }
-        if (targetNode.edge && targetNode.edge.description) {
+        if (targetNode.edge?.description) {
             config.description = targetNode.edge.description;
         }
         return config;
@@ -407,9 +170,172 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
     graph.data(graphData);
     graph.render();
     graph.fitView();
+
     return graph;
 };
 
+
+//
+// 公共图样式
+//
+
+// tooltip（描述浮窗）效果
+export const tooltipStyles = `
+    .g6-tooltip {
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #545454;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px 8px;
+        box-shadow: rgb(174, 174, 174) 0px 0px 10px;
+    }
+`;
+
+// 添加tooltip到文档
+export const addTooltipStyles = () => {
+    // 检查是否已经添加过样式
+    if (!document.querySelector('#g6-tooltip-styles')) {
+        const style = document.createElement('style');
+        style.id = 'g6-tooltip-styles';
+        style.textContent = tooltipStyles;
+        document.head.appendChild(style);
+    }
+};
+
+// 提取公共配置
+const getCommonConfig = (container) => ({
+    container,
+    width: container.clientWidth,
+    height: container.clientHeight || 600,
+    plugins: [new G6.Grid()],
+    defaultNode: {
+        size: 30,
+        style: {
+            fill: '#40a9ff',
+            stroke: '#096dd9',
+        },
+        labelCfg: {
+            position: 'bottom',
+            offset: 5,
+            style: {
+                fontSize: 12,
+                fill: '#000',
+            },
+        }
+    },
+    defaultEdge: {
+        style: {
+            stroke: '#e2e2e2',
+            lineAppendWidth: 3
+        },
+        labelCfg: {
+            autoRotate: true,
+            style: {
+                fill: '#000',
+                fontSize: 12,
+            },
+        }
+    },
+    nodeStateStyles: {
+        highlight: {
+            opacity: 1,
+            lineWidth: 2,
+        },
+        dark: {
+            opacity: 0.2,
+        }
+    },
+    edgeStateStyles: {
+        highlight: {
+            stroke: '#999',
+            lineWidth: 2,
+        },
+        dark: {
+            opacity: 0.2,
+        }
+    }
+});
+
+// 提取公共工具函数
+const clearAllStats = (graph) => {
+    graph.setAutoPaint(false);
+    graph.getNodes().forEach(node => {
+        graph.clearItemStates(node);
+    });
+    graph.getEdges().forEach(edge => {
+        graph.clearItemStates(edge);
+    });
+    graph.paint();
+    graph.setAutoPaint(true);
+};
+
+// 提取公共事件处理
+const bindCommonEvents = (graph) => {
+    graph.on('node:mouseenter', (e) => {
+        const item = e.item;
+        graph.setAutoPaint(false);
+
+        graph.getNodes().forEach(node => {
+            graph.clearItemStates(node);
+            graph.setItemState(node, 'dark', true);
+        });
+
+        graph.setItemState(item, 'dark', false);
+        graph.setItemState(item, 'highlight', true);
+
+        graph.getEdges().forEach(edge => {
+            if (edge.getSource() === item || edge.getTarget() === item) {
+                const otherNode = edge.getSource() === item ? edge.getTarget() : edge.getSource();
+                graph.setItemState(otherNode, 'dark', false);
+                graph.setItemState(otherNode, 'highlight', true);
+                graph.setItemState(edge, 'highlight', true);
+                edge.toFront();
+            } else {
+                graph.setItemState(edge, 'highlight', false);
+            }
+        });
+
+        graph.paint();
+        graph.setAutoPaint(true);
+    });
+
+    graph.on('node:mouseleave', () => clearAllStats(graph));
+    graph.on('canvas:click', () => clearAllStats(graph));
+};
+
+// 提取公共tooltip配置
+const getTooltipBehavior = () => ({
+    type: 'tooltip',
+    formatText(model) {
+        if (model.description?.trim()) {
+            return `描述: ${model.description}`;
+        }
+        return null;
+    },
+    shouldBegin(e) {
+        const node = e.item.getModel();
+        return !!(node.description?.trim());
+    }
+});
+
+const getEdgeTooltipBehavior = () => ({
+    type: 'edge-tooltip',
+    formatText(model) {
+        if (model.description?.trim()) {
+            return model.description;
+        }
+        return null;
+    },
+    shouldBegin(e) {
+        const edge = e.item.getModel();
+        return !!(edge.description?.trim());
+    }
+});
+
+
+
+// 公共图工具
 // 通用图表尺寸更新函数
 export const updateGraphSize = async (graph, graphRef, containerRef) => {
     if (graph && graphRef) {
@@ -447,28 +373,3 @@ export class GraphSearchUtil {
         });
     }
 }
-
-// tooltip（描述浮窗）效果
-export const tooltipStyles = `
-    .g6-tooltip {
-        border: 1px solid #e2e2e2;
-        border-radius: 4px;
-        font-size: 12px;
-        color: #545454;
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 10px 8px;
-        box-shadow: rgb(174, 174, 174) 0px 0px 10px;
-    }
-`;
-
-// 添加tooltip到文档
-export const addTooltipStyles = () => {
-    // 检查是否已经添加过样式
-    if (!document.querySelector('#g6-tooltip-styles')) {
-        const style = document.createElement('style');
-        style.id = 'g6-tooltip-styles';
-        style.textContent = tooltipStyles;
-        document.head.appendChild(style);
-    }
-};
-
