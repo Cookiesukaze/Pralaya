@@ -1,16 +1,17 @@
 <!-- EditPage.vue -->
+<!-- EditPage.vue -->
 <template>
-  <div class="flex min-h-screen">
-    <!-- 添加返回按钮 -->
+  <div class="flex h-screen">
+    <!-- 返回按钮 -->
     <button
         @click="goToMainPage"
-        class="absolute top-3 left-3 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+        class="absolute top-6 left-6 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
         title="返回首页"
     >
       <ArrowLeftIcon class="w-6 h-6 text-gray-600" />
     </button>
 
-    <div class="w-3/5 p-6 ">
+    <div class="w-3/5 pl-12 h-screen overflow-y-auto">
       <InfoForm
           :graphData="graphData"
           :isLoading="isLoading"
@@ -18,8 +19,9 @@
       />
     </div>
 
-    <div class="w-2/5">
-      <!-- 预留区域 -->
+    <!-- 预留区域 -->
+    <div class="w-2/5 h-screen">
+      <!-- 预留区域内容 -->
     </div>
   </div>
 </template>
@@ -30,6 +32,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import InfoForm from "./EditPage/InfoForm.vue";
 import { graph as graphs, fetchGraph } from '../services/dataManager';
+import  './form/utils/scrollbar.css'
 
 const route = useRoute();
 const router = useRouter();
@@ -67,3 +70,7 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped>
+
+</style>
