@@ -4,17 +4,17 @@
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-medium">选择图标</h3>
         <button @click="$emit('update:modelValue', false)" class="text-gray-500 hover:text-gray-700">
-          <XMarkIcon class="w-5 h-5" />
+          <component :is="HeroIcons.XMarkIcon" class="w-5 h-5" />
         </button>
       </div>
       <div class="grid grid-cols-6 gap-4">
         <button
-            v-for="icon in icons"
-            :key="icon.name"
-            @click="selectIcon(icon)"
+            v-for="(component, name) in icons"
+            :key="name"
+            @click="selectIcon(name, component)"
             class="p-3 hover:bg-gray-100 rounded-lg flex items-center justify-center"
         >
-          <component :is="icon.component" class="w-6 h-6" />
+          <component :is="component" class="w-6 h-6" />
         </button>
       </div>
     </div>
@@ -22,14 +22,7 @@
 </template>
 
 <script setup>
-import { XMarkIcon } from '@heroicons/vue/24/outline'
-import {
-  AcademicCapIcon,
-  BeakerIcon,
-  BookOpenIcon,
-  BriefcaseIcon,
-  CalculatorIcon
-} from '@heroicons/vue/24/outline'
+import * as HeroIcons from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   modelValue: Boolean
@@ -37,16 +30,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'select'])
 
-const icons = [
-  { name: 'academic-cap', component: AcademicCapIcon },
-  { name: 'beaker', component: BeakerIcon },
-  { name: 'book-open', component: BookOpenIcon },
-  { name: 'briefcase', component: BriefcaseIcon },
-  { name: 'calculator', component: CalculatorIcon }
-]
+// 选择需要显示的图标
+const icons = {
+  AcademicCapIcon: HeroIcons.AcademicCapIcon,
+  BeakerIcon: HeroIcons.BeakerIcon,
+  BookOpenIcon: HeroIcons.BookOpenIcon,
+  BriefcaseIcon: HeroIcons.BriefcaseIcon,
+  CalculatorIcon: HeroIcons.CalculatorIcon
+}
 
-const selectIcon = (icon) => {
-  emit('select', icon)
+const selectIcon = (name, component) => {
+  emit('select', { name, component })
   emit('update:modelValue', false)
 }
 </script>

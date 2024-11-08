@@ -90,6 +90,7 @@ import IconPicker from '../form/IconPicker.vue'
 import FileList from '../form/FileList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
+import * as HeroIcons from '@heroicons/vue/24/outline'
 
 // 接收父组件传来的props
 const props = defineProps({
@@ -133,7 +134,7 @@ watch(() => props.graphData, (newData) => {
     if (newData.icon) {
       selectedIcon.value = {
         name: newData.icon,
-        component: newData.icon
+        component: HeroIcons[newData.icon]
       }
     }
 
