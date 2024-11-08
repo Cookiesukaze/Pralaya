@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import IconPicker from '../form/IconPicker.vue'
@@ -91,20 +91,26 @@ import FileList from '../form/FileList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
 
+// 接收父组件传来的props
+const props = defineProps({
+  graphData: {
+    type: Object,
+    default: null
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
+  isEditing: {
+    type: Boolean,
+    default: false
+  }
+})
+
 // 获取路由信息
 const route = useRoute()
 const isEditing = route.name === 'EditPage'
 const graphId = route.params.id
-
-// 在组件挂载时打印信息
-onMounted(() => {
-  if (isEditing) {
-    console.log('InfoForm: 当前模式: 编辑图谱')
-    console.log('InfoForm: 图谱ID:', graphId)
-  } else {
-    console.log('InfoForm: 当前模式: 创建新图谱')
-  }
-})
 
 // 表单数据
 const formData = reactive({
@@ -116,6 +122,43 @@ const formData = reactive({
 // 图标选择
 const showIconPicker = ref(false)
 const selectedIcon = ref(null)
+
+// 监听 graphData 的变化，更新表单数据
+watch(() => props.graphData, (newData) => {
+  if (newData) {
+    formData.name = newData.name
+    formData.description = newData.description
+    formData.promptText = newData.prompt
+
+    if (newData.icon) {
+      selectedIcon.value = {
+        name: newData.icon,
+        component: newData.icon
+      }
+    }
+
+    // 处理文件列表
+    if (newData.filenameList) {
+      try {
+        const fileListData = JSON.parse(newData.filenameList)
+        if (fileListData.files && Array.isArray(fileListData.files)) {
+          const processedFiles = fileListData.files.map(file => ({
+            name: file.name,
+            size: file.size,
+            format: file.format,
+            status: 'success'
+          }))
+          setFiles(processedFiles)
+        }
+      } catch (error) {
+        console.error('解析文件列表失败:', error)
+        setFiles([])
+      }
+    } else {
+      setFiles([])
+    }
+  }
+}, { immediate: true })
 
 const handleIconSelect = (icon) => {
   selectedIcon.value = icon
@@ -129,33 +172,41 @@ const {
   files,
   isUploading,
   uploadProgress,
+  uploadError,
   handleFileUpload,
-  deleteFile
+  deleteFile,
+  setFiles
 } = useFileHandler()
 
 // 表单提交
 const submitForm = async () => {
-  if (!validateForm(formData)) {
-    return
-  }
+  if (!validateForm(formData)) return
 
   try {
+    const fileListData = {
+      files: files.value.map(file => ({
+        name: file.name,
+        size: file.size,
+        format: file.format
+      }))
+    }
+
     const formPayload = {
       ...formData,
       icon: selectedIcon.value?.name,
-      files: files.value
+      filenameList: JSON.stringify(fileListData),
+      prompt: formData.promptText
     }
 
     if (isEditing) {
-      console.log('InfoForm: 更新图谱:', graphId, formPayload)
+      console.log('更新图谱:', formPayload)
       // TODO: 调用更新API
     } else {
-      console.log('InfoForm: 创建新图谱:', formPayload)
+      console.log('创建新图谱:', formPayload)
       // TODO: 调用创建API
     }
-
   } catch (error) {
-    console.error('InfoForm: 表单提交失败:', error)
+    console.error('表单提交失败:', error)
   }
 }
 </script>
