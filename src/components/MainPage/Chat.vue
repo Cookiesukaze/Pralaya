@@ -43,7 +43,7 @@
 
 <script>
 import { reactive } from 'vue';
-import { postChat } from '../api/method.js';
+import { postChat } from '../../api/method.js';
 
 export default {
   props: {

@@ -33,7 +33,6 @@
             :botAvatar="botAvatar"
             :selectedGraphId="selectedGraph?.id?.toString() || '1'"
         />
-<!--        TODO: v-if="selectedGraph && userAvatar的问题"-->
       </div>
     </div>
   </div>
@@ -41,16 +40,16 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import Sidebar from './Sidebar.vue';
-import CourseGraph from './CourseGraph.vue';
-import Topbar from './Topbar.vue';
+import Sidebar from './MainPage/Sidebar.vue';
+import CourseGraph from './MainPage/CourseGraph.vue';
+import Topbar from './MainPage/Topbar.vue';
 // import { graphs as fakeGraphs, user as fakeUser, company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
 // import { fetchGraph, fetchUser} from '../services/dataManager';
 import { company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
 import { graph as fakeGraphs, user as fakeUser, fetchGraph, fetchUser} from '../services/dataManager';
 
 
-import Chat from "./Chat.vue";
+import Chat from "./MainPage/Chat.vue";
 
 const isSidebarCollapsed = ref(false);
 const graphs = ref(fakeGraphs);

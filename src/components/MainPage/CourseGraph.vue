@@ -13,8 +13,8 @@
 
 <script setup>
 import {ref, computed, nextTick, onMounted} from 'vue';
-import KnowledgeGraph from './graph/KnowledgeGraph.vue';
-import TreeGraph from './graph/TreeGraph.vue';
+import KnowledgeGraph from '../graph/KnowledgeGraph.vue';
+import TreeGraph from '../graph/TreeGraph.vue';
 
 const props = defineProps({
   jsonPath: String,
