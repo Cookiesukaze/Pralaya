@@ -42,28 +42,6 @@ export const parseGraphData = (data, parentId = null, nodes = [], edges = []) =>
     return { nodes, edges };
 };
 
-export const parseTreeGraphData = (data) => {
-    const node = {
-        id: data.name,
-        label: data.name,
-        children: []
-    };
-    if (data.children) {    // 处理子节点
-        node.children = data.children.map(child => parseTreeGraphData(child));
-    }
-    // 处理 keyword_relations，将 keyword 作为子节点并附加 relation 信息
-    if (data.keyword_relations) {
-        data.keyword_relations.forEach((relationObj, index) => {
-            const keywordNode = {
-                id: `${data.name}-keyword-${index}`,  // 确保 ID 唯一
-                label: relationObj.keyword,
-                relation: relationObj.relation
-            };
-            node.children.push(keywordNode);
-        });
-    }
-    return node;
-};
 
 // 通用的初始化图形函数
 export const initializeGraph = (container, graphData, options = {}) => {
@@ -116,59 +94,104 @@ export const initializeGraph = (container, graphData, options = {}) => {
 };
 
 
+export const parseTreeGraphData = (data) => {
+    const processNode = (nodeData) => {
+        const node = {
+            id: nodeData.name,
+            label: nodeData.name,
+            children: []
+        };
+        // 处理普通子节点
+        if (nodeData.children) {
+            node.children = nodeData.children.map(child => processNode(child));
+        }
+        // 处理关键词关系
+        if (nodeData.keyword_relations) {
+            const keywordNodes = nodeData.keyword_relations.map((relation, index) => ({
+                id: `${nodeData.name}-keyword-${index}`,
+                label: relation.keyword,
+                // 存储边的信息
+                edgeLabel: relation.relation
+            }));
+            node.children.push(...keywordNodes);
+        }
+        return node;
+    };
+    return processNode(data);
+};
 
-// 初始化树形图函数，支持通过 options 传递额外配置
 export const initializeTreeGraph = (container, graphData, options = {}) => {
-
     const graph = new G6.TreeGraph({
-            container: container,
-            width: container.clientWidth,
-            height: container.clientHeight || 600,
-            ...options,
-            layout: {
-                type: 'compactBox',  // 使用树形布局
-                direction: 'TB',     // 树形布局方向：从上到下
-                getId: function (d) {
-                    return d.id;
-                },
-                getHeight: () => 16,
-                getWidth: () => 16,
-                getVGap: () => 40,   // 垂直间距
-                getHGap: () => 60,   // 水平间距
+        container: container,
+        width: container.clientWidth,
+        height: container.clientHeight || 600,
+        ...options,
+        layout: {
+            type: 'compactBox',
+            direction: 'TB',
+            getId: function getId(d) {
+                return d.id;
             },
-            defaultNode: {
-                size: 30,
+            getHeight: () => 16,
+            getWidth: () => 16,
+            getVGap: () => 40,
+            getHGap: () => 60,
+        },
+        defaultNode: {
+            size: 30,
+            style: {
+                fill: '#40a9ff',
+                stroke: '#096dd9',
+            },
+            labelCfg: {
+                position: 'bottom',
+                offset: 5,
                 style: {
-                    fill: '#40a9ff',
-                    stroke: '#096dd9',
+                    fontSize: 12,
+                    fill: '#000',
                 },
-                labelCfg: {
-                    position: 'bottom',
-                    offset: 5,
-                    style: {
-                        fontSize: 12,
-                        fill: '#000',
+            },
+        },
+        defaultEdge: {
+            type: 'cubic-horizontal',
+            style: {
+                stroke: '#e2e2e2',
+                endArrow: true,
+            },
+            labelCfg: {
+                position: 'middle',
+                style: {
+                    fontSize: 12,
+                    fill: '#666',
+                    background: {
+                        fill: '#fff',
+                        padding: [2, 4, 2, 4],
+                        radius: 2,
                     },
                 },
             },
-            defaultEdge: {
-                type: 'polyline',
-                style: {
-                    stroke: '#e2e2e2',
-                    endArrow: true,
-                },
-            },
-            modes: {
-                default: ['drag-canvas', 'zoom-canvas'],
-            },
-        });
-
-        graph.data(graphData);
-        graph.render();
-        graph.fitView(); // 适应视图大小
-
+        },
+        modes: {
+            default: ['drag-canvas', 'zoom-canvas'],
+        },
+    });
+    // 自定义边的标签
+    graph.edge(edge => {
+        const config = {
+            ...edge
+        };
+        // 如果目标节点有 edgeLabel 属性，则显示在边上
+        const targetNode = graph.findById(edge.target).getModel();
+        if (targetNode.edgeLabel) {
+            config.label = targetNode.edgeLabel;
+        }
+        return config;
+    });
+    graph.data(graphData);
+    graph.render();
+    graph.fitView();
     return graph;
-    };
+};
 
 // 通用图表尺寸更新函数
 export const updateGraphSize = async (graph, graphRef, containerRef) => {

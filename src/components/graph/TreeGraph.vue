@@ -66,6 +66,8 @@ const loadGraphData = async () => {
     // 解析和初始化图表
     const graphData = parseTreeGraphData(rawData);
     graph = initializeTreeGraph(treeGraphRef.value, graphData);
+    // const { nodes, edges } = parseTreeGraphData(rawData);
+    // graph = initializeTreeGraph(treeGraphRef.value, { nodes, edges });
   } catch (error) {
     console.error('TreeGraph: 加载图表数据出错:', error);
   }
