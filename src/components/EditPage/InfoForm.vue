@@ -151,7 +151,7 @@ watch(() => props.graphData, (newData) => {
           setFiles(processedFiles)
         }
       } catch (error) {
-        console.error('解析文件列表失败:', error)
+        console.error('InfoForm: 解析文件列表失败:', error)
         setFiles([])
       }
     } else {
@@ -199,14 +199,14 @@ const submitForm = async () => {
     }
 
     if (isEditing) {
-      console.log('更新图谱:', formPayload)
+      console.log('InfoForm: 更新图谱:', formPayload)
       // TODO: 调用更新API
     } else {
-      console.log('创建新图谱:', formPayload)
+      console.log('InfoForm: 创建新图谱:', formPayload)
       // TODO: 调用创建API
     }
   } catch (error) {
-    console.error('表单提交失败:', error)
+    console.error('InfoForm: 表单提交失败:', error)
   }
 }
 </script>

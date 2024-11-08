@@ -41,7 +41,7 @@ export function useFileHandler() {
             }
         } catch (error) {
             uploadError.value = error.message
-            console.error('File upload error:', error)
+            console.error('文件上传器：File upload error:', error)
         } finally {
             isUploading.value = false
             uploadProgress.value = 0
