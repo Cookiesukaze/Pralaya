@@ -41,15 +41,17 @@ export const parseGraphData = (data, parentId = null, nodes = [], edges = []) =>
                 source: nodeId,
                 target: keywordId,
                 label: relationObj.relation,
-                description: `关系: ${relationObj.relation}` // 给有关系标签的边添加description
+                description: `关系: ${relationObj.relation}`
             });
         });
     }
     return { nodes, edges };
 };
+
 export const initializeGraph = (container, graphData, options = {}) => {
-    addTooltipStyles();//tooltip
-    const grid = new G6.Grid();//网格
+    addTooltipStyles();
+    const grid = new G6.Grid();
+
     const graph = new G6.Graph({
         container,
         width: container.clientWidth,
@@ -83,19 +85,36 @@ export const initializeGraph = (container, graphData, options = {}) => {
                 },
             }
         },
+        // 添加状态样式
+        nodeStateStyles: {
+            highlight: {
+                opacity: 1,
+                lineWidth: 2,
+            },
+            dark: {
+                opacity: 0.2,
+            }
+        },
+        edgeStateStyles: {
+            highlight: {
+                stroke: '#999',
+                lineWidth: 2,
+            },
+            dark: {
+                opacity: 0.2,
+            }
+        },
         modes: {
             default: ['drag-canvas', 'zoom-canvas', 'drag-node',
                 {
                     type: 'tooltip',
                     formatText(model) {
-                        // 只有当description存在且不为空时才显示tooltip
                         if (model.description && model.description.trim() !== '') {
                             return `描述: ${model.description}`;
                         }
-                        return null; // 返回null则不显示tooltip
+                        return null;
                     },
                     shouldBegin(e) {
-                        // 只有节点有description时才显示tooltip
                         const node = e.item.getModel();
                         return !!(node.description && node.description.trim() !== '');
                     }
@@ -124,6 +143,59 @@ export const initializeGraph = (container, graphData, options = {}) => {
         },
     });
 
+    // 清除所有状态的函数
+    const clearAllStats = () => {
+        graph.setAutoPaint(false);
+        graph.getNodes().forEach(function(node) {
+            graph.clearItemStates(node);
+        });
+        graph.getEdges().forEach(function(edge) {
+            graph.clearItemStates(edge);
+        });
+        graph.paint();
+        graph.setAutoPaint(true);
+    };
+
+    // 添加节点交互事件
+    graph.on('node:mouseenter', function(e) {
+        const item = e.item;
+        graph.setAutoPaint(false);
+
+        // 将所有节点设置为暗状态
+        graph.getNodes().forEach(function(node) {
+            graph.clearItemStates(node);
+            graph.setItemState(node, 'dark', true);
+        });
+
+        // 高亮当前节点
+        graph.setItemState(item, 'dark', false);
+        graph.setItemState(item, 'highlight', true);
+
+        // 处理边和相关节点
+        graph.getEdges().forEach(function(edge) {
+            if (edge.getSource() === item) {
+                graph.setItemState(edge.getTarget(), 'dark', false);
+                graph.setItemState(edge.getTarget(), 'highlight', true);
+                graph.setItemState(edge, 'highlight', true);
+                edge.toFront();
+            } else if (edge.getTarget() === item) {
+                graph.setItemState(edge.getSource(), 'dark', false);
+                graph.setItemState(edge.getSource(), 'highlight', true);
+                graph.setItemState(edge, 'highlight', true);
+                edge.toFront();
+            } else {
+                graph.setItemState(edge, 'highlight', false);
+            }
+        });
+
+        graph.paint();
+        graph.setAutoPaint(true);
+    });
+
+    // 添加鼠标离开和画布点击事件
+    graph.on('node:mouseleave', clearAllStats);
+    graph.on('canvas:click', clearAllStats);
+
     graph.data(graphData);
     graph.render();
 
@@ -139,18 +211,15 @@ export const parseTreeGraphData = (data) => {
             children: []
         };
 
-        // 处理普通子节点
         if (nodeData.children) {
             node.children = nodeData.children.map(child => processNode(child));
         }
 
-        // 处理关键词关系
         if (nodeData.keyword_relations) {
             const keywordNodes = nodeData.keyword_relations.map((relation, index) => ({
                 id: `${nodeData.name}-keyword-${index}`,
                 label: relation.keyword,
                 edgeLabel: relation.relation,
-                // 直接在edge属性中设置description
                 edge: {
                     description: `关系: ${relation.relation}`
                 }
@@ -163,8 +232,8 @@ export const parseTreeGraphData = (data) => {
 };
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {
-    addTooltipStyles();//tooltip
-    const grid = new G6.Grid();//网格
+    addTooltipStyles();
+    const grid = new G6.Grid();
     const graph = new G6.TreeGraph({
         container: container,
         width: container.clientWidth,
@@ -202,7 +271,7 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
             style: {
                 stroke: '#e2e2e2',
                 endArrow: true,
-                lineAppendWidth: 5  // 增加边的响应范围
+                lineAppendWidth: 5
             },
             labelCfg: {
                 position: 'middle',
@@ -216,6 +285,25 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
                     },
                 },
             },
+        },
+        // 添加状态样式
+        nodeStateStyles: {
+            highlight: {
+                opacity: 1,
+                lineWidth: 2,
+            },
+            dark: {
+                opacity: 0.2,
+            }
+        },
+        edgeStateStyles: {
+            highlight: {
+                stroke: '#999',
+                lineWidth: 2,
+            },
+            dark: {
+                opacity: 0.2,
+            }
         },
         modes: {
             default: ['drag-canvas', 'zoom-canvas',
@@ -235,7 +323,6 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
                 {
                     type: 'edge-tooltip',
                     formatText(model) {
-                        // 从model.data中获取description
                         if (model.description) {
                             return model.description;
                         }
@@ -246,23 +333,74 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
         },
     });
 
+    // 清除所有状态的函数
+    const clearAllStats = () => {
+        graph.setAutoPaint(false);
+        graph.getNodes().forEach(function(node) {
+            graph.clearItemStates(node);
+        });
+        graph.getEdges().forEach(function(edge) {
+            graph.clearItemStates(edge);
+        });
+        graph.paint();
+        graph.setAutoPaint(true);
+    };
+
+    // 添加节点交互事件
+    graph.on('node:mouseenter', function(e) {
+        const item = e.item;
+        graph.setAutoPaint(false);
+
+        // 将所有节点设置为暗状态
+        graph.getNodes().forEach(function(node) {
+            graph.clearItemStates(node);
+            graph.setItemState(node, 'dark', true);
+        });
+
+        // 高亮当前节点
+        graph.setItemState(item, 'dark', false);
+        graph.setItemState(item, 'highlight', true);
+
+        // 获取与当前节点相关的边和节点
+        const edges = item.getEdges();
+        edges.forEach(edge => {
+            const source = edge.getSource();
+            const target = edge.getTarget();
+
+            // 高亮相连的节点
+            if (source === item) {
+                graph.setItemState(target, 'dark', false);
+                graph.setItemState(target, 'highlight', true);
+            } else {
+                graph.setItemState(source, 'dark', false);
+                graph.setItemState(source, 'highlight', true);
+            }
+
+            // 高亮边
+            graph.setItemState(edge, 'highlight', true);
+            edge.toFront();
+        });
+
+        graph.paint();
+        graph.setAutoPaint(true);
+    });
+
+    // 添加鼠标离开和画布点击事件
+    graph.on('node:mouseleave', clearAllStats);
+    graph.on('canvas:click', clearAllStats);
+
     // 自定义边的配置
     graph.edge(edge => {
         const config = {
             ...edge
         };
-        // 获取目标节点
         const targetNode = graph.findById(edge.target).getModel();
-        // 设置边的标签
         if (targetNode.edgeLabel) {
             config.label = targetNode.edgeLabel;
         }
-
-        // 如果目标节点有edge.description，则添加到边的属性中
         if (targetNode.edge && targetNode.edge.description) {
             config.description = targetNode.edge.description;
         }
-
         return config;
     });
 
