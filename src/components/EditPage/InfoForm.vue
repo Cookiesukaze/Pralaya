@@ -54,13 +54,13 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">智能问答系统提示词</label>
         <textarea
-            v-model="formData.promptText"
+            v-model="formData.prompt"
             rows="3"
             placeholder="请输入智能问答系统的提示词，用于指导AI回答问题的方式和范围"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
-            :class="{ 'border-red-500': errors.promptText }"
+            :class="{ 'border-red-500': errors.prompt }"
         ></textarea>
-        <p class="mt-1 text-sm text-red-600">{{ errors.promptText }}</p>
+        <p class="mt-1 text-sm text-red-600">{{ errors.prompt }}</p>
       </div>
 
       <!-- 文件列表 -->
@@ -119,7 +119,7 @@ const graphId = route.params.id
 const formData = reactive({
   name: '',
   description: '',
-  promptText: ''
+  prompt: ''
 })
 
 // 图标选择
@@ -131,7 +131,7 @@ watch(() => props.graphData, (newData) => {
   if (newData) {
     formData.name = newData.name
     formData.description = newData.description
-    formData.promptText = newData.prompt
+    formData.prompt = newData.prompt
 
     if (newData.icon) {
       selectedIcon.value = {
@@ -199,7 +199,7 @@ const submitForm = async () => {
       ...formData,
       icon: selectedIcon.value?.name || '', // 如果没选择图标，使用空字符串
       filenameList: JSON.stringify(fileListData),
-      prompt: formData.promptText || '' // 如果没有提示词，使用空字符串
+      prompt: formData.prompt || '' // 如果没有提示词，使用空字符串
     }
 
     if (isEditing) {
