@@ -6,55 +6,53 @@ import {nextTick} from "vue";
 
 export const parseGraphData = (data, parentId = null, nodes = [], edges = []) => {
     const nodeId = data.name;
-    nodes.push({    // 添加当前节点
+    nodes.push({
         id: nodeId,
         label: data.name,
+        description: data.description,
+        x: Math.random() * 800,
+        y: Math.random() * 600
     });
-    if (parentId) {    // 如果存在父节点，添加边
+
+    if (parentId) {
         edges.push({
             source: parentId,
-            target: nodeId,
+            target: nodeId
         });
     }
-    if (data.children) {    // 处理子节点
+
+    if (data.children) {
         data.children.forEach((child) => {
             parseGraphData(child, nodeId, nodes, edges);
         });
     }
-    if (data.keyword_relations) {    // 处理 keyword_relations 中的 keyword 作为子节点
+
+    if (data.keyword_relations) {
         data.keyword_relations.forEach((relationObj, index) => {
-            const keywordId = `${nodeId}-keyword-${index}`; // 保证ID唯一性
-            const keywordLabel = relationObj.keyword;
-            const relationLabel = relationObj.relation;
-            // 创建 keyword 节点
+            const keywordId = `${nodeId}-keyword-${index}`;
             nodes.push({
                 id: keywordId,
-                label: keywordLabel,
+                label: relationObj.keyword,
+                x: Math.random() * 800,
+                y: Math.random() * 600
             });
-            // 创建带有 relation 的边
+
             edges.push({
                 source: nodeId,
                 target: keywordId,
-                label: relationLabel,  // 添加边上的标签
+                label: relationObj.relation,
+                description: `关系: ${relationObj.relation}` // 给有关系标签的边添加description
             });
         });
     }
     return { nodes, edges };
 };
-
-
-// 通用的初始化图形函数
 export const initializeGraph = (container, graphData, options = {}) => {
+    addTooltipStyles();
     const graph = new G6.Graph({
         container,
-        ...options,
-        layout: {
-            type: 'force',
-            preventOverlap: true,
-            nodeStrength: -2000,
-            edgeStrength: 5,
-            linkDistance: 100,
-        },
+        width: container.clientWidth,
+        height: container.clientHeight || 600,
         defaultNode: {
             size: 30,
             style: {
@@ -68,22 +66,59 @@ export const initializeGraph = (container, graphData, options = {}) => {
                     fontSize: 12,
                     fill: '#000',
                 },
-            },
+            }
         },
         defaultEdge: {
             style: {
-                stroke: '#e2e2e2', // 边的颜色
+                stroke: '#e2e2e2',
+                lineAppendWidth: 3
             },
             labelCfg: {
-                autoRotate: true,  // 让标签随边的方向自动旋转
+                autoRotate: true,
                 style: {
-                    fill: '#000',    // 标签颜色
-                    fontSize: 12,    // 标签字体大小
+                    fill: '#000',
+                    fontSize: 12,
                 },
-            },
+            }
         },
         modes: {
-            default: ['drag-canvas', 'zoom-canvas'],
+            default: ['drag-canvas', 'zoom-canvas', 'drag-node',
+                {
+                    type: 'tooltip',
+                    formatText(model) {
+                        // 只有当description存在且不为空时才显示tooltip
+                        if (model.description && model.description.trim() !== '') {
+                            return `描述: ${model.description}`;
+                        }
+                        return null; // 返回null则不显示tooltip
+                    },
+                    shouldBegin(e) {
+                        // 只有节点有description时才显示tooltip
+                        const node = e.item.getModel();
+                        return !!(node.description && node.description.trim() !== '');
+                    }
+                },
+                {
+                    type: 'edge-tooltip',
+                    formatText(model) {
+                        if (model.description && model.description.trim() !== '') {
+                            return model.description;
+                        }
+                        return null;
+                    },
+                    shouldBegin(e) {
+                        const edge = e.item.getModel();
+                        return !!(edge.description && edge.description.trim() !== '');
+                    }
+                }
+            ]
+        },
+        layout: {
+            type: 'force',
+            preventOverlap: true,
+            nodeStrength: -2000,
+            edgeStrength: 5,
+            linkDistance: 100,
         },
     });
 
@@ -93,25 +128,30 @@ export const initializeGraph = (container, graphData, options = {}) => {
     return graph;
 };
 
-
 export const parseTreeGraphData = (data) => {
     const processNode = (nodeData) => {
         const node = {
             id: nodeData.name,
             label: nodeData.name,
+            description: nodeData.description,
             children: []
         };
+
         // 处理普通子节点
         if (nodeData.children) {
             node.children = nodeData.children.map(child => processNode(child));
         }
+
         // 处理关键词关系
         if (nodeData.keyword_relations) {
             const keywordNodes = nodeData.keyword_relations.map((relation, index) => ({
                 id: `${nodeData.name}-keyword-${index}`,
                 label: relation.keyword,
-                // 存储边的信息
-                edgeLabel: relation.relation
+                edgeLabel: relation.relation,
+                // 直接在edge属性中设置description
+                edge: {
+                    description: `关系: ${relation.relation}`
+                }
             }));
             node.children.push(...keywordNodes);
         }
@@ -121,6 +161,7 @@ export const parseTreeGraphData = (data) => {
 };
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {
+    addTooltipStyles();
     const graph = new G6.TreeGraph({
         container: container,
         width: container.clientWidth,
@@ -157,6 +198,7 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
             style: {
                 stroke: '#e2e2e2',
                 endArrow: true,
+                lineAppendWidth: 5  // 增加边的响应范围
             },
             labelCfg: {
                 position: 'middle',
@@ -172,21 +214,54 @@ export const initializeTreeGraph = (container, graphData, options = {}) => {
             },
         },
         modes: {
-            default: ['drag-canvas', 'zoom-canvas'],
+            default: ['drag-canvas', 'zoom-canvas',
+                {
+                    type: 'tooltip',
+                    formatText(model) {
+                        if (model.description && model.description.trim() !== '') {
+                            return model.description;
+                        }
+                        return null;
+                    },
+                    shouldBegin(e) {
+                        const node = e.item.getModel();
+                        return !!(node.description && node.description.trim() !== '');
+                    }
+                },
+                {
+                    type: 'edge-tooltip',
+                    formatText(model) {
+                        // 从model.data中获取description
+                        if (model.description) {
+                            return model.description;
+                        }
+                        return null;
+                    }
+                }
+            ],
         },
     });
-    // 自定义边的标签
+
+    // 自定义边的配置
     graph.edge(edge => {
         const config = {
             ...edge
         };
-        // 如果目标节点有 edgeLabel 属性，则显示在边上
+        // 获取目标节点
         const targetNode = graph.findById(edge.target).getModel();
+        // 设置边的标签
         if (targetNode.edgeLabel) {
             config.label = targetNode.edgeLabel;
         }
+
+        // 如果目标节点有edge.description，则添加到边的属性中
+        if (targetNode.edge && targetNode.edge.description) {
+            config.description = targetNode.edge.description;
+        }
+
         return config;
     });
+
     graph.data(graphData);
     graph.render();
     graph.fitView();
@@ -230,3 +305,26 @@ export class GraphSearchUtil {
         });
     }
 }
+
+export const tooltipStyles = `
+    .g6-tooltip {
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #545454;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px 8px;
+        box-shadow: rgb(174, 174, 174) 0px 0px 10px;
+    }
+`;
+
+// 添加样式到文档
+export const addTooltipStyles = () => {
+    // 检查是否已经添加过样式
+    if (!document.querySelector('#g6-tooltip-styles')) {
+        const style = document.createElement('style');
+        style.id = 'g6-tooltip-styles';
+        style.textContent = tooltipStyles;
+        document.head.appendChild(style);
+    }
+};
