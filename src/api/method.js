@@ -1,4 +1,5 @@
 import axios from "./request"
+import {ref} from "vue";
 
 //get
 export const fakeGet = (data) => {
@@ -23,6 +24,7 @@ export const getAllGraph = () => {
         }
     });
 }
+
 
 export const getAllUser = () => {
     return axios({
@@ -96,4 +98,33 @@ export const postChat = async (data, onChunkReceived) => {
     }
 
     return result;
+};
+
+// useFileHandler.js所有的知识库管理
+export const knowledgeBaseAPI = {
+    uploadDocument: async (knowledgeBaseId, file, onProgress) => {
+        return axios({
+            url: `/knowledge-base/${knowledgeBaseId}/documents`,
+            method: 'POST',
+            data: file,
+            onUploadProgress: onProgress,
+            config: {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 30000 // 文件上传需要更长的超时时间
+            }
+        });
+    },
+
+    deleteDocument: async (fileId) => {
+        return axios({
+            url: `/documents/${fileId}`,
+            method: 'DELETE',
+            config: {
+                headers: {},
+                timeout: 3000
+            }
+        });
+    }
 };

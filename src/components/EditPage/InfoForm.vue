@@ -1,13 +1,15 @@
+<!--InfoForm-->
 <template>
   <div class="p-6 space-y-8">
     <!-- 头部 -->
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold">{{ isEditing ? '编辑知识图谱' : '创建知识图谱' }}</h1>
       <button
-          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
           @click="submitForm"
+          :disabled="isSubmitting"
       >
-        保存
+        {{ isSubmitting ? '保存中...' : '保存' }}
       </button>
     </div>
 
@@ -18,6 +20,7 @@
         <button
             @click="showIconPicker = true"
             class="p-3 border rounded-lg hover:bg-gray-50"
+            type="button"
         >
           <component
               :is="selectedIcon?.component || QuestionMarkCircleIcon"
@@ -52,7 +55,10 @@
 
       <!-- 提示词 -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">智能问答系统提示词</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          智能问答系统提示词
+          <span class="text-gray-500 text-xs ml-1">(选填)</span>
+        </label>
         <textarea
             v-model="formData.prompt"
             rows="3"
@@ -65,13 +71,16 @@
 
       <!-- 文件列表 -->
       <div>
+        <!-- InfoForm.vue 中的 FileList 组件使用 -->
         <FileList
             v-model="files"
             :is-uploading="isUploading"
             :upload-progress="uploadProgress"
-            @file-upload="handleFileUpload"
+            @upload="handleFileUpload"
+            @delete="handleFileDelete"
+            @drop="handleDrop"
+            @dragover="handleDragOver"
         />
-        <!-- 添加这一行来显示文件相关的错误信息 -->
         <p v-if="errors.files" class="mt-1 text-sm text-red-600">{{ errors.files }}</p>
       </div>
     </div>
@@ -81,17 +90,23 @@
         v-model="showIconPicker"
         @select="handleIconSelect"
     />
+
+    <!-- 全局错误信息 -->
+    <div v-if="globalError" class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      {{ globalError }}
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import {ref, reactive, onMounted, watch, onUnmounted} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import IconPicker from '../form/IconPicker.vue'
 import FileList from '../form/FileList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
+import { knowledgeBaseAPI } from '../../api/method'
 import * as HeroIcons from '@heroicons/vue/24/outline'
 
 // 接收父组件传来的props
@@ -103,17 +118,17 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false
-  },
-  isEditing: {
-    type: Boolean,
-    default: false
   }
 })
 
-// 获取路由信息
+const router = useRouter()
 const route = useRoute()
 const isEditing = route.name === 'EditPage'
 const graphId = route.params.id
+
+// 状态管理
+const isSubmitting = ref(false)
+const globalError = ref('')
 
 // 表单数据
 const formData = reactive({
@@ -131,7 +146,7 @@ watch(() => props.graphData, (newData) => {
   if (newData) {
     formData.name = newData.name
     formData.description = newData.description
-    formData.prompt = newData.prompt
+    formData.prompt = newData.prompt || ''
 
     if (newData.icon) {
       selectedIcon.value = {
@@ -140,31 +155,31 @@ watch(() => props.graphData, (newData) => {
       }
     }
 
-    // 处理文件列表
     if (newData.filenameList) {
       try {
         const fileListData = JSON.parse(newData.filenameList)
         if (fileListData.files && Array.isArray(fileListData.files)) {
-          const processedFiles = fileListData.files.map(file => ({
+          files.value = fileListData.files.map(file => ({
+            id: file.fileId,
             name: file.name,
             size: file.size,
             format: file.format,
             status: 'success'
           }))
-          setFiles(processedFiles)
         }
       } catch (error) {
         console.error('InfoForm: 解析文件列表失败:', error)
-        setFiles([])
+        files.value = []
       }
     } else {
-      setFiles([])
+      files.value = []
     }
   }
 }, { immediate: true })
 
 const handleIconSelect = (icon) => {
   selectedIcon.value = icon
+  showIconPicker.value = false
 }
 
 // 表单验证
@@ -177,40 +192,67 @@ const {
   uploadProgress,
   uploadError,
   handleFileUpload,
-  deleteFile,
-  setFiles
-} = useFileHandler()
+  handleFileDelete,
+  handleDrop,
+  handleDragOver,
+  validateFiles,
+  resetFiles
+} = useFileHandler(graphId)
 
 // 表单提交
+// 在 InfoForm.vue 中的 submitForm 方法
 const submitForm = async () => {
-  if (!validateForm(formData, files.value)) return
-
-
   try {
-    const fileListData = {
-      files: files.value.map(file => ({
+    globalError.value = ''
+
+    if (!validateForm(formData, files.value)) {
+      return
+    }
+
+    isSubmitting.value = true
+
+    let knowledgeBaseId
+
+    const formPayload = {
+      name: formData.name,
+      description: formData.description,
+      icon: selectedIcon.value?.name || '',
+      prompt: formData.prompt || '',
+      documents: files.value.map(file => ({
+        id: file.id,
         name: file.name,
         size: file.size,
-        format: file.format
+        format: file.format,
+        status: file.status
       }))
     }
 
-    const formPayload = {
-      ...formData,
-      icon: selectedIcon.value?.name || '', // 如果没选择图标，使用空字符串
-      filenameList: JSON.stringify(fileListData),
-      prompt: formData.prompt || '' // 如果没有提示词，使用空字符串
+    if (isEditing) {
+      await knowledgeBaseAPI.updateKnowledgeBase(graphId, formPayload)
+    } else {
+      const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
+      router.push(`/edit/${response.data.id}`)
     }
 
-    if (isEditing) {
-      console.log('InfoForm: 更新图谱:', formPayload)
-      // TODO: 调用更新API
-    } else {
-      console.log('InfoForm: 创建新图谱:', formPayload)
-      // TODO: 调用创建API
-    }
+    // 成功提示
+    alert(isEditing ? '更新成功' : '创建成功')
   } catch (error) {
-    console.error('InfoForm: 表单提交失败:', error)
+    console.error('提交失败:', error)
+    globalError.value = error.response?.data?.message || '操作失败，请稍后重试'
+  } finally {
+    isSubmitting.value = false
   }
 }
+
+// 清理函数
+onUnmounted(() => {
+  resetFiles()
+})
 </script>
+
+<style scoped>
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+</style>
