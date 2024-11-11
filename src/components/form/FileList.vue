@@ -101,7 +101,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['update:modelValue', 'delete', 'drop', 'dragover'])
+const emit = defineEmits(['update:modelValue', 'delete', 'drop', 'dragover', 'upload'])
 
 // 拖拽状态
 const isDragging = ref(false)
