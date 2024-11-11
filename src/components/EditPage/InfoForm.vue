@@ -165,6 +165,8 @@ watch(
     () => props.graphData,
     (newData) => {
       if (newData) {
+        // 添加 knowledgeBaseId 的获取
+        knowledgeBaseId.value = newData.knowledgeBaseId || null
         // 确保 newData 存在后再尝试访问内部属性
         formData.name = newData.name || ''
         formData.description = newData.description || ''
@@ -233,11 +235,16 @@ const submitForm = async () => {
       prompt: formData.prompt || ''
     }
 
+    // 打印请求载荷
+    console.log('InfoForm: 请求载荷:', formPayload)
+
     if (isEditing) {
       // 更新知识库信息
+      console.log('更新知识库:', baseId)
       await knowledgeBaseAPI.updateKnowledgeBase(baseId, formPayload)
 
       if (pendingDeleteFileIds.value.length > 0) {
+        console.log('待删除文件:', pendingDeleteFileIds.value)
         try {
           await deleteFiles()
         } catch (error) {
@@ -246,12 +253,15 @@ const submitForm = async () => {
       }
     } else {
       // 创建新的知识库
+      console.log('创建新知识库')
       const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
       baseId = response.data.id
       knowledgeBaseId.value = baseId
+      console.log('创建成功,新ID:', baseId)
     }
 
     if (files.value.length > 0) {
+      console.log('待上传文件:', files.value)
       try {
         await uploadFiles(baseId)
       } catch (error) {
