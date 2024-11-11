@@ -164,22 +164,4 @@ uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
         }
     },
 
-    // 新增：启用文件删除的后端请求
-    enableDelete: async (fileId) => {
-        try {
-            const response = await axios({
-                url: `/graph/files/${fileId}/enableDelete`,  // 后端的 PATCH 请求路径
-                method: 'PATCH',
-                config: {
-                    timeout: 3000
-                }
-            });
-
-            console.log('删除启用请求响应:', response.data);
-            return response.data;  // 返回响应数据
-        } catch (error) {
-            console.error('启用删除请求失败:', error.response?.data || error.message);
-            throw error;
-        }
-    }
 };

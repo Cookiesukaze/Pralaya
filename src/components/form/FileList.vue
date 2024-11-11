@@ -1,4 +1,4 @@
-<!--FileList.vue-->
+<!-- FileList.vue -->
 <template>
   <div>
     <label class="block text-sm font-medium text-gray-700 mb-2">知识库</label>
@@ -20,7 +20,7 @@
             class="hidden"
             accept=".txt,.pdf,.doc,.docx"
             @change="handleFileChange"
-        >
+        />
         <button
             @click="$refs.fileInput.click()"
             class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -28,9 +28,7 @@
         >
           选择文件
         </button>
-        <p class="mt-2 text-sm text-gray-500">
-          或将文件拖拽到这里上传
-        </p>
+        <p class="mt-2 text-sm text-gray-500">或将文件拖拽到这里上传</p>
       </div>
 
       <!-- 上传进度条 -->
@@ -48,11 +46,7 @@
     </div>
 
     <!-- 文件列表 -->
-    <TransitionGroup
-        name="list"
-        tag="div"
-        class="mt-4 space-y-2"
-    >
+    <transition-group name="list" tag="div" class="mt-4 space-y-2">
       <div
           v-for="file in modelValue"
           :key="file.id || file.tempId || file.name"
@@ -61,8 +55,12 @@
         <div class="flex items-center space-x-3">
           <DocumentIcon class="w-5 h-5 text-gray-400" />
           <div>
-            <p class="text-sm font-medium text-gray-700 truncate max-w-xs">{{ file.name }}</p>
-            <p class="text-xs text-gray-500">{{ file.format }} · {{ formatFileSize(file.size) }}</p>
+            <p class="text-sm font-medium text-gray-700 truncate max-w-xs">
+              {{ file.name }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ file.format }} · {{ formatFileSize(file.size) }}
+            </p>
           </div>
         </div>
         <button
@@ -75,16 +73,15 @@
           <XMarkIcon class="w-5 h-5" />
         </button>
       </div>
-    </TransitionGroup>
+    </transition-group>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { DocumentIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { knowledgeBaseAPI } from "../../api/method.js"
 
-// Props
+// 定义 Props
 const props = defineProps({
   modelValue: {
     type: Array,
@@ -100,77 +97,48 @@ const props = defineProps({
   }
 })
 
-// Emits
-const emit = defineEmits(['update:modelValue', 'delete', 'drop', 'dragover', 'upload'])
+// 定义事件
+const emit = defineEmits(['update:modelValue', 'delete', 'upload'])
 
 // 拖拽状态
 const isDragging = ref(false)
 
+// 处理文件拖拽
 const handleDrop = (event) => {
   isDragging.value = false
   const droppedFiles = event.dataTransfer.files
   if (droppedFiles.length) {
-    emit('upload', { target: { files: droppedFiles } })
+    handleFiles(droppedFiles)
   }
 }
 
 const handleFileChange = (event) => {
   const selectedFiles = event.target.files
   if (selectedFiles.length) {
-    emit('upload', event)
+    handleFiles(selectedFiles)
   }
 }
 
-// 文件上传处理
-const handleFileUpload = (uploadedFiles) => {
-  uploadedFiles.forEach(file => {
-    file.isDisabled = true;
-
-    setTimeout(async () => {
-      try {
-        const response = await knowledgeBaseAPI.enableDelete(file.id);
-        console.log("FileList: 上传返回：", response)
-
-        if (response.canDelete) {
-          const fileIndex = props.modelValue.findIndex(f => f === file);
-          if (fileIndex !== -1) {
-            emit('update:modelValue', [
-              ...props.modelValue.slice(0, fileIndex),
-              { ...file, isDisabled: false },
-              ...props.modelValue.slice(fileIndex + 1)
-            ]);
-          }
-          console.log("FileList: Delete button enabled for file ID:", file.id);
-        } else {
-          console.warn("FileList: File cannot be deleted yet:", file.id);
-        }
-      } catch (error) {
-        console.error("Error enabling delete for file:", file.id, error);
-      }
-    }, 2000);
-  });
-};
+// 处理文件列表
+const handleFiles = (fileList) => {
+  const fileArray = Array.from(fileList)
+  emit('upload', fileArray)
+}
 
 // 删除文件
 const removeFile = (file) => {
   if (!file.id) {
-    console.warn("FileList: File has not been uploaded yet (missing file id).");
-    return;
+    console.warn('文件尚未上传，无法删除。')
+    return
   }
 
   if (file.isDisabled) {
-    console.warn("FileList: File is temporarily disabled and cannot be deleted.");
-    return;
+    console.warn('文件暂时不可删除。')
+    return
   }
 
-  console.log("FileList: Removing file with ID:", file.id);
-  emit('delete', file.id);
-};
-
-// 导出方法
-defineExpose({
-  handleFileUpload
-});
+  emit('delete', file.id)
+}
 
 // 格式化文件大小
 const formatFileSize = (bytes) => {

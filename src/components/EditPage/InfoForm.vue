@@ -1,4 +1,4 @@
-<!--InfoForm-->
+<!-- InfoForm.vue -->
 <template>
   <div class="p-6 space-y-8">
     <!-- 头部 -->
@@ -22,10 +22,7 @@
             type="button"
             @click="showIconPicker = true"
         >
-          <component
-              :is="selectedIcon?.component || QuestionMarkCircleIcon"
-              class="w-6 h-6"
-          />
+          <component :is="selectedIcon?.component || QuestionMarkCircleIcon" class="w-6 h-6" />
         </button>
         <div class="flex-1">
           <label class="block text-sm font-medium text-gray-700 mb-2">知识图谱名称</label>
@@ -35,7 +32,7 @@
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
               placeholder="请输入知识图谱名称，例如：产品知识库"
               type="text"
-          >
+          />
           <p class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
         </div>
       </div>
@@ -76,8 +73,6 @@
             :is-uploading="isUploading"
             :upload-progress="uploadProgress"
             @delete="handleFileDelete"
-            @dragover="handleDragOver"
-            @drop="handleDrop"
             @upload="handleFileUpload"
         />
         <p v-if="errors.files" class="mt-1 text-sm text-red-600">{{ errors.files }}</p>
@@ -85,14 +80,12 @@
     </div>
 
     <!-- 图标选择器弹窗 -->
-    <IconPicker
-        v-model="showIconPicker"
-        @select="handleIconSelect"
-    />
+    <IconPicker v-model="showIconPicker" @select="handleIconSelect" />
 
     <!-- 全局错误信息 -->
-    <div v-if="globalError"
-         class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+    <div
+        v-if="globalError"
+        class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
     >
       {{ globalError }}
     </div>
@@ -100,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, onUnmounted } from 'vue'
+import { ref, reactive, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import IconPicker from '../form/IconPicker.vue'
@@ -110,7 +103,7 @@ import { useFileHandler } from '../form/utils/useFileHandler'
 import { getGraphById, knowledgeBaseAPI } from '../../api/method'
 import * as HeroIcons from '@heroicons/vue/24/outline'
 
-// Props
+// **补充：定义 props**
 const props = defineProps({
   graphData: {
     type: Object,
@@ -122,6 +115,7 @@ const props = defineProps({
   }
 })
 
+// 获取路由信息
 const router = useRouter()
 const route = useRoute()
 const isEditing = route.name === 'EditPage'
@@ -140,63 +134,12 @@ const formData = reactive({
 
 // 知识库ID
 const knowledgeBaseId = ref(null)
-
-// 监听图谱数据变化，获取知识库ID
-watch(() => props.graphData, (newData) => {
-  if (newData && newData.knowledgeBaseId) {
-    knowledgeBaseId.value = newData.knowledgeBaseId
-  }
-  console.log("InfoForm: 获取到知识库id：", knowledgeBaseId.value)
-}, { immediate: true })
-
 // 图标选择
 const showIconPicker = ref(false)
-const selectedIcon = ref(null)
-
-// 监听 graphData 的变化，更新表单数据
-watch(() => props.graphData, (newData) => {
-  if (newData) {
-    formData.name = newData.name
-    formData.description = newData.description
-    formData.prompt = newData.prompt || ''
-
-    if (newData.icon) {
-      selectedIcon.value = {
-        name: newData.icon,
-        component: HeroIcons[newData.icon]
-      }
-    }
-
-    if (newData.filenameList) {
-      try {
-        const fileListData = JSON.parse(newData.filenameList)
-        if (fileListData.files && Array.isArray(fileListData.files)) {
-          files.value = fileListData.files.map(file => ({
-            id: file.file_id,
-            name: file.name,
-            size: file.size,
-            format: file.format,
-            status: 'success'
-          }))
-        }
-        console.log("InfoForm: 文件列表：", files.value)
-      } catch (error) {
-        console.error('InfoForm: 解析文件列表失败:', error)
-        files.value = []
-      }
-    } else {
-      files.value = []
-    }
-  }
-}, { immediate: true })
-
-const handleIconSelect = (icon) => {
-  selectedIcon.value = icon
-  showIconPicker.value = false
-}
-
-// 表单验证
-const { errors, validateForm } = useFormValidation()
+const selectedIcon = ref({
+  name: '',
+  component: HeroIcons.QuestionMarkCircleIcon // 设置默认图标
+})
 
 // 文件处理
 const {
@@ -208,14 +151,69 @@ const {
   handleFileDelete,
   handleDrop,
   handleDragOver,
-  resetFiles,
+  reset,
   uploadFiles,
   deleteFiles,
   pendingDeleteFileIds
 } = useFileHandler(graphId, (processedFiles) => {
-  // 这里处理上传成功后的逻辑
-  console.log('Files uploaded successfully:', processedFiles);
-});
+  // 上传成功后的回调
+  console.log('文件上传成功:', processedFiles)
+})
+
+// 监听 graphData 变化，获取知识库ID
+watch(
+    () => props.graphData,
+    (newData) => {
+      if (newData) {
+        // 确保 newData 存在后再尝试访问内部属性
+        formData.name = newData.name || ''
+        formData.description = newData.description || ''
+        formData.prompt = newData.prompt || ''
+
+        if (newData.icon) {
+          selectedIcon.value = {
+            name: newData.icon,
+            component: HeroIcons[newData.icon] || HeroIcons.QuestionMarkCircleIcon
+          }
+        }
+
+        if (newData.filenameList) {
+          try {
+            const fileListData = JSON.parse(newData.filenameList)
+            if (fileListData.files && Array.isArray(fileListData.files)) {
+              files.value = fileListData.files.map((file) => ({
+                id: file.file_id,
+                name: file.name,
+                size: file.size,
+                format: file.format,
+                status: 'success'
+              }))
+            }
+          } catch (error) {
+            console.error("文件列表解析失败", error);
+            files.value = [] // 设置为一个空数组
+          }
+        } else {
+          files.value = []
+        }
+      }
+    },
+    { immediate: true }
+)
+
+
+
+
+// 处理图标选择
+const handleIconSelect = (icon) => {
+  selectedIcon.value = icon
+  showIconPicker.value = false
+}
+
+// 表单验证
+const { errors, validateForm } = useFormValidation()
+
+
 
 // 表单提交
 const submitForm = async () => {
@@ -226,7 +224,7 @@ const submitForm = async () => {
     }
 
     isSubmitting.value = true
-    let knowledgeBaseId
+    let baseId = knowledgeBaseId.value
 
     const formPayload = {
       name: formData.name,
@@ -236,32 +234,33 @@ const submitForm = async () => {
     }
 
     if (isEditing) {
-      const graphResponse = await getGraphById(graphId)
-      knowledgeBaseId = graphResponse.data.knowledgeBaseId
-      await knowledgeBaseAPI.updateKnowledgeBase(knowledgeBaseId, formPayload)
+      // 更新知识库信息
+      await knowledgeBaseAPI.updateKnowledgeBase(baseId, formPayload)
 
       if (pendingDeleteFileIds.value.length > 0) {
         try {
-          await deleteFiles(graphId)
+          await deleteFiles()
         } catch (error) {
           throw new Error(`删除文件失败: ${error.message}`)
         }
       }
     } else {
+      // 创建新的知识库
       const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
-      knowledgeBaseId = response.data.id
+      baseId = response.data.id
+      knowledgeBaseId.value = baseId
     }
 
     if (files.value.length > 0) {
       try {
-        await uploadFiles(knowledgeBaseId)
+        await uploadFiles(baseId)
       } catch (error) {
         throw new Error(`上传文件失败: ${error.message}`)
       }
     }
 
     if (!isEditing) {
-      router.push(`/edit/${knowledgeBaseId}`)
+      router.push(`/edit/${baseId}`)
     }
 
     alert(isEditing ? '更新成功' : '创建成功')
@@ -273,9 +272,9 @@ const submitForm = async () => {
   }
 }
 
-// 清理函数
+// 组件卸载时清理
 onUnmounted(() => {
-  resetFiles()
+  reset() // 调用之前定义的 reset 函数
 })
 </script>
 
