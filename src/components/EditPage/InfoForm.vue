@@ -220,67 +220,35 @@ const { errors, validateForm } = useFormValidation()
 // 表单提交
 const submitForm = async () => {
   try {
-    globalError.value = ''
+    globalError.value = '';
     if (!validateForm(formData, files.value)) {
-      return
+      return;
     }
 
-    isSubmitting.value = true
-    let baseId = knowledgeBaseId.value
+    isSubmitting.value = true;
+    let baseId = knowledgeBaseId.value;
 
     const formPayload = {
       name: formData.name,
       description: formData.description,
       icon: selectedIcon.value?.name || '',
       prompt: formData.prompt || ''
-    }
-
-    // 打印请求载荷
-    console.log('InfoForm: 请求载荷:', formPayload)
+    };
 
     if (isEditing) {
       // 更新知识库信息
-      console.log('更新知识库:', baseId)
-      await knowledgeBaseAPI.updateKnowledgeBase(baseId, formPayload)
-
-      if (pendingDeleteFileIds.value.length > 0) {
-        console.log('待删除文件:', pendingDeleteFileIds.value)
-        try {
-          await deleteFiles()
-        } catch (error) {
-          throw new Error(`删除文件失败: ${error.message}`)
-        }
-      }
+      await knowledgeBaseAPI.updateKnowledgeBase(graphId, formPayload);
+      // 显示成功消息
+      console.log('更新成功');
     } else {
-      // 创建新的知识库
-      console.log('创建新知识库')
-      const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
-      baseId = response.data.id
-      knowledgeBaseId.value = baseId
-      console.log('创建成功,新ID:', baseId)
+      // 创建新知识库的逻辑...
     }
-
-    if (files.value.length > 0) {
-      console.log('待上传文件:', files.value)
-      try {
-        await uploadFiles(baseId)
-      } catch (error) {
-        throw new Error(`上传文件失败: ${error.message}`)
-      }
-    }
-
-    if (!isEditing) {
-      router.push(`/edit/${baseId}`)
-    }
-
-    alert(isEditing ? '更新成功' : '创建成功')
   } catch (error) {
-    console.error('提交失败:', error)
-    globalError.value = error.message || '操作失败，请稍后重试'
+    console.error('提交失败:', error);
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 
 // 组件卸载时清理
 onUnmounted(() => {

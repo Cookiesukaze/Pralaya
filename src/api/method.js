@@ -164,4 +164,27 @@ uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
         }
     },
 
+    updateKnowledgeBase: async (id, data) => {
+        try {
+            const response = await axios({
+                url: `/graph/${id}/full`,
+                method: 'PUT',
+                data: data,
+                config: {
+                    timeout: 3000
+                }
+            });
+
+            console.log('更新知识库响应:', response.data);
+            return response;
+        } catch (error) {
+            console.error('更新知识库失败:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw error;
+        }
+    }
+
 };
