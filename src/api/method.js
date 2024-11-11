@@ -25,6 +25,17 @@ export const getAllGraph = () => {
     });
 }
 
+export const getGraphById = (id) => {
+    return axios({
+        url: `/graph/${id}`,
+        method: "get",
+        config: {
+            headers: {},
+            timeout: 3000
+        }
+    });
+}
+
 
 export const getAllUser = () => {
     return axios({
@@ -102,24 +113,26 @@ export const postChat = async (data, onChunkReceived) => {
 
 // useFileHandler.js所有的知识库管理
 export const knowledgeBaseAPI = {
-    uploadDocument: async (knowledgeBaseId, file, onProgress) => {
+    uploadDocument: async (knowledgeBaseId, formData, onProgress) => {
+        if (!(formData instanceof FormData)) {
+            throw new Error('formData must be an instance of FormData');
+        }
+
         return axios({
-            url: `/knowledge-base/${knowledgeBaseId}/documents`,
-            method: 'POST',
-            data: file,
-            onUploadProgress: onProgress,
+            url: `/api/knowledge/${knowledgeBaseId}/documents`,
+            method: 'post',
+            data: formData,
             config: {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                timeout: 30000 // 文件上传需要更长的超时时间
+                headers: {}, // 不设置Content-Type，让axios自动处理
+                timeout: 30000,
+                onUploadProgress: onProgress
             }
         });
     },
 
     deleteDocument: async (fileId) => {
         return axios({
-            url: `/documents/${fileId}`,
+            url: `/api/knowledge/documents/${fileId}`,
             method: 'DELETE',
             config: {
                 headers: {},

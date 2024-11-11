@@ -8,12 +8,13 @@ const service = axios.create({
 // 添加请求拦截器
 service.interceptors.request.use(
     (config) => {
-        // 在发送请求之前做些什么
-        config.headers["Content-type"] = "application/json";
+        // 如果不是FormData，才设置Content-Type
+        if (!(config.data instanceof FormData)) {
+            config.headers["Content-type"] = "application/json";
+        }
         return config;
     },
     (error) => {
-        // 对请求错误做些什么
         return Promise.reject(error);
     }
 );

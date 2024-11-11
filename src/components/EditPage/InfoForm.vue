@@ -106,7 +106,7 @@ import IconPicker from '../form/IconPicker.vue'
 import FileList from '../form/FileList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
-import { knowledgeBaseAPI } from '../../api/method'
+import {getGraphById, knowledgeBaseAPI} from '../../api/method'
 import * as HeroIcons from '@heroicons/vue/24/outline'
 
 // 接收父组件传来的props
@@ -136,6 +136,18 @@ const formData = reactive({
   description: '',
   prompt: ''
 })
+
+// 在 InfoForm.vue 的 setup 中添加
+const knowledgeBaseId = ref(null)
+
+// 监听图谱数据变化，获取知识库ID
+watch(() => props.graphData, (newData) => {
+  if (newData && newData.knowledgeBaseId) {
+    knowledgeBaseId.value = newData.knowledgeBaseId
+  }
+
+  console.log("InfoForm: 获取到知识库id：",knowledgeBaseId.value)
+}, { immediate: true })
 
 // 图标选择
 const showIconPicker = ref(false)
@@ -185,7 +197,6 @@ const handleIconSelect = (icon) => {
 // 表单验证
 const { errors, validateForm } = useFormValidation()
 
-// 文件处理
 const {
   files,
   isUploading,
@@ -195,46 +206,60 @@ const {
   handleFileDelete,
   handleDrop,
   handleDragOver,
-  validateFiles,
-  resetFiles
+  resetFiles,
+  uploadFiles, // 添加这个
+  deleteFiles, // 添加这个
+  pendingDeleteFileIds // 添加这个
 } = useFileHandler(graphId)
 
 // 表单提交
 // 在 InfoForm.vue 中的 submitForm 方法
+
 const submitForm = async () => {
   try {
     globalError.value = ''
-
     if (!validateForm(formData, files.value)) {
       return
     }
 
     isSubmitting.value = true
-
     let knowledgeBaseId
 
     const formPayload = {
       name: formData.name,
       description: formData.description,
       icon: selectedIcon.value?.name || '',
-      prompt: formData.prompt || '',
-      documents: files.value.map(file => ({
-        id: file.id,
-        name: file.name,
-        size: file.size,
-        format: file.format,
-        status: file.status
-      }))
+      prompt: formData.prompt || ''
     }
 
     if (isEditing) {
-      await knowledgeBaseAPI.updateKnowledgeBase(graphId, formPayload)
+      // 编辑态：先获取图谱对应的知识库ID
+      const graphResponse = await getGraphById(graphId)
+      knowledgeBaseId = graphResponse.data.knowledgeBaseId
+
+      // 更新知识库信息
+      await knowledgeBaseAPI.updateKnowledgeBase(knowledgeBaseId, formPayload)
     } else {
+      // 创建态：先创建知识库
       const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
-      router.push(`/edit/${response.data.id}`)
+      knowledgeBaseId = response.data.id
     }
 
-    // 成功提示
+    // 处理文件上传
+    if (files.value.length > 0) {
+      await uploadFiles(knowledgeBaseId)
+    }
+
+    // 处理文件删除
+    if (pendingDeleteFileIds.value.length > 0) {
+      await deleteFiles()
+    }
+
+    // 更新路由
+    if (!isEditing) {
+      router.push(`/edit/${knowledgeBaseId}`)
+    }
+
     alert(isEditing ? '更新成功' : '创建成功')
   } catch (error) {
     console.error('提交失败:', error)

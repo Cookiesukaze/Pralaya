@@ -1,3 +1,4 @@
+<!--FileList.vue-->
 <template>
   <div>
     <label class="block text-sm font-medium text-gray-700 mb-2">知识库</label>
@@ -54,7 +55,7 @@
     >
       <div
           v-for="file in modelValue"
-          :key="file.id"
+          :key="file.id || file.tempId || file.name"
           class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
       >
         <div class="flex items-center space-x-3">
@@ -65,7 +66,7 @@
           </div>
         </div>
         <button
-            @click="removeFile(file.id)"
+            @click="removeFile(file)"
             class="text-gray-400 hover:text-red-500 transition-colors p-1"
             title="删除文件"
         >
@@ -79,6 +80,7 @@
 <script setup>
 import { ref } from 'vue'
 import { DocumentIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+
 
 const props = defineProps({
   modelValue: {
@@ -113,8 +115,8 @@ const handleFileChange = (event) => {
   }
 }
 
-const removeFile = (fileId) => {
-  emit('update:modelValue', props.modelValue.filter(f => f.id !== fileId))
+const removeFile = (file) => {
+  emit('delete', file) // 修改为通过emit传递删除事件
 }
 
 const formatFileSize = (bytes) => {

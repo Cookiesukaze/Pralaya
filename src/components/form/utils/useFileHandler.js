@@ -1,6 +1,6 @@
 // src/form/utils/useFileHandler.js
 import { ref } from 'vue'
-import { knowledgeBaseAPI } from '../../../api/method'
+import {getGraphById, knowledgeBaseAPI} from '../../../api/method'
 
 export function useFileHandler(initialKnowledgeBaseId = null) {
     const knowledgeBaseId = ref(initialKnowledgeBaseId)
@@ -13,33 +13,58 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
     const pendingDeleteFileIds = ref([])
 
     const handleFileUpload = async (event) => {
-        const newFiles = event.target.files
+        // 检查event参数的格式
+        const newFiles = Array.isArray(event) ? event :
+            event.target?.files ? Array.from(event.target.files) :
+                event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : [];
 
-        const processedFiles = Array.from(newFiles).map(file => {
-            const processed = {
-                file,
-                name: file.name,
-                size: file.size,
-                format: file.name.split('.').pop(),
-                status: 'pending',
-                progress: 0
-            }
-            console.log('3. 处理后的单个文件对象:', processed)
-            return processed
-        })
+        if(newFiles.length === 0) {
+            console.error('No files to upload');
+            return;
+        }
 
-        pendingUploadFiles.value.push(...processedFiles)
-        files.value.push(...processedFiles)
-        console.log('6. 更新后的总文件列表:', files.value)
-
-        if (knowledgeBaseId.value) {
+        // 添加文件验证
+        const validFiles = [];
+        for(const file of newFiles) {
             try {
-                await uploadFiles(knowledgeBaseId.value)
-            } catch (error) {
-                console.error('文件上传失败:', error)
-                uploadError.value = error.message
+                validateFile(file);
+                validFiles.push(file);
+            } catch(error) {
+                console.error(`文件 ${file.name} 验证失败:`, error.message);
+                uploadError.value = error.message;
             }
         }
+
+        const processedFiles = validFiles.map(file => ({
+            file,
+            name: file.name,
+            size: file.size,
+            format: file.name.split('.').pop().toLowerCase(),
+            status: 'pending',
+            progress: 0,
+            tempId: `${file.name}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        }));
+
+        pendingUploadFiles.value.push(...processedFiles);
+        files.value.push(...processedFiles);
+
+        const temp_name = `kb_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 5)}`;
+
+        try {
+            // 如果没有知识库ID，可能需要先创建知识库
+            if(!knowledgeBaseId.value) {
+                const response = await knowledgeBaseAPI.createKnowledgeBase({
+                    name: temp_name, // 这里可以从外部传入
+                    description: "临时描述",
+                });
+                knowledgeBaseId.value = response.data.id;
+            }
+            await uploadFiles(knowledgeBaseId.value);
+        } catch (error) {
+            console.error('Upload failed:', error);
+            uploadError.value = error.message;
+        }
+
     }
 
     const handleFileDelete = (fileToDelete) => {
@@ -56,10 +81,9 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
     }
 
     const handleDrop = (e) => {
-        e.preventDefault()
-        const droppedFiles = e.dataTransfer.files
-        console.log('文件拖放:', droppedFiles)
-        handleFileUpload(droppedFiles)
+        e.preventDefault();
+        const droppedFiles = Array.from(e.dataTransfer.files);
+        handleFileUpload(droppedFiles);
     }
 
     const handleDragOver = (e) => {
@@ -69,18 +93,29 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
     const uploadFiles = async (baseId) => {
         if (pendingUploadFiles.value.length === 0) return []
 
+        // 获取当前graph信息
+        const graph = await getGraphById(baseId)
+        const knowledgeBaseId = graph.data.knowledgeBaseId
+        console.log("useFileHandler: 获得知识库id", knowledgeBaseId)
+
         const uploadResults = []
         isUploading.value = true
         uploadError.value = null
 
         try {
-            console.log('开始上传文件到服务器:', pendingUploadFiles.value)
+            console.log('useFileHandler: 开始上传文件到服务器(uploadFiles):', pendingUploadFiles.value)
             for (const fileData of pendingUploadFiles.value) {
                 const formData = new FormData()
                 formData.append('file', fileData.file)
 
+                // 打印FormData内容进行检查
+                console.log('Uploading FormData:', formData)
+                for (let pair of formData.entries()) {
+                    console.log(pair[0], pair[1])
+                }
+
                 const result = await knowledgeBaseAPI.uploadDocument(
-                    baseId,
+                    knowledgeBaseId,
                     formData,
                     (progressEvent) => {
                         const percentCompleted = Math.round(
@@ -107,7 +142,7 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
             pendingUploadFiles.value = []
             return uploadResults
         } catch (error) {
-            console.error('文件上传过程中出错:', error)
+            console.error('useFileHandler: 文件上传过程中出错:', error)
             uploadError.value = error.message || '文件上传失败'
             throw error
         } finally {
@@ -165,9 +200,21 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
         knowledgeBaseId.value = id
     }
 
-    const validateFiles = () => {
-        // 在这里添加文件验证逻辑
-        return files.value.length > 0
+    const validateFile = (file) => {
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        const allowedTypes = ['txt', 'pdf', 'doc', 'docx'];
+
+        const fileType = file.name.split('.').pop().toLowerCase();
+
+        if(!allowedTypes.includes(fileType)) {
+            throw new Error(`不支持的文件类型: ${fileType}`);
+        }
+
+        if(file.size > maxSize) {
+            throw new Error(`文件大小不能超过50MB`);
+        }
+
+        return true;
     }
 
     return {
@@ -184,6 +231,6 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
         reset,
         getPendingActions,
         setKnowledgeBaseId,
-        validateFiles
+        validateFile,
     }
 }
