@@ -5,9 +5,9 @@
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold">{{ isEditing ? '编辑知识图谱' : '创建知识图谱' }}</h1>
       <button
+          :disabled="isSubmitting"
           class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
           @click="submitForm"
-          :disabled="isSubmitting"
       >
         {{ isSubmitting ? '保存中...' : '保存' }}
       </button>
@@ -18,9 +18,9 @@
       <!-- 图标选择和名称 -->
       <div class="flex items-center space-x-4">
         <button
-            @click="showIconPicker = true"
             class="p-3 border rounded-lg hover:bg-gray-50"
             type="button"
+            @click="showIconPicker = true"
         >
           <component
               :is="selectedIcon?.component || QuestionMarkCircleIcon"
@@ -31,10 +31,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">知识图谱名称</label>
           <input
               v-model="formData.name"
-              type="text"
-              placeholder="请输入知识图谱名称，例如：产品知识库"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
               :class="{ 'border-red-500': errors.name }"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
+              placeholder="请输入知识图谱名称，例如：产品知识库"
+              type="text"
           >
           <p class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
         </div>
@@ -45,10 +45,10 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">知识图谱简介</label>
         <textarea
             v-model="formData.description"
-            rows="3"
-            placeholder="请简要描述该知识图谱的用途、适用场景等"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
             :class="{ 'border-red-500': errors.description }"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
+            placeholder="请简要描述该知识图谱的用途、适用场景等"
+            rows="3"
         ></textarea>
         <p class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
       </div>
@@ -61,25 +61,24 @@
         </label>
         <textarea
             v-model="formData.prompt"
-            rows="3"
-            placeholder="请输入智能问答系统的提示词，用于指导AI回答问题的方式和范围"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
             :class="{ 'border-red-500': errors.prompt }"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2"
+            placeholder="请输入智能问答系统的提示词，用于指导AI回答问题的方式和范围"
+            rows="3"
         ></textarea>
         <p class="mt-1 text-sm text-red-600">{{ errors.prompt }}</p>
       </div>
 
       <!-- 文件列表 -->
       <div>
-        <!-- InfoForm.vue 中的 FileList 组件使用 -->
         <FileList
             v-model="files"
             :is-uploading="isUploading"
             :upload-progress="uploadProgress"
-            @upload="handleFileUpload"
             @delete="handleFileDelete"
-            @drop="handleDrop"
             @dragover="handleDragOver"
+            @drop="handleDrop"
+            @upload="handleFileUpload"
         />
         <p v-if="errors.files" class="mt-1 text-sm text-red-600">{{ errors.files }}</p>
       </div>
@@ -92,24 +91,26 @@
     />
 
     <!-- 全局错误信息 -->
-    <div v-if="globalError" class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <div v-if="globalError"
+         class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+    >
       {{ globalError }}
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref, reactive, onMounted, watch, onUnmounted} from 'vue'
+import { ref, reactive, onMounted, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import IconPicker from '../form/IconPicker.vue'
 import FileList from '../form/FileList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
-import {getGraphById, knowledgeBaseAPI} from '../../api/method'
+import { getGraphById, knowledgeBaseAPI } from '../../api/method'
 import * as HeroIcons from '@heroicons/vue/24/outline'
 
-// 接收父组件传来的props
+// Props
 const props = defineProps({
   graphData: {
     type: Object,
@@ -137,7 +138,7 @@ const formData = reactive({
   prompt: ''
 })
 
-// 在 InfoForm.vue 的 setup 中添加
+// 知识库ID
 const knowledgeBaseId = ref(null)
 
 // 监听图谱数据变化，获取知识库ID
@@ -145,8 +146,7 @@ watch(() => props.graphData, (newData) => {
   if (newData && newData.knowledgeBaseId) {
     knowledgeBaseId.value = newData.knowledgeBaseId
   }
-
-  console.log("InfoForm: 获取到知识库id：",knowledgeBaseId.value)
+  console.log("InfoForm: 获取到知识库id：", knowledgeBaseId.value)
 }, { immediate: true })
 
 // 图标选择
@@ -172,13 +172,14 @@ watch(() => props.graphData, (newData) => {
         const fileListData = JSON.parse(newData.filenameList)
         if (fileListData.files && Array.isArray(fileListData.files)) {
           files.value = fileListData.files.map(file => ({
-            id: file.fileId,
+            id: file.file_id,
             name: file.name,
             size: file.size,
             format: file.format,
             status: 'success'
           }))
         }
+        console.log("InfoForm: 文件列表：", files.value)
       } catch (error) {
         console.error('InfoForm: 解析文件列表失败:', error)
         files.value = []
@@ -197,6 +198,7 @@ const handleIconSelect = (icon) => {
 // 表单验证
 const { errors, validateForm } = useFormValidation()
 
+// 文件处理
 const {
   files,
   isUploading,
@@ -207,14 +209,15 @@ const {
   handleDrop,
   handleDragOver,
   resetFiles,
-  uploadFiles, // 添加这个
-  deleteFiles, // 添加这个
-  pendingDeleteFileIds // 添加这个
-} = useFileHandler(graphId)
+  uploadFiles,
+  deleteFiles,
+  pendingDeleteFileIds
+} = useFileHandler(graphId, (processedFiles) => {
+  // 这里处理上传成功后的逻辑
+  console.log('Files uploaded successfully:', processedFiles);
+});
 
 // 表单提交
-// 在 InfoForm.vue 中的 submitForm 方法
-
 const submitForm = async () => {
   try {
     globalError.value = ''
@@ -233,29 +236,30 @@ const submitForm = async () => {
     }
 
     if (isEditing) {
-      // 编辑态：先获取图谱对应的知识库ID
       const graphResponse = await getGraphById(graphId)
       knowledgeBaseId = graphResponse.data.knowledgeBaseId
-
-      // 更新知识库信息
       await knowledgeBaseAPI.updateKnowledgeBase(knowledgeBaseId, formPayload)
+
+      if (pendingDeleteFileIds.value.length > 0) {
+        try {
+          await deleteFiles(graphId)
+        } catch (error) {
+          throw new Error(`删除文件失败: ${error.message}`)
+        }
+      }
     } else {
-      // 创建态：先创建知识库
       const response = await knowledgeBaseAPI.createKnowledgeBase(formPayload)
       knowledgeBaseId = response.data.id
     }
 
-    // 处理文件上传
     if (files.value.length > 0) {
-      await uploadFiles(knowledgeBaseId)
+      try {
+        await uploadFiles(knowledgeBaseId)
+      } catch (error) {
+        throw new Error(`上传文件失败: ${error.message}`)
+      }
     }
 
-    // 处理文件删除
-    if (pendingDeleteFileIds.value.length > 0) {
-      await deleteFiles()
-    }
-
-    // 更新路由
     if (!isEditing) {
       router.push(`/edit/${knowledgeBaseId}`)
     }
@@ -263,7 +267,7 @@ const submitForm = async () => {
     alert(isEditing ? '更新成功' : '创建成功')
   } catch (error) {
     console.error('提交失败:', error)
-    globalError.value = error.response?.data?.message || '操作失败，请稍后重试'
+    globalError.value = error.message || '操作失败，请稍后重试'
   } finally {
     isSubmitting.value = false
   }

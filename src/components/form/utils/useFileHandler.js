@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import {getGraphById, knowledgeBaseAPI} from '../../../api/method'
 
-export function useFileHandler(initialKnowledgeBaseId = null) {
+export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = () => {}) {
     const knowledgeBaseId = ref(initialKnowledgeBaseId)
     const files = ref([])
     const isUploading = ref(false)
@@ -13,23 +13,22 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
     const pendingDeleteFileIds = ref([])
 
     const handleFileUpload = async (event) => {
-        // 检查event参数的格式
         const newFiles = Array.isArray(event) ? event :
             event.target?.files ? Array.from(event.target.files) :
                 event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : [];
 
-        if(newFiles.length === 0) {
+        if (newFiles.length === 0) {
             console.error('No files to upload');
             return;
         }
 
         // 添加文件验证
         const validFiles = [];
-        for(const file of newFiles) {
+        for (const file of newFiles) {
             try {
                 validateFile(file);
                 validFiles.push(file);
-            } catch(error) {
+            } catch (error) {
                 console.error(`文件 ${file.name} 验证失败:`, error.message);
                 uploadError.value = error.message;
             }
@@ -51,34 +50,41 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
         const temp_name = `kb_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 5)}`;
 
         try {
-            // 如果没有知识库ID，可能需要先创建知识库
-            if(!knowledgeBaseId.value) {
+            if (!knowledgeBaseId.value) {
                 const response = await knowledgeBaseAPI.createKnowledgeBase({
-                    name: temp_name, // 这里可以从外部传入
+                    name: temp_name,
                     description: "临时描述",
                 });
                 knowledgeBaseId.value = response.data.id;
             }
+
+            // 上传文件
             await uploadFiles(knowledgeBaseId.value);
+
+            // 上传完成后，通过回调函数通知
+            onUploadSuccess(processedFiles);
         } catch (error) {
             console.error('Upload failed:', error);
             uploadError.value = error.message;
         }
+    };
 
-    }
+    const handleFileDelete = async (fileId) => {
+        try {
+            // 找到要删除的文件
+            const fileToDelete = files.value.find(file => file.id === fileId);
+            if (!fileToDelete) return;
 
-    const handleFileDelete = (fileToDelete) => {
-        console.log('处理文件删除:', fileToDelete)
-        if (fileToDelete.id) {
-            pendingDeleteFileIds.value.push(fileToDelete.id)
+            // 调用后端 API 删除文件
+            await knowledgeBaseAPI.deleteDocument(fileId);
+
+            // 从前端文件列表中移除该文件
+            files.value = files.value.filter(file => file.id !== fileId);
+        } catch (error) {
+            console.error('删除文件失败:', error);
+            throw error;
         }
-
-        pendingUploadFiles.value = pendingUploadFiles.value.filter(
-            file => file.name !== fileToDelete.name
-        )
-
-        files.value = files.value.filter(file => file.name !== fileToDelete.name)
-    }
+    };
 
     const handleDrop = (e) => {
         e.preventDefault();
@@ -152,23 +158,23 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
         }
     }
 
-    const deleteFiles = async () => {
-        if (pendingDeleteFileIds.value.length === 0) return
 
+    const deleteFiles = async (graphId) => {
         try {
-            console.log('开始删除文件:', pendingDeleteFileIds.value)
-            await Promise.all(
-                pendingDeleteFileIds.value.map(fileId =>
-                    knowledgeBaseAPI.deleteDocument(fileId)
-                )
-            )
+            // 只处理待删除队列中的文件
+            const deletePromises = pendingDeleteFileIds.value.map(fileId =>
+                knowledgeBaseAPI.deleteDocument(fileId)
+            );
 
-            pendingDeleteFileIds.value = []
+            await Promise.all(deletePromises);
+
+            // 清空待删除队列
+            pendingDeleteFileIds.value = [];
         } catch (error) {
-            console.error('删除文件失败:', error)
-            throw error
+            console.error('批量删除文件失败:', error);
+            throw error;
         }
-    }
+    };
 
     const updateTotalProgress = () => {
         if (pendingUploadFiles.value.length === 0) {

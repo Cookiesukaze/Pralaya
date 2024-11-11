@@ -111,7 +111,7 @@ export const postChat = async (data, onChunkReceived) => {
     return result;
 };
 
-// useFileHandler.js所有的知识库管理
+// method.js所有的知识库管理
 export const knowledgeBaseAPI = {
 uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
         if (!(formData instanceof FormData)) {
@@ -147,13 +147,39 @@ uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
     },
 
     deleteDocument: async (fileId) => {
-        return axios({
-            url: `/api/knowledge/documents/${fileId}`,
-            method: 'DELETE',
-            config: {
-                headers: {},
-                timeout: 3000
-            }
-        });
+        try {
+            const response = await axios({
+                url: `/api/knowledge/documents/${fileId}`,  // 使用 fileId 删除文件
+                method: 'DELETE',
+                config: {
+                    timeout: 3000
+                }
+            });
+
+            console.log('删除文档响应:', response.data);
+            return response;
+        } catch (error) {
+            console.error('删除文档失败:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // 新增：启用文件删除的后端请求
+    enableDelete: async (fileId) => {
+        try {
+            const response = await axios({
+                url: `/graph/files/${fileId}/enableDelete`,  // 后端的 PATCH 请求路径
+                method: 'PATCH',
+                config: {
+                    timeout: 3000
+                }
+            });
+
+            console.log('删除启用请求响应:', response.data);
+            return response.data;  // 返回响应数据
+        } catch (error) {
+            console.error('启用删除请求失败:', error.response?.data || error.message);
+            throw error;
+        }
     }
 };
