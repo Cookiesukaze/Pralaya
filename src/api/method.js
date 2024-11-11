@@ -113,21 +113,37 @@ export const postChat = async (data, onChunkReceived) => {
 
 // useFileHandler.js所有的知识库管理
 export const knowledgeBaseAPI = {
-    uploadDocument: async (knowledgeBaseId, formData, onProgress) => {
+uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
         if (!(formData instanceof FormData)) {
-            throw new Error('formData must be an instance of FormData');
+            throw new Error('formData must be an instance of FormData')
         }
+        // console.log("上传前的知识库ID：", knowledgeBaseId)  // 上传知识库
+        try {
+            const response = await axios({
+                url: `/api/knowledge/${knowledgeBaseId}/documents`,
+                method: 'post',
+                data: formData,
+                config: {
+                    headers: {},
+                    timeout: 30000,
+                    onUploadProgress: onProgress
+                }
+            })
+        console.log("文件上传返回结果：", response.data)
 
-        return axios({
-            url: `/api/knowledge/${knowledgeBaseId}/documents`,
-            method: 'post',
-            data: formData,
-            config: {
-                headers: {}, // 不设置Content-Type，让axios自动处理
-                timeout: 30000,
-                onUploadProgress: onProgress
-            }
-        });
+        // 2. 然后更新图的文件列表
+        const updateResponse = await axios({
+            url: `/graph/${graphId}/files`,
+            method: 'patch',
+            data: response.data
+        })
+        console.log("更新图文件列表结果：", updateResponse.data)
+
+            return response
+        } catch (error) {
+            console.error("uploadDocument: 文件上传错误：", error)
+            throw error
+        }
     },
 
     deleteDocument: async (fileId) => {

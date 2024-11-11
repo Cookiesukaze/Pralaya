@@ -1,4 +1,5 @@
 import service from "./index"
+
 const axios = ({
                    method,
                    url,
@@ -17,12 +18,15 @@ const axios = ({
         return service.delete(url, {
             params: data,
             ...config
-        }, )
+        })
     } else if (method === 'put') {
-        return service.put(url, data,{...config})
+        return service.put(url, data, {...config})
+    } else if (method === 'patch') {
+        return service.patch(url, data, {...config})
     } else {
         console.error('未知的method' + method)
         return false
     }
 }
+
 export default axios

@@ -116,6 +116,7 @@ export function useFileHandler(initialKnowledgeBaseId = null) {
 
                 const result = await knowledgeBaseAPI.uploadDocument(
                     knowledgeBaseId,
+                    baseId,  // 添加图的ID
                     formData,
                     (progressEvent) => {
                         const percentCompleted = Math.round(
