@@ -133,14 +133,14 @@
       </div>
 
       <!-- 历史记录面板 -->
-      <div v-if="currentTab === 'history'" class="space-y-2">
+      <div v-if="currentTab === 'history'" class="history-panel space-y-2">
         <div v-if="historyList.length === 0" class="text-gray-500 text-center py-4">
           暂无操作记录
         </div>
         <div
             v-for="(item, index) in historyList"
             :key="index"
-            class="p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer group"
+            class="history-item group"
             @click="restoreHistory(index)"
         >
           <div class="flex items-center justify-between">
@@ -166,26 +166,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import G6 from '@antv/g6'
 
-// 状态定义
+// 引用和响应式数据
 const graphContainer = ref(null)
 const graph = ref(null)
-const selectedNode = ref(null)
-const selectedEdge = ref(null)
 const nodes = ref([])
 const currentTab = ref('node')
+const selectedNode = ref(null)
+const selectedEdge = ref(null)
 const historyList = ref([])
 const currentHistoryIndex = ref(-1)
-const maxHistoryLength = 20 // 最大历史记录数量
 
-const tabs = [
-  { id: 'node', name: '节点编辑' },
-  { id: 'edge', name: '关系编辑' },
-  { id: 'history', name: '历史记录' }
-]
-
+// 表单数据
 const nodeForm = ref({
   label: '',
   description: ''
@@ -197,264 +191,251 @@ const edgeForm = ref({
   label: ''
 })
 
-// 初始化图实例
+// 标签页配置
+const tabs = [
+  { id: 'node', name: '节点' },
+  { id: 'edge', name: '关系' },
+  { id: 'history', name: '历史' }
+]
+
+// 从localStorage加载数据
+const loadFromLocalStorage = () => {
+  try {
+    const savedHistory = localStorage.getItem('graphHistory')
+    const savedIndex = localStorage.getItem('graphHistoryIndex')
+
+    if (savedHistory) {
+      historyList.value = JSON.parse(savedHistory)
+      currentHistoryIndex.value = savedIndex ? parseInt(savedIndex) : -1
+
+      // 如果有历史记录，加载最新的状态
+      if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
+        const currentState = historyList.value[currentHistoryIndex.value].data
+        graph.value.changeData(currentState)
+        updateNodesList()
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load history from localStorage:', error)
+  }
+}
+
+// 保存到localStorage
+const saveToLocalStorage = () => {
+  try {
+    localStorage.setItem('graphHistory', JSON.stringify(historyList.value))
+    localStorage.setItem('graphHistoryIndex', currentHistoryIndex.value.toString())
+  } catch (error) {
+    console.error('Failed to save history to localStorage:', error)
+  }
+}
+
+// 监听历史记录变化，自动保存到localStorage
+watch([historyList, currentHistoryIndex], () => {
+  saveToLocalStorage()
+}, { deep: true })
+
+// 初始化图谱
 const initGraph = () => {
-  const width = graphContainer.value.clientWidth
-  const height = graphContainer.value.clientHeight
+  const width = graphContainer.value.offsetWidth
+  const height = graphContainer.value.offsetHeight
 
   graph.value = new G6.Graph({
     container: graphContainer.value,
     width,
     height,
     modes: {
-      default: ['drag-canvas', 'zoom-canvas', 'drag-node', {
-        type: 'click-select',
-        multiple: false,
-      }],
+      default: ['drag-canvas', 'zoom-canvas', 'drag-node']
     },
     defaultNode: {
       type: 'circle',
       size: 40,
-      style: {
-        fill: '#e6f7ff',
-        stroke: '#1890ff',
-        lineWidth: 2,
-      },
       labelCfg: {
-        position: 'bottom',
-        offset: 10,
-        style: {
-          fill: '#333',
-          fontSize: 12,
-        },
+        position: 'bottom'
       },
+      style: {
+        fill: '#fff',
+        stroke: '#91d5ff',
+        lineWidth: 2
+      }
     },
     defaultEdge: {
       type: 'line',
       style: {
-        stroke: '#1890ff',
+        stroke: '#91d5ff',
         lineWidth: 2,
-        endArrow: true,
+        endArrow: true
       },
       labelCfg: {
-        refY: 10,
+        autoRotate: true,
         style: {
-          fill: '#333',
-          fontSize: 12,
-        },
-      },
-    },
+          fill: '#333'
+        }
+      }
+    }
   })
 
-  // 绑定事件
-  graph.value.on('node:click', (evt) => {
-    const node = evt.item
-    selectedNode.value = node
-    selectedEdge.value = null
-    nodeForm.value.label = node.getModel().label || ''
-    nodeForm.value.description = node.getModel().description || ''
-    currentTab.value = 'node'
-  })
+  // 注册事件
+  graph.value.on('node:click', handleNodeClick)
+  graph.value.on('edge:click', handleEdgeClick)
+  graph.value.on('canvas:click', handleCanvasClick)
 
-  graph.value.on('edge:click', (evt) => {
-    const edge = evt.item
-    selectedEdge.value = edge
-    selectedNode.value = null
-    edgeForm.value.label = edge.getModel().label || ''
-    edgeForm.value.source = edge.getSource().getModel().id
-    edgeForm.value.target = edge.getTarget().getModel().id
-    currentTab.value = 'edge'
-  })
+  // 加载保存的数据
+  loadFromLocalStorage()
+}
 
-  graph.value.on('canvas:click', () => {
-    selectedNode.value = null
-    selectedEdge.value = null
-  })
-
-  return graph.value
+// 更新节点列表
+const updateNodesList = () => {
+  nodes.value = graph.value.getNodes().map(node => ({
+    id: node.getID(),
+    label: node.getModel().label
+  }))
 }
 
 // 节点操作
 const addNode = () => {
   if (!nodeForm.value.label) return
 
+  // 获取画布中心点
+  const centerX = graph.value.get('width') / 2
+  const centerY = graph.value.get('height') / 2
+
+  // 在中心点附近随机生成位置
+  const randomOffset = () => Math.random() * 200 - 100 // 随机偏移量±100
+
   const node = {
     id: `node-${Date.now()}`,
-    label: nodeForm.value.label,
-    description: nodeForm.value.description,
-    x: Math.random() * graphContainer.value.clientWidth,
-    y: Math.random() * graphContainer.value.clientHeight,
+    ...nodeForm.value,
+    x: centerX + randomOffset(),
+    y: centerY + randomOffset()
   }
 
   graph.value.addItem('node', node)
-  addToHistory(`添加节点: ${node.label}`)
   updateNodesList()
+  addToHistory('添加节点')
   nodeForm.value = { label: '', description: '' }
 }
 
 const updateNode = () => {
-  if (!selectedNode.value) return
-
-  graph.value.updateItem(selectedNode.value, {
-    label: nodeForm.value.label,
-    description: nodeForm.value.description,
-  })
-
-  addToHistory(`更新节点: ${nodeForm.value.label}`)
+  if (!selectedNode.value || !nodeForm.value.label) return
+  graph.value.updateItem(selectedNode.value, nodeForm.value)
+  addToHistory('更新节点')
+  selectedNode.value = null
+  nodeForm.value = { label: '', description: '' }
 }
 
 const deleteNode = () => {
   if (!selectedNode.value) return
-
-  const nodeModel = selectedNode.value.getModel()
   graph.value.removeItem(selectedNode.value)
-  addToHistory(`删除节点: ${nodeModel.label}`)
-  selectedNode.value = null
   updateNodesList()
+  addToHistory('删除节点')
+  selectedNode.value = null
   nodeForm.value = { label: '', description: '' }
 }
 
 // 边操作
 const addEdge = () => {
   if (!edgeForm.value.source || !edgeForm.value.target || !edgeForm.value.label) return
-
   const edge = {
-    source: edgeForm.value.source,
-    target: edgeForm.value.target,
-    label: edgeForm.value.label,
     id: `edge-${Date.now()}`,
+    ...edgeForm.value
   }
-
   graph.value.addItem('edge', edge)
-  addToHistory(`添加关系: ${edge.label}`)
+  addToHistory('添加关系')
   edgeForm.value = { source: '', target: '', label: '' }
 }
 
 const updateEdge = () => {
-  if (!selectedEdge.value) return
-
-  graph.value.updateItem(selectedEdge.value, {
-    label: edgeForm.value.label,
-  })
-
-  addToHistory(`更新关系: ${edgeForm.value.label}`)
-}
-
-const deleteEdge = () => {
-  if (!selectedEdge.value) return
-
-  const edgeModel = selectedEdge.value.getModel()
-  graph.value.removeItem(selectedEdge.value)
-  addToHistory(`删除关系: ${edgeModel.label}`)
+  if (!selectedEdge.value || !edgeForm.value.label) return
+  graph.value.updateItem(selectedEdge.value, { label: edgeForm.value.label })
+  addToHistory('更新关系')
   selectedEdge.value = null
   edgeForm.value = { source: '', target: '', label: '' }
 }
 
-// 历史记录相关方法
-const addToHistory = (action) => {
-  const timestamp = new Date().toLocaleString()
-  const graphData = graph.value.save()
+const deleteEdge = () => {
+  if (!selectedEdge.value) return
+  graph.value.removeItem(selectedEdge.value)
+  addToHistory('删除关系')
+  selectedEdge.value = null
+  edgeForm.value = { source: '', target: '', label: '' }
+}
 
-  if (currentHistoryIndex.value !== -1 && currentHistoryIndex.value < historyList.value.length - 1) {
+// 事件处理
+const handleNodeClick = (e) => {
+  const node = e.item
+  selectedNode.value = node
+  selectedEdge.value = null
+  const model = node.getModel()
+  nodeForm.value = {
+    label: model.label,
+    description: model.description || ''
+  }
+  currentTab.value = 'node'
+}
+
+const handleEdgeClick = (e) => {
+  const edge = e.item
+  selectedEdge.value = edge
+  selectedNode.value = null
+  const model = edge.getModel()
+  edgeForm.value = {
+    source: model.source,
+    target: model.target,
+    label: model.label
+  }
+  currentTab.value = 'edge'
+}
+
+const handleCanvasClick = () => {
+  selectedNode.value = null
+  selectedEdge.value = null
+  nodeForm.value = { label: '', description: '' }
+  edgeForm.value = { source: '', target: '', label: '' }
+}
+
+// 历史记录操作
+const addToHistory = (action) => {
+  const data = {
+    nodes: graph.value.save().nodes || [],
+    edges: graph.value.save().edges || []
+  }
+
+  // 如果当前不是最新状态，删除当前状态之后的所有记录
+  if (currentHistoryIndex.value !== historyList.value.length - 1) {
     historyList.value = historyList.value.slice(0, currentHistoryIndex.value + 1)
   }
 
-  historyList.value.unshift({
+  historyList.value.push({
+    timestamp: new Date().toLocaleTimeString(),
     action,
-    timestamp,
-    data: graphData
+    data
   })
 
-  if (historyList.value.length > maxHistoryLength) {
-    historyList.value = historyList.value.slice(0, maxHistoryLength)
-  }
-
-  currentHistoryIndex.value = 0
+  currentHistoryIndex.value = historyList.value.length - 1
+  saveToLocalStorage() // 保存到localStorage
 }
 
 const restoreHistory = (index) => {
-  if (index === currentHistoryIndex.value) return
-
-  try {
-    const historyItem = historyList.value[index]
-    graph.value.clear()
-    graph.value.data(historyItem.data)
-    graph.value.render()
-    updateNodesList()
-    currentHistoryIndex.value = index
-  } catch (error) {
-    console.error('恢复历史状态失败:', error)
-  }
+  const historyData = historyList.value[index].data
+  graph.value.changeData(historyData)
+  updateNodesList()
+  currentHistoryIndex.value = index
+  saveToLocalStorage() // 保存当前状态索引
 }
 
 const deleteHistory = (index) => {
-  if (index < currentHistoryIndex.value) {
-    currentHistoryIndex.value--
-  } else if (index === currentHistoryIndex.value) {
-    currentHistoryIndex.value = index === 0 ? 0 : index - 1
-    if (historyList.value.length > 1) {
-      const nearestHistory = historyList.value[currentHistoryIndex.value]
-      graph.value.clear()
-      graph.value.data(nearestHistory.data)
-      graph.value.render()
-      updateNodesList()
-    }
-  }
-
   historyList.value.splice(index, 1)
-
-  if (historyList.value.length === 0) {
-    currentHistoryIndex.value = -1
-    graph.value.clear()
-    updateNodesList()
+  if (currentHistoryIndex.value >= index) {
+    currentHistoryIndex.value--
   }
-}
-
-// 辅助函数
-const updateNodesList = () => {
-  nodes.value = graph.value.getNodes().map(node => node.getModel())
-}
-
-const handleResize = () => {
-  if (!graph.value || graph.value.destroyed) return
-  if (!graphContainer.value) return
-  graph.value.changeSize(
-      graphContainer.value.clientWidth,
-      graphContainer.value.clientHeight
-  )
-}
-
-// 快捷键处理
-const handleKeyDown = (e) => {
-  if (e.ctrlKey && e.key === 'z') {
-    e.preventDefault()
-    if (currentHistoryIndex.value < historyList.value.length - 1) {
-      restoreHistory(currentHistoryIndex.value + 1)
-    }
-  }
-  if (e.ctrlKey && e.key === 'y') {
-    e.preventDefault()
-    if (currentHistoryIndex.value > 0) {
-      restoreHistory(currentHistoryIndex.value - 1)
-    }
-  }
+  saveToLocalStorage() // 保存更改后的历史记录
 }
 
 // 生命周期钩子
 onMounted(() => {
   nextTick(() => {
     initGraph()
-    addToHistory('初始状态')
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('keydown', handleKeyDown)
   })
-})
-
-onUnmounted(() => {
-  if (graph.value) {
-    graph.value.destroy()
-  }
-  window.removeEventListener('resize', handleResize)
-  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
