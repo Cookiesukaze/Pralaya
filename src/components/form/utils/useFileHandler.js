@@ -165,7 +165,7 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
             pendingUploadFiles.value = []
 
             // **页面刷新：文件上传完成后刷新页面**
-            window.location.reload(); // 添加这行代码来刷新页面
+            // window.location.reload(); // 添加这行代码来刷新页面
 
             return uploadResults
         } catch (error) {

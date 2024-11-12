@@ -185,6 +185,52 @@ uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
             });
             throw error;
         }
+    },
+    createKnowledgeBase: async (data) => {
+        try {
+            const formData = new URLSearchParams();
+            formData.append('name', data.name);
+            formData.append('description', data.description);
+            formData.append('embeddingId', data.embeddingId);
+
+            const response = await axios({
+                url: '/api/knowledge',
+                method: 'POST',
+                data: formData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                config: {
+                    timeout: 3000
+                }
+            });
+
+            console.log('创建知识库响应:', response.data);
+            return response;
+        } catch (error) {
+            console.error('创建知识库失败:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw error;
+        }
     }
 
 };
+
+export const createEmptyGraph = () => {
+    return axios({
+        url: "/graph",
+        method: "POST",
+        data: {
+            name: "新的图谱",
+            description: "",
+            embeddingId: "3"
+        },
+        config: {
+            headers: {},
+            timeout: 3000
+        }
+    });
+}
