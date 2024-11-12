@@ -124,7 +124,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('fullscreenchange', onFullscreenChange);
 });
 
-const updateGraphSizeMethod = () => {
+const updateGraphSizeMethod = () => { //不能直接把graphUtils的更新size拿来暴露，会丢失上下文
   console.log('KnowledgeGraph: updateGraphSizeMethod called');
   if (graph && knowledgeGraphRef.value) {
     updateGraphSize(graph, knowledgeGraphRef, outerContainer);

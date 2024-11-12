@@ -109,14 +109,19 @@ document.addEventListener('fullscreenchange', () => {
   setTimeout(()=>{refreshGraph();},200) //强制刷新一次
 });
 
-
+const updateGraphSizeMethod = () => {
+  console.log('TreeGraph: updateGraphSizeMethod called');
+  if (graph && treeGraphRef.value) {
+    updateGraphSize(graph, treeGraphRef, outerContainer);
+  }
+};
 // 暴露方法
 defineExpose({
-  updateGraphSize,
+  updateGraphSize: updateGraphSizeMethod,
   refreshGraph,
   toggleFullscreen: handleToggleFullscreen,
-
 });
+
 
 // 生命周期钩子：挂载时加载数据
 onMounted(() => {

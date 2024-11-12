@@ -340,8 +340,8 @@ const getEdgeTooltipBehavior = () => ({
 export const updateGraphSize = async (graph, graphRef, containerRef) => {
     if (graph && graphRef) {
         await nextTick();
-        const width = graphRef.value.clientWidth;
-        // const height = containerRef.value.clientHeight;
+        const width = containerRef.value.clientWidth;
+        const height = graphRef.value.clientHeight;
         graph.changeSize(width, height);
         graph.fitCenter();
     }
