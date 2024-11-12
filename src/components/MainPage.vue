@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import {ref, computed, onMounted, onBeforeUnmount, nextTick} from 'vue';
 import Sidebar from './MainPage/Sidebar.vue';
 import CourseGraph from './MainPage/CourseGraph.vue';
 import Topbar from './MainPage/Topbar.vue';
@@ -104,11 +104,18 @@ const calculateCourseGraphStyle = () => {
 const courseGraphStyle = ref(calculateCourseGraphStyle());
 
 const updateGraphSize = () => {
+  console.log('MainPage: updateGraphSize called'); // 添加日志
   courseGraphStyle.value = calculateCourseGraphStyle();
-  if (mainCourseGraphRef.value && typeof mainCourseGraphRef.value.updateGraphSize === 'function') { // 使用 mainCourseGraphRef
-    mainCourseGraphRef.value.updateGraphSize();  // 只有存在该函数时才调用
-  } else {
-    // console.warn('MainPage: No updateGraphSize method available on the current graph component');
+  console.log('mainCourseGraphRef:', mainCourseGraphRef.value); // 检查引用
+  if (mainCourseGraphRef.value) {
+    nextTick(() => {
+      console.log('MainPage: Attempting to call CourseGraph updateGraphSize');
+      if (typeof mainCourseGraphRef.value.updateGraphSize === 'function') {
+        mainCourseGraphRef.value.updateGraphSize();
+      } else {
+        console.log('MainPage: updateGraphSize is not a function');
+      }
+    });
   }
 };
 

@@ -69,6 +69,10 @@ const updateGraphSize = () => {
 onMounted(() => {
   console.log('CourseGraph: Initial graphs:', props.graphs);
 });
+
+defineExpose({
+  updateGraphSize
+});
 </script>
 
 <style scoped>

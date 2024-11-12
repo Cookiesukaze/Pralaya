@@ -124,9 +124,15 @@ onBeforeUnmount(() => {
   document.removeEventListener('fullscreenchange', onFullscreenChange);
 });
 
+const updateGraphSizeMethod = () => {
+  console.log('KnowledgeGraph: updateGraphSizeMethod called');
+  if (graph && knowledgeGraphRef.value) {
+    updateGraphSize(graph, knowledgeGraphRef, outerContainer);
+  }
+};
 // 暴露方法
 defineExpose({
-  updateGraphSize,
+  updateGraphSize: updateGraphSizeMethod,
   refreshGraph,
   toggleFullscreen: handleToggleFullscreen,
 });
