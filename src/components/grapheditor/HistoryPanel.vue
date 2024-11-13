@@ -1,3 +1,4 @@
+<!--HistoryPanel.vue-->
 <template>
   <div class="history-panel space-y-2">
     <div v-if="historyList.length === 0" class="text-gray-500 text-center py-4">

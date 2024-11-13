@@ -14,6 +14,12 @@ export default function useEdgeForm() {
     const { graph, nodes, updateNodesList } = useGraph()
     const { addToHistory } = useHistory()
 
+    // 获取节点标签
+    const getNodeLabel = (nodeId) => {
+        const node = graph.value.findById(nodeId)
+        return node ? node.get('model').label : nodeId
+    }
+
     // 添加边
     const addEdge = () => {
         if (!edgeForm.value.source || !edgeForm.value.target || !edgeForm.value.label) return
@@ -23,11 +29,12 @@ export default function useEdgeForm() {
             ...edgeForm.value
         }
 
-        // 添加边到图
-        graph.value.addItem('edge', edge)
-        addToHistory('添加关系')
+        const sourceLabel = getNodeLabel(edgeForm.value.source)
+        const targetLabel = getNodeLabel(edgeForm.value.target)
 
-        // 清空表单
+        graph.value.addItem('edge', edge)
+        addToHistory(`添加关系: "${sourceLabel}" ${edgeForm.value.label} "${targetLabel}"`)
+
         edgeForm.value = { source: '', target: '', label: '' }
     }
 
@@ -35,11 +42,14 @@ export default function useEdgeForm() {
     const updateEdge = () => {
         if (!selectedEdge.value || !edgeForm.value.label) return
 
-        // 更新选中的边
-        graph.value.updateItem(selectedEdge.value, { label: edgeForm.value.label })
-        addToHistory('更新关系')
+        const edge = graph.value.findById(selectedEdge.value)
+        const oldLabel = edge.get('model').label
+        const sourceLabel = getNodeLabel(edge.get('source'))
+        const targetLabel = getNodeLabel(edge.get('target'))
 
-        // 清空选中状态和表单
+        graph.value.updateItem(selectedEdge.value, { label: edgeForm.value.label })
+        addToHistory(`更新关系: "${sourceLabel}" 的关系从 "${oldLabel}" 改为 "${edgeForm.value.label}" "${targetLabel}"`)
+
         selectedEdge.value = null
         edgeForm.value = { source: '', target: '', label: '' }
     }
@@ -48,11 +58,14 @@ export default function useEdgeForm() {
     const deleteEdge = () => {
         if (!selectedEdge.value) return
 
-        // 删除选中的边
-        graph.value.removeItem(selectedEdge.value)
-        addToHistory('删除关系')
+        const edge = graph.value.findById(selectedEdge.value)
+        const sourceLabel = getNodeLabel(edge.get('source'))
+        const targetLabel = getNodeLabel(edge.get('target'))
+        const edgeLabel = edge.get('model').label
 
-        // 清空选中状态和表单
+        graph.value.removeItem(selectedEdge.value)
+        addToHistory(`删除关系: "${sourceLabel}" ${edgeLabel} "${targetLabel}"`)
+
         selectedEdge.value = null
         edgeForm.value = { source: '', target: '', label: '' }
     }

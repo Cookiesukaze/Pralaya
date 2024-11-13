@@ -1,3 +1,4 @@
+<!--GraphEditor.vue-->
 <template>
   <div class="h-screen bg-white shadow-lg">
     <GraphContainer />

@@ -1,3 +1,4 @@
+// ./utils/useNodeForm.js
 import { ref } from 'vue'
 import useGraph from './useGraph'
 import useHistory from './useHistory'
@@ -17,10 +18,8 @@ export default function useNodeForm() {
     const addNode = () => {
         if (!nodeForm.value.label) return
 
-        // 获取画布中心点
         const centerX = graph.value.get('width') / 2
         const centerY = graph.value.get('height') / 2
-
         // 在中心点附近随机生成位置
         const randomOffset = () => Math.random() * 200 - 100 // 随机偏移量±100
 
@@ -31,14 +30,12 @@ export default function useNodeForm() {
             y: centerY + randomOffset()
         }
 
-        // 添加节点到图
         graph.value.addItem('node', node)
         updateNodesList()
 
-        // 添加到历史记录
-        addToHistory('添加节点')
+        // 添加更详细的历史记录
+        addToHistory(`添加节点 "${nodeForm.value.label}"`)
 
-        // 清空表单
         nodeForm.value = { label: '', description: '' }
     }
 
@@ -46,11 +43,12 @@ export default function useNodeForm() {
     const updateNode = () => {
         if (!selectedNode.value || !nodeForm.value.label) return
 
-        // 更新选中的节点
+        const oldLabel = graph.value.findById(selectedNode.value).get('model').label
         graph.value.updateItem(selectedNode.value, nodeForm.value)
-        addToHistory('更新节点')
 
-        // 清空选中状态和表单
+        // 添加更详细的历史记录
+        addToHistory(`更新节点 "${oldLabel}" → "${nodeForm.value.label}"`)
+
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }
     }
@@ -59,14 +57,13 @@ export default function useNodeForm() {
     const deleteNode = () => {
         if (!selectedNode.value) return
 
-        // 删除选中的节点
+        const nodeLabel = graph.value.findById(selectedNode.value).get('model').label
         graph.value.removeItem(selectedNode.value)
         updateNodesList()
 
-        // 添加到历史记录
-        addToHistory('删除节点')
+        // 添加更详细的历史记录
+        addToHistory(`删除节点 "${nodeLabel}"`)
 
-        // 清空选中状态和表单
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }
     }
