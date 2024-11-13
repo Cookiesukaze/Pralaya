@@ -1,3 +1,4 @@
+// ./utils/useGraph.js
 import { ref } from 'vue'
 import G6 from '@antv/g6'
 
@@ -41,6 +42,24 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                         fill: '#333'
                     }
                 }
+            },
+            // 定义选中状态的样式
+            nodeStateStyles: {
+                selected: {
+                    fill: '#f6ffed',
+                    stroke: '#52c41a',
+                    lineWidth: 3
+                }
+            },
+            edgeStateStyles: {
+                selected: {
+                    stroke: '#52c41a',
+                    lineWidth: 3,
+                    endArrow: {
+                        path: G6.Arrow.triangle(10, 10, 10),
+                        fill: '#52c41a'
+                    }
+                }
             }
         })
 
@@ -64,6 +83,13 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     // 事件处理
     const handleNodeClick = (e) => {
         const node = e.item
+
+        // 更新选中状态样式
+        graph.value.setItemState(node, 'selected', true)
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false)
+        }
+
         selectedNode.value = node
         selectedEdge.value = null
         const model = node.getModel()
@@ -76,6 +102,12 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
 
     const handleEdgeClick = (e) => {
         const edge = e.item
+
+        graph.value.setItemState(edge, 'selected', true)
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false)
+        }
+
         selectedEdge.value = edge
         selectedNode.value = null
         const model = edge.getModel()
@@ -88,8 +120,14 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     }
 
     const handleCanvasClick = () => {
-        selectedNode.value = null
-        selectedEdge.value = null
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false)
+            selectedNode.value = null
+        }
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false)
+            selectedEdge.value = null
+        }
         nodeForm.value = { label: '', description: '' }
         edgeForm.value = { source: '', target: '', label: '' }
     }
