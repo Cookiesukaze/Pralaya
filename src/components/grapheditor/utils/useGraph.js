@@ -4,7 +4,7 @@ import G6 from '@antv/g6'
 const graph = ref(null)
 const nodes = ref([])
 
-export default function useGraph(graphContainer) {
+export default function useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab) {
     const initGraph = () => {
         const width = graphContainer.value.offsetWidth
         const height = graphContainer.value.offsetHeight
@@ -61,7 +61,38 @@ export default function useGraph(graphContainer) {
         }))
     }
 
-    // 事件处理函数可以在其他地方定义，省略以保持简洁
+    // 事件处理
+    const handleNodeClick = (e) => {
+        const node = e.item
+        selectedNode.value = node
+        selectedEdge.value = null
+        const model = node.getModel()
+        nodeForm.value = {
+            label: model.label,
+            description: model.description || ''
+        }
+        currentTab.value = 'node'
+    }
+
+    const handleEdgeClick = (e) => {
+        const edge = e.item
+        selectedEdge.value = edge
+        selectedNode.value = null
+        const model = edge.getModel()
+        edgeForm.value = {
+            source: model.source,
+            target: model.target,
+            label: model.label
+        }
+        currentTab.value = 'edge'
+    }
+
+    const handleCanvasClick = () => {
+        selectedNode.value = null
+        selectedEdge.value = null
+        nodeForm.value = { label: '', description: '' }
+        edgeForm.value = { source: '', target: '', label: '' }
+    }
 
     return { graph, nodes, initGraph, updateNodesList }
 }

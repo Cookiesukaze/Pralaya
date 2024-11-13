@@ -1,5 +1,6 @@
 <template>
   <div class="space-y-4">
+    <!-- 起始节点选择框 -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">起始节点</label>
       <select
@@ -12,6 +13,8 @@
         </option>
       </select>
     </div>
+
+    <!-- 目标节点选择框 -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">目标节点</label>
       <select
@@ -24,6 +27,8 @@
         </option>
       </select>
     </div>
+
+    <!-- 关系输入框 -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">关系</label>
       <input
@@ -32,6 +37,8 @@
           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
       />
     </div>
+
+    <!-- 按钮组：添加关系、更新关系、删除关系 -->
     <div class="flex space-x-2">
       <button
           @click="addEdge"
@@ -58,8 +65,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+// 从全局状态 store.js 中导入 edgeForm 和 selectedEdge
+import { edgeForm, selectedEdge } from './utils/store'
+
+// 继续从 useEdgeForm 中导入边的操作函数
 import useEdgeForm from './utils/useEdgeForm'
 
-const { edgeForm, nodes, selectedEdge, addEdge, updateEdge, deleteEdge } = useEdgeForm()
+const { nodes, addEdge, updateEdge, deleteEdge } = useEdgeForm()
 </script>

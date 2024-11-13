@@ -3,28 +3,30 @@
 </template>
 
 <script setup>
-import {onMounted, ref, nextTick, watch, toRefs} from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import useGraph from './utils/useGraph'
 
+// 导入 store 中的全局状态
+import { selectedNode, selectedEdge, nodeForm, edgeForm, currentTab } from './utils/store.js'
+
 const graphContainer = ref(null)
-const {initGraph} = useGraph(graphContainer)
 
-const props = defineProps(['graphData']);
+const props = defineProps(['graphData'])
 
-// Destructure content from graphData
-const {content} = toRefs(props.graphData);
-
-// Watch content for changes
-watch(content, (newContent, oldContent) => {
-  console.log('GraphEditor:GraphContainer图数据更新:', oldContent, '->', newContent);
-  // Reinitialize or update your graph here if needed
-});
+const { initGraph } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab)
 
 onMounted(() => {
-  nextTick(() => {
-    console.log('GraphEditor:GraphContainer拿到图数据:', content.value);
-
-    initGraph()
-  })
+  watch(
+      () => props.graphData,
+      (newData) => {
+        if (newData) {
+          console.log('GraphEditor:get data:', newData) // 打印 graphData
+          nextTick(() => {
+            initGraph()
+          })
+        }
+      },
+      { immediate: true }
+  )
 })
 </script>

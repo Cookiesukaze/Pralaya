@@ -1,14 +1,7 @@
-import { ref } from 'vue'
+// ./utils/useEdgeForm.js
+import { edgeForm, selectedEdge } from './store'  // 从 store.js 导入全局状态
 import useGraph from './useGraph'
 import useHistory from './useHistory'
-
-const edgeForm = ref({
-    source: '',
-    target: '',
-    label: ''
-})
-
-const selectedEdge = ref(null)
 
 export default function useEdgeForm() {
     const { graph, nodes, updateNodesList } = useGraph()
@@ -35,7 +28,7 @@ export default function useEdgeForm() {
         graph.value.addItem('edge', edge)
         addToHistory(`添加关系: "${sourceLabel}" ${edgeForm.value.label} "${targetLabel}"`)
 
-        edgeForm.value = { source: '', target: '', label: '' }
+        edgeForm.value = { source: '', target: '', label: '' }  // 重置表单
     }
 
     // 更新边
@@ -51,7 +44,7 @@ export default function useEdgeForm() {
         addToHistory(`更新关系: "${sourceLabel}" 的关系从 "${oldLabel}" 改为 "${edgeForm.value.label}" "${targetLabel}"`)
 
         selectedEdge.value = null
-        edgeForm.value = { source: '', target: '', label: '' }
+        edgeForm.value = { source: '', target: '', label: '' }  // 重置表单
     }
 
     // 删除边
@@ -67,8 +60,8 @@ export default function useEdgeForm() {
         addToHistory(`删除关系: "${sourceLabel}" ${edgeLabel} "${targetLabel}"`)
 
         selectedEdge.value = null
-        edgeForm.value = { source: '', target: '', label: '' }
+        edgeForm.value = { source: '', target: '', label: '' }  // 重置表单
     }
 
-    return { edgeForm, nodes, selectedEdge, addEdge, updateEdge, deleteEdge }
+    return { nodes, addEdge, updateEdge, deleteEdge }
 }

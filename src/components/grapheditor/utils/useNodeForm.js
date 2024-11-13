@@ -1,14 +1,7 @@
 // ./utils/useNodeForm.js
-import { ref } from 'vue'
+import { nodeForm, selectedNode } from './store'  // 从 store.js 导入全局状态
 import useGraph from './useGraph'
 import useHistory from './useHistory'
-
-const nodeForm = ref({
-    label: '',
-    description: ''
-})
-
-const selectedNode = ref(null)
 
 export default function useNodeForm() {
     const { graph, updateNodesList } = useGraph()
@@ -36,7 +29,7 @@ export default function useNodeForm() {
         // 添加更详细的历史记录
         addToHistory(`添加节点 "${nodeForm.value.label}"`)
 
-        nodeForm.value = { label: '', description: '' }
+        nodeForm.value = { label: '', description: '' }  // 清空表单
     }
 
     // 更新节点
@@ -50,7 +43,7 @@ export default function useNodeForm() {
         addToHistory(`更新节点 "${oldLabel}" → "${nodeForm.value.label}"`)
 
         selectedNode.value = null
-        nodeForm.value = { label: '', description: '' }
+        nodeForm.value = { label: '', description: '' }  // 重置表单
     }
 
     // 删除节点
@@ -65,8 +58,8 @@ export default function useNodeForm() {
         addToHistory(`删除节点 "${nodeLabel}"`)
 
         selectedNode.value = null
-        nodeForm.value = { label: '', description: '' }
+        nodeForm.value = { label: '', description: '' }  // 重置表单
     }
 
-    return { nodeForm, selectedNode, addNode, updateNode, deleteNode }
+    return { addNode, updateNode, deleteNode }
 }
