@@ -21,7 +21,7 @@
     <!-- 预留区域 -->
     <div class="w-2/5 h-screen">
       <!-- 预留区域内容 -->
-      <GraphEditor></GraphEditor>
+      <GraphEditor :graphData="graphData" />
     </div>
   </div>
 </template>

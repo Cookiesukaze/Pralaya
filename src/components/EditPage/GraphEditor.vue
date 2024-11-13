@@ -1,7 +1,7 @@
 <!--GraphEditor.vue-->
 <template>
   <div class="h-screen bg-white shadow-lg">
-    <GraphContainer />
+    <GraphContainer :graphData="graphData" />
     <div class="h-2/5 overflow-y-auto p-4">
       <div class="flex space-x-4 border-b border-gray-200 mb-4">
         <button
@@ -32,6 +32,9 @@ import GraphContainer from '../grapheditor/GraphContainer.vue'
 import NodeEditor from '../grapheditor/NodeEditor.vue'
 import EdgeEditor from '../grapheditor/EdgeEditor.vue'
 import HistoryPanel from '../grapheditor/HistoryPanel.vue'
+
+const props = defineProps(['graphData']);
+
 
 // 当前选中的标签页
 const currentTab = ref('node')
