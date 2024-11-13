@@ -84,7 +84,18 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     const handleNodeClick = (e) => {
         const node = e.item
 
-        // 更新选中状态样式
+        // 清除上一个选中的边
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false)
+            selectedEdge.value = null
+        }
+
+        // 清除上一个选中的节点
+        if (selectedNode.value && selectedNode.value !== node) {
+            graph.value.setItemState(selectedNode.value, 'selected', false)
+        }
+
+        // 更新当前选中的节点状态
         graph.value.setItemState(node, 'selected', true)
         if (selectedNode.value) {
             graph.value.setItemState(selectedNode.value, 'selected', false)
@@ -103,11 +114,19 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     const handleEdgeClick = (e) => {
         const edge = e.item
 
-        graph.value.setItemState(edge, 'selected', true)
-        if (selectedEdge.value) {
+        // 清除上一个选中的节点
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false)
+            selectedNode.value = null
+        }
+
+        // 清除上一个选中的边
+        if (selectedEdge.value && selectedEdge.value !== edge) {
             graph.value.setItemState(selectedEdge.value, 'selected', false)
         }
 
+        // 更新当前选中的边状态
+        graph.value.setItemState(edge, 'selected', true)
         selectedEdge.value = edge
         selectedNode.value = null
         const model = edge.getModel()
