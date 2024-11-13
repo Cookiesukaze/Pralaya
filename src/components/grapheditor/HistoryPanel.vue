@@ -7,22 +7,27 @@
         v-for="(item, index) in historyList"
         :key="index"
         class="history-item group"
-        @click="restoreHistory(index)"
     >
       <div class="flex items-center justify-between">
         <span class="text-sm text-gray-600">{{ item.timestamp }}</span>
         <button
-            @click.stop="deleteHistory(index)"
+            @click="rollbackToHistory(index)"
+            class="text-blue-500 hover:underline"
+        >
+          回滚
+        </button>
+        <button
+            @click="deleteHistoryAfter(index)"
             class="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           删除
         </button>
       </div>
-      <div class="text-sm font-medium mt-1">{{ item.action }}</div>
-      <div
-          v-if="currentHistoryIndex === index"
-          class="text-xs text-blue-500 mt-1"
-      >
+      <div class="text-sm font-medium">
+        {{ item.action }}
+      </div>
+      <!-- 指示当前版本 -->
+      <div v-if="isCurrentVersion(index)" class="text-xs text-blue-500">
         当前版本
       </div>
     </div>
@@ -30,7 +35,30 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import useHistory from './utils/useHistory'
 
-const { historyList, currentHistoryIndex, restoreHistory, deleteHistory } = useHistory()
+const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter } = useHistory()
+
+// 判断当前索引是否是“当前版本”
+const isCurrentVersion = (index) => {
+  // 直接比较当前索引和 currentHistoryIndex
+  return currentHistoryIndex.value === index
+}
 </script>
+
+<style scoped>
+.history-item {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+}
+
+.history-item:hover {
+  background-color: #f1f5f9;
+}
+
+.group:hover .opacity-0 {
+  opacity: 1;
+}
+</style>

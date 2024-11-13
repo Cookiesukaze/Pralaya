@@ -31,17 +31,26 @@ export default function useNodeForm() {
             y: centerY + randomOffset()
         }
 
+        // 添加节点到图
         graph.value.addItem('node', node)
         updateNodesList()
+
+        // 添加到历史记录
         addToHistory('添加节点')
+
+        // 清空表单
         nodeForm.value = { label: '', description: '' }
     }
 
     // 更新节点
     const updateNode = () => {
         if (!selectedNode.value || !nodeForm.value.label) return
+
+        // 更新选中的节点
         graph.value.updateItem(selectedNode.value, nodeForm.value)
         addToHistory('更新节点')
+
+        // 清空选中状态和表单
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }
     }
@@ -49,9 +58,15 @@ export default function useNodeForm() {
     // 删除节点
     const deleteNode = () => {
         if (!selectedNode.value) return
+
+        // 删除选中的节点
         graph.value.removeItem(selectedNode.value)
         updateNodesList()
+
+        // 添加到历史记录
         addToHistory('删除节点')
+
+        // 清空选中状态和表单
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }
     }
