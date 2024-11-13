@@ -33,11 +33,11 @@ import GraphContainer from '../grapheditor/GraphContainer.vue'
 import NodeEditor from '../grapheditor/NodeEditor.vue'
 import EdgeEditor from '../grapheditor/EdgeEditor.vue'
 import HistoryPanel from '../grapheditor/HistoryPanel.vue'
-
-const props = defineProps(['graphData'])
+import { currentTab } from '../grapheditor/utils/store'
 
 // 当前选中的标签页
-const currentTab = ref('node')
+const props = defineProps(['graphData'])
+// const currentTab = ref('node')
 
 // 标签页配置
 const tabs = [
