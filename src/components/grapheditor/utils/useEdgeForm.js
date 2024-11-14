@@ -8,25 +8,28 @@ export default function useEdgeForm() {
     const { addToHistory } = useHistory()
 
     // 获取节点标签
-    const getNodeLabel = (nodeId) => {
-        // 防御性代码，检查 nodeId 是否有效
+    const getNodeLabel = (nodeIdOrObject) => {
+        // 如果传入的是对象，尝试获取其 ID
+        const nodeId = typeof nodeIdOrObject === 'object' ? nodeIdOrObject.id : nodeIdOrObject;
+
+        // 防御性代码：检查 nodeId 是否有效
         if (!nodeId) {
-            console.error('Invalid nodeId:', nodeId)
-            return 'Unknown'
+            console.error('Invalid nodeId:', nodeIdOrObject);
+            return 'undefined';  // 返回 'undefined' 作为默认值
         }
 
         // 查找节点
-        const node = graph.value.findById(nodeId)
+        const node = graph.value.findById(nodeId);
 
         // 检查 node 是否存在
         if (!node) {
-            console.error('Node not found:', nodeId)
-            return nodeId // 返回 nodeId 作为默认标签
+            console.error('Node not found:', nodeId);
+            return 'undefined'; // 返回 'undefined' 作为默认值
         }
 
-        // 返回节点的标签
-        return node.get('model').label || nodeId
-    }
+        // 返回节点的 label，如果没有 label，返回 nodeId
+        return node.get('model').label || nodeId;
+    };
 
     // 添加边
     const addEdge = () => {
@@ -48,83 +51,88 @@ export default function useEdgeForm() {
 
     // 更新边
     const updateEdge = () => {
-        // 检查 selectedEdge 是否存在，并且 edgeForm.label 是否有效
-        if (!selectedEdge.value || !edgeForm.value.label) return
+        if (!selectedEdge.value || !edgeForm.value.label) return;
 
-        // 获取边的 ID
-        const edgeId = selectedEdge.value.getID()
+        const edgeId = selectedEdge.value.getID();
+        const edge = graph.value.findById(edgeId);
 
-        // 获取边对象
-        const edge = graph.value.findById(edgeId)
-
-        // 检查边是否存在
         if (!edge) {
-            console.error('Edge not found:', edgeId)
-            return
+            console.error('Edge not found:', edgeId);
+            return;
         }
 
-        // 检查边的 source 和 target 是否存在
-        const source = edge.get('source')
-        const target = edge.get('target')
+        // 优先从 edge 模型中获取 source 和 target
+        const model = edge.getModel();
+        const source = model.source || edge.get('source');
+        const target = model.target || edge.get('target');
+
+        // Debug: 打印 source 和 target
+        console.log('Edge Source:', source);
+        console.log('Edge Target:', target);
 
         if (!source || !target) {
-            console.error('Edge source or target not found:', edge)
-            return
+            console.error('Edge source or target not found:', edge);
+            return;
         }
 
-        // 获取节点标签
-        const sourceLabel = getNodeLabel(source)
-        const targetLabel = getNodeLabel(target)
+        const sourceLabel = getNodeLabel(source);   // 使用 getNodeLabel 获取 source 的 label 或 ID
+        const targetLabel = getNodeLabel(target);   // 使用 getNodeLabel 获取 target 的 label 或 ID
 
-        // 更新边的标签
-        const oldLabel = edge.get('model').label
-        graph.value.updateItem(edge, { label: edgeForm.value.label })
-        addToHistory(`更新关系: "${sourceLabel}" 的关系从 "${oldLabel}" 改为 "${edgeForm.value.label}" "${targetLabel}"`)
+        const oldLabel = edge.get('model').label;
+        graph.value.updateItem(edge, { label: edgeForm.value.label });
 
-        // 清除选中状态
-        selectedEdge.value = null
-        edgeForm.value = { source: '', target: '', label: '' }
-    }
+        addToHistory(`更新关系: "${sourceLabel}" 的关系从 "${oldLabel}" 改为 "${edgeForm.value.label}" "${targetLabel}"`);
+
+        selectedEdge.value = null;
+        edgeForm.value = { source: '', target: '', label: '' };
+    };
 
     // 删除边
     const deleteEdge = () => {
         // 检查 selectedEdge 是否存在
-        if (!selectedEdge.value) return
+        if (!selectedEdge.value) return;
 
         // 获取边的 ID
-        const edgeId = selectedEdge.value.getID()
+        const edgeId = selectedEdge.value.getID();
 
         // 获取边对象
-        const edge = graph.value.findById(edgeId)
+        const edge = graph.value.findById(edgeId);
 
         // 检查边是否存在
         if (!edge) {
-            console.error('Edge not found:', edgeId)
-            return
+            console.error('Edge not found:', edgeId);
+            return;
         }
 
-        // 检查边的 source 和 target 是否存在
-        const source = edge.get('source')
-        const target = edge.get('target')
+        // 尝试从 edge 模型中获取 source 和 target
+        const model = edge.getModel();
+        const source = model.source || edge.get('source');
+        const target = model.target || edge.get('target');
 
+        // 打印 source 和 target 用于调试
+        console.log('Source:', source, 'Target:', target);
+
+        // 确保 source 和 target 都存在
         if (!source || !target) {
-            console.error('Edge source or target not found:', edge)
-            return
+            console.error('Edge source or target is undefined:', edge);
+            return;
         }
 
         // 获取节点标签
-        const sourceLabel = getNodeLabel(source)
-        const targetLabel = getNodeLabel(target)
-        const edgeLabel = edge.get('model').label
+        const sourceLabel = getNodeLabel(source);   // 使用 getNodeLabel 获取 source 节点的标签或 ID
+        const targetLabel = getNodeLabel(target);   // 使用 getNodeLabel 获取 target 节点的标签或 ID
+        const edgeLabel = edge.get('model').label;  // 获取边的标签
 
         // 删除边
-        graph.value.removeItem(edge)
-        addToHistory(`删除关系: "${sourceLabel}" ${edgeLabel} "${targetLabel}"`)
+        graph.value.removeItem(edge);
+
+        // 添加历史记录
+        addToHistory(`删除关系: "${sourceLabel}" ${edgeLabel} "${targetLabel}"`);
 
         // 清除选中状态
-        selectedEdge.value = null
-        edgeForm.value = { source: '', target: '', label: '' }
-    }
+        selectedEdge.value = null;
+        edgeForm.value = { source: '', target: '', label: '' };
+    };
 
     return { nodes, addEdge, updateEdge, deleteEdge }
 }
