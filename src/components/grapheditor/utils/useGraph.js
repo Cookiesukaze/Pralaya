@@ -81,6 +81,8 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     }
 
     // 事件处理
+
+    // 处理节点点击事件
     const handleNodeClick = (e) => {
         const node = e.item
 
@@ -90,27 +92,28 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             selectedEdge.value = null
         }
 
-        // 清除上一个选中的节点
+        // 清除上一个选中的节点（如果它不是当前点击的节点）
         if (selectedNode.value && selectedNode.value !== node) {
             graph.value.setItemState(selectedNode.value, 'selected', false)
         }
 
-        // 更新当前选中的节点状态
+        // 设置当前节点为选中状态
         graph.value.setItemState(node, 'selected', true)
-        if (selectedNode.value) {
-            graph.value.setItemState(selectedNode.value, 'selected', false)
-        }
-
         selectedNode.value = node
-        selectedEdge.value = null
+        selectedEdge.value = null  // 清除选中的边
+
+        // 更新节点表单
         const model = node.getModel()
         nodeForm.value = {
             label: model.label,
             description: model.description || ''
         }
+
+        // 切换到节点编辑器
         currentTab.value = 'node'
     }
 
+    // 处理边点击事件
     const handleEdgeClick = (e) => {
         const edge = e.item
 
@@ -120,33 +123,43 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             selectedNode.value = null
         }
 
-        // 清除上一个选中的边
+        // 清除上一个选中的边（如果它不是当前点击的边）
         if (selectedEdge.value && selectedEdge.value !== edge) {
             graph.value.setItemState(selectedEdge.value, 'selected', false)
         }
 
-        // 更新当前选中的边状态
+        // 设置当前边为选中状态
         graph.value.setItemState(edge, 'selected', true)
         selectedEdge.value = edge
-        selectedNode.value = null
+        selectedNode.value = null  // 清除选中的节点
+
+        // 更新边表单
         const model = edge.getModel()
         edgeForm.value = {
             source: model.source,
             target: model.target,
             label: model.label
         }
+
+        // 切换到边编辑器
         currentTab.value = 'edge'
     }
 
+    // 处理画布点击事件（取消选中）
     const handleCanvasClick = () => {
+        // 清除选中的节点状态
         if (selectedNode.value) {
             graph.value.setItemState(selectedNode.value, 'selected', false)
             selectedNode.value = null
         }
+
+        // 清除选中的边状态
         if (selectedEdge.value) {
             graph.value.setItemState(selectedEdge.value, 'selected', false)
             selectedEdge.value = null
         }
+
+        // 重置表单
         nodeForm.value = { label: '', description: '' }
         edgeForm.value = { source: '', target: '', label: '' }
     }

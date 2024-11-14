@@ -26,7 +26,7 @@ export default function useNodeForm() {
         graph.value.addItem('node', node)
         updateNodesList()
 
-        // 添加更详细的历史记录
+        // 添加详细的历史记录
         addToHistory(`添加节点 "${nodeForm.value.label}"`)
 
         nodeForm.value = { label: '', description: '' }  // 清空表单
@@ -34,29 +34,63 @@ export default function useNodeForm() {
 
     // 更新节点
     const updateNode = () => {
+        // 检查是否有选中的节点和有效的节点标签
         if (!selectedNode.value || !nodeForm.value.label) return
 
-        const oldLabel = graph.value.findById(selectedNode.value).get('model').label
-        graph.value.updateItem(selectedNode.value, nodeForm.value)
+        // 获取选中节点的 ID
+        const nodeId = selectedNode.value.getID()
 
-        // 添加更详细的历史记录
+        // 获取节点对象
+        const node = graph.value.findById(nodeId)
+
+        // 检查节点是否存在
+        if (!node) {
+            console.error('Node not found:', nodeId)
+            return
+        }
+
+        // 获取旧的标签
+        const oldLabel = node.get('model').label
+
+        // 更新节点
+        graph.value.updateItem(nodeId, nodeForm.value)
+
+        // 添加详细的历史记录
         addToHistory(`更新节点 "${oldLabel}" → "${nodeForm.value.label}"`)
 
+        // 清除选中状态并重置表单
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }  // 重置表单
     }
 
     // 删除节点
     const deleteNode = () => {
+        // 检查是否有选中的节点
         if (!selectedNode.value) return
 
-        const nodeLabel = graph.value.findById(selectedNode.value).get('model').label
-        graph.value.removeItem(selectedNode.value)
+        // 获取选中节点的 ID
+        const nodeId = selectedNode.value.getID()
+
+        // 获取节点对象
+        const node = graph.value.findById(nodeId)
+
+        // 检查节点是否存在
+        if (!node) {
+            console.error('Node not found:', nodeId)
+            return
+        }
+
+        // 获取节点的标签
+        const nodeLabel = node.get('model').label
+
+        // 删除节点
+        graph.value.removeItem(nodeId)
         updateNodesList()
 
-        // 添加更详细的历史记录
+        // 添加详细的历史记录
         addToHistory(`删除节点 "${nodeLabel}"`)
 
+        // 清除选中状态并重置表单
         selectedNode.value = null
         nodeForm.value = { label: '', description: '' }  // 重置表单
     }
