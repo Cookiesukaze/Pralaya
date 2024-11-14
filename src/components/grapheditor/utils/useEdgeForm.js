@@ -40,7 +40,7 @@ export default function useEdgeForm() {
             return;
         }
 
-        const edgeId = selectedEdge.value.getID();
+        const edgeId = selectedEdge.value.getID ? selectedEdge.value.getID() : selectedEdge.value;
         const edge = graph.value.findById(edgeId);
 
         if (!edge) {
@@ -66,9 +66,9 @@ export default function useEdgeForm() {
         clearSelectedState();
     };
 
-    // 删除边
     const deleteEdge = () => {
-        // 防御性检查，确保 selectedEdge.value 存在
+        console.log('Delete button clicked!');  // 确认按钮点击后触发了该函数
+
         if (!selectedEdge.value) {
             console.error('No edge is selected.');
             return;
@@ -82,22 +82,18 @@ export default function useEdgeForm() {
             return;
         }
 
-        const model = edge.getModel();
+        console.log('Deleting edge:', edgeId);  // 输出要删除的边ID
 
         // 删除边
         graph.value.removeItem(edgeId);
-        updateNodesList();
+        updateNodesList();  // 更新节点列表
 
-        // 获取 source 和 target 的标签
-        const sourceNode = graph.value.findById(model.source);
-        const targetNode = graph.value.findById(model.target);
-
-        const sourceLabel = sourceNode ? sourceNode.get('model').label : model.source;
-        const targetLabel = targetNode ? targetNode.get('model').label : model.target;
-
-        addToHistory(`删除关系: "${sourceLabel}" ${model.label} "${targetLabel}"`);
-
+        console.log('Edge deleted, clearing state');
         clearSelectedState();  // 清除选中状态
+
+        // 确保销毁后将 selectedEdge 设置为 null
+        selectedEdge.value = null;  // 确保边删除后，selectedEdge 清空
+        console.log('After clearing state, selectedEdge:', selectedEdge.value);  // 再次检查 selectedEdge 是否为 null
     };
 
     // 返回节点列表供边表单使用

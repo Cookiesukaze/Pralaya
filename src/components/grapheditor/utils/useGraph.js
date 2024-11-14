@@ -84,48 +84,42 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
 
     // 清除当前选中的节点或边状态
     const clearSelectedState = () => {
-        // 确保 selectedNode 是 ref 对象，并且其 value 不是 null
         if (selectedNode && selectedNode.value) {
-            // 确保 selectedNode.value 仍然存在于图中
             const node = graph.value.findById(selectedNode.value.getID ? selectedNode.value.getID() : selectedNode.value);
             if (node) {
-                // 只有当节点存在时才清除选中状态
                 graph.value.setItemState(node, 'selected', false);
             }
-            selectedNode.value = null;  // 解除选中状态
+            selectedNode.value = null;
         }
 
-        // 确保 selectedEdge 是 ref 对象，并且其 value 不是 null
         if (selectedEdge && selectedEdge.value) {
-            // 确保 selectedEdge.value 仍然存在于图中
             const edge = graph.value.findById(selectedEdge.value.getID ? selectedEdge.value.getID() : selectedEdge.value);
             if (edge) {
-                // 只有当边存在时才清除选中状态
+                // 如果边存在且未被销毁，则取消它的选中状态
                 graph.value.setItemState(edge, 'selected', false);
             }
-            selectedEdge.value = null;  // 解除选中状态
+            console.log('Clearing selected edge:', selectedEdge.value);
+            selectedEdge.value = null;  // 确保销毁后清空 selectedEdge
+            console.log('After clearing, selectedEdge:', selectedEdge.value);  // 确保它被置为 null
         }
 
-        // 确保 nodeForm 和 edgeForm 存在并且是 ref 对象
+        // 清空表单
         if (nodeForm && typeof nodeForm === 'object' && 'value' in nodeForm) {
-            nodeForm.value = { label: '', description: '' };  // 清空节点表单
+            nodeForm.value = { label: '', description: '' };
         }
 
         if (edgeForm && typeof edgeForm === 'object' && 'value' in edgeForm) {
-            edgeForm.value = { source: '', target: '', label: '' };  // 清空边表单
+            edgeForm.value = { source: '', target: '', label: '' };
         }
     };
 
-    // 处理节点点击事件
     const handleNodeClick = (e) => {
         const node = e.item;
         clearSelectedState();  // 清除之前选中的边或节点状态
 
-        // 设置当前节点为选中状态
         graph.value.setItemState(node, 'selected', true);
         selectedNode.value = node;
 
-        // 更新表单和当前标签页
         const model = node.getModel();
         nodeForm.value = {
             label: model.label,
@@ -134,22 +128,20 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         currentTab.value = 'node';
     };
 
-    // 处理边点击事件
     const handleEdgeClick = (e) => {
-        const edge = e.item;
-        clearSelectedState();  // 清除之前选中的边或节点状态
+        clearSelectedState();  // 清除之前的选中状态
 
-        // 设置当前边为选中状态
+        const edge = e.item;
         graph.value.setItemState(edge, 'selected', true);
         selectedEdge.value = edge;
 
-        // 更新表单和当前标签页
         const model = edge.getModel();
         edgeForm.value = {
             source: model.source,
             target: model.target,
             label: model.label
         };
+
         currentTab.value = 'edge';
     };
 

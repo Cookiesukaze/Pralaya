@@ -75,5 +75,8 @@ import {computed} from "vue";
 const { nodes, addEdge, updateEdge, deleteEdge } = useEdgeForm()
 
 // 计算属性，检查是否有选中的边
-const isEdgeSelected = computed(() => !!selectedEdge.value);
+const isEdgeSelected = computed(() => {
+  console.log('selectedEdge:', selectedEdge.value);
+  return !!selectedEdge.value;
+});
 </script>
