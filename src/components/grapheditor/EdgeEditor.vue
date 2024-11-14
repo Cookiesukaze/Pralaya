@@ -48,14 +48,14 @@
       </button>
       <button
           @click="updateEdge"
-          :disabled="!selectedEdge"
+          :disabled="!isEdgeSelected"
           class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
       >
         更新关系
       </button>
       <button
           @click="deleteEdge"
-          :disabled="!selectedEdge"
+          :disabled="!isEdgeSelected"
           class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
       >
         删除关系
@@ -70,6 +70,10 @@ import { edgeForm, selectedEdge } from './utils/store'
 
 // 继续从 useEdgeForm 中导入边的操作函数
 import useEdgeForm from './utils/useEdgeForm'
+import {computed} from "vue";
 
 const { nodes, addEdge, updateEdge, deleteEdge } = useEdgeForm()
+
+// 计算属性，检查是否有选中的边
+const isEdgeSelected = computed(() => !!selectedEdge.value);
 </script>

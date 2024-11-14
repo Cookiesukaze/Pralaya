@@ -13,7 +13,7 @@ const graphContainer = ref(null)
 
 const props = defineProps(['graphData'])
 
-const { initGraph } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab)
+const { initGraph, clearSelectedState } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab);
 
 onMounted(() => {
   watch(
