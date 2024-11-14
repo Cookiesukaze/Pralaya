@@ -9,7 +9,8 @@ const currentHistoryIndex = ref(-1) // 当前历史记录索引
 export default function useHistory() {
     const { graph, updateNodesList } = useGraph()
 
-    // 添加到历史记录
+    const MAX_HISTORY = 5;
+
     const addToHistory = (action) => {
         const data = {
             nodes: graph.value.save().nodes || [],
@@ -27,6 +28,11 @@ export default function useHistory() {
             action,
             data
         });
+
+        // 如果历史记录超过最大限制，移除最早的记录
+        if (historyList.value.length > MAX_HISTORY) {
+            historyList.value.pop();  // 删除最后一条记录
+        }
 
         // 更新当前历史记录索引
         currentHistoryIndex.value = 0;
@@ -59,6 +65,11 @@ export default function useHistory() {
     const deleteHistoryAfter = (index) => {
         if (index === historyList.value.length - 1) return; // 保留最后一条历史记录
         historyList.value = historyList.value.slice(0, index + 1);
+
+        // 如果历史记录长度超过最大限制，删除最早的记录
+        if (historyList.value.length > MAX_HISTORY) {
+            historyList.value.pop();  // 删除最后一条记录
+        }
 
         // 如果当前索引大于删除后的列表长度，更新为最后一个索引
         if (currentHistoryIndex.value >= historyList.value.length) {
