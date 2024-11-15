@@ -37,44 +37,14 @@ const addToHistory = (action) => {
     saveToLocalStorage();
 };
 
-const debounce = (func, wait) => {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-};
-
-const saveToLocalStorage = debounce(() => {
+const saveToLocalStorage = () => {
     try {
-        const getCircularReplacer = () => {
-            const seen = new WeakSet();
-            return (key, value) => {
-                if (typeof value === "object" && value !== null) {
-                    if (seen.has(value)) {
-                        return;
-                    }
-                    seen.add(value);
-                }
-                return value;
-            };
-        };
-
-        // 将 historyList 转换为普通对象
-        const plainHistoryList = historyList.value.map(item => ({
-            ...item,
-            data: {
-                nodes: item.data.nodes.map(node => ({ ...node })),
-                edges: item.data.edges.map(edge => ({ ...edge }))
-            }
-        }));
-
-        localStorage.setItem('graphHistory', JSON.stringify(plainHistoryList, getCircularReplacer()));
+        localStorage.setItem('graphHistory', JSON.stringify(historyList.value));
         localStorage.setItem('graphHistoryIndex', currentHistoryIndex.value.toString());
     } catch (error) {
         console.error('Failed to save history to localStorage:', error);
     }
-}, 300); // 300ms 的防抖时间
+};
 
 export default function useHistory() {
     const graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
