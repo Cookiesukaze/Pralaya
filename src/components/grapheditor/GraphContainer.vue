@@ -5,6 +5,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
 import useGraph from './utils/useGraph'
+import useHistory from './utils/useHistory'
 
 // 导入 store 中的全局状态
 import { selectedNode, selectedEdge, nodeForm, edgeForm, currentTab } from './utils/store.js'
@@ -13,16 +14,20 @@ const graphContainer = ref(null)
 
 const props = defineProps(['graphData'])
 
-const { initGraph, clearSelectedState } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab);
+const { historyList, currentHistoryIndex, loadFromLocalStorage, addToHistory } = useHistory();
+const { initGraph, clearSelectedState } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
 
 onMounted(() => {
   watch(
       () => props.graphData,
       (newData) => {
         if (newData) {
-          console.log('GraphEditor:get data:', newData) // 打印 graphData
+          console.log('GraphEditor:get data:', newData)
           nextTick(() => {
-            initGraph()
+            initGraph();
+            nextTick(() => {
+              loadFromLocalStorage();
+            });
           })
         }
       },

@@ -36,16 +36,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import useHistory from './utils/useHistory'
 
-const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter } = useHistory()
+const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter, loadFromLocalStorage } = useHistory()
 
 // 判断当前索引是否是“当前版本”
 const isCurrentVersion = (index) => {
   // 直接比较当前索引和 currentHistoryIndex
   return currentHistoryIndex.value === index
 }
+
+onMounted(() => {
+  loadFromLocalStorage(); // 加载历史记录
+});
 </script>
 
 <style scoped>
