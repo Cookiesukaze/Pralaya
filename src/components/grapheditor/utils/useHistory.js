@@ -71,10 +71,11 @@ export default function useHistory() {
 
                             if (validNodes.length > 0 || validEdges.length > 0) {
                                 console.log('Loading history data into graph:', { nodes: validNodes, edges: validEdges });
-                                graph.value.changeData({ nodes: validNodes, edges: validEdges });
+                                graph.value.clear(); // 清除现有的图表数据
+                                graph.value.data({ nodes: validNodes, edges: validEdges }); // 使用 data 方法而不是 changeData
                                 graphUtils.updateNodesList();
                                 // 强制重新渲染图表
-                                graph.value.refresh();
+                                graph.value.render();
                             } else {
                                 console.error('No valid node or edge data in history:', currentState);
                             }
@@ -101,9 +102,21 @@ export default function useHistory() {
     const rollbackToHistory = (index) => {
         const historyData = historyList.value[index].data;
 
-        // 回滚图数据
-        graph.value.changeData(historyData);
-        graphUtils.updateNodesList();
+        // 检查所有节点和边的模型数据是否有效
+        const validNodes = historyData.nodes.filter(node => node && node.id && node.label);
+        const validEdges = historyData.edges.filter(edge => edge && edge.source && edge.target);
+
+        if (validNodes.length > 0 || validEdges.length > 0) {
+            console.log('Rolling back to history data:', { nodes: validNodes, edges: validEdges });
+            graph.value.clear(); // 清除现有的图表数据
+            graph.value.data({ nodes: validNodes, edges: validEdges }); // 使用 data 方法而不是 changeData
+            graphUtils.updateNodesList();
+            // 强制重新渲染图表
+            graph.value.render();
+        } else {
+            console.error('No valid node or edge data in history:', historyData);
+            return;
+        }
 
         // 清除选中的节点和边
         selectedNode.value = null;
