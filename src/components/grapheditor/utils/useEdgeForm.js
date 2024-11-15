@@ -84,12 +84,18 @@ export default function useEdgeForm() {
 
         console.log('Deleting edge:', edgeId);  // 输出要删除的边ID
 
+        // 获取边的标签
+        const edgeLabel = edge.get('model').label;
+
         // 删除边
         graph.value.removeItem(edgeId);
         updateNodesList();  // 更新节点列表
 
         console.log('Edge deleted, clearing state');
         clearSelectedState();  // 清除选中状态
+
+        // 添加到历史记录
+        addToHistory(`删除关系: "${edgeLabel}"`);
 
         // 确保销毁后将 selectedEdge 设置为 null
         selectedEdge.value = null;  // 确保边删除后，selectedEdge 清空

@@ -188,9 +188,6 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             description: model.description || ''
         };
         currentTab.value = 'node';
-
-        // 添加到历史记录
-        addToHistory('Node Clicked');
     };
 
     const handleEdgeClick = (e) => {
@@ -208,9 +205,6 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         };
 
         currentTab.value = 'edge';
-
-        // 添加到历史记录
-        addToHistory('Edge Clicked');
     };
 
     // 处理画布点击事件（取消选中）
