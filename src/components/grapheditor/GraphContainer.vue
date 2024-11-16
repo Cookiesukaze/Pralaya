@@ -15,7 +15,7 @@ const graphContainer = ref(null)
 const props = defineProps(['graphData'])
 
 const { historyList, currentHistoryIndex, loadFromLocalStorage, addToHistory } = useHistory();
-const { initGraph, clearSelectedState } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
+const { initGraph, clearSelectedState, updateNodesList } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
 
 onMounted(() => {
   watch(
@@ -27,6 +27,7 @@ onMounted(() => {
             initGraph();
             nextTick(() => {
               loadFromLocalStorage();
+              updateNodesList(); // 确保在加载历史记录后更新节点列表
             });
           })
         }

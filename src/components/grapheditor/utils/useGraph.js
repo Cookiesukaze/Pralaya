@@ -93,31 +93,18 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                     if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
                         const currentState = historyList.value[currentHistoryIndex.value].data;
                         if (graph.value) {
-                            // 检查所有节点和边的模型数据是否有效
                             const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
                             const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
 
                             if (validNodes.length > 0 || validEdges.length > 0) {
-                                console.log('Loading history data into graph:', { nodes: validNodes, edges: validEdges });
-                                graph.value.clear(); // 清除现有的图表数据
-                                graph.value.data({ nodes: validNodes, edges: validEdges }); // 使用 data 方法而不是 changeData
+                                graph.value.clear();
+                                graph.value.data({ nodes: validNodes, edges: validEdges });
                                 updateNodesList();
-                                // 强制重新渲染图表
                                 graph.value.render();
-                            } else {
-                                console.error('No valid node or edge data in history:', currentState);
                             }
-                        } else {
-                            console.error('Graph is not initialized');
                         }
-                    } else {
-                        console.log('No valid history data to load');
                     }
-                } else {
-                    throw new Error('Invalid history format');
                 }
-            } else {
-                console.log('No history data found in localStorage');
             }
         } catch (error) {
             console.error('Failed to load history from localStorage:', error);
@@ -188,6 +175,9 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             description: model.description || ''
         };
         currentTab.value = 'node';
+
+        // 打印选中节点的详细信息
+        console.log('Selected node:', JSON.stringify(model, null, 2));
     };
 
     const handleEdgeClick = (e) => {
@@ -205,6 +195,9 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         };
 
         currentTab.value = 'edge';
+
+        // 打印选中边的详细信息
+        console.log('Selected edge:', JSON.stringify(model, null, 2));
     };
 
     // 处理画布点击事件（取消选中）
