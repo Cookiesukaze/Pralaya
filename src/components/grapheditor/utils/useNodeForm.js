@@ -38,7 +38,7 @@ export default function useNodeForm() {
         const node = graph.value.findById(nodeId);
 
         if (!node) {
-            console.error('Node not found:', nodeId);
+            // console.error('Node not found:', nodeId);
             return;
         }
 
@@ -57,7 +57,7 @@ export default function useNodeForm() {
         const node = graph.value.findById(nodeId);
 
         if (!node) {
-            console.error('Node not found:', nodeId);
+            // console.error('Node not found:', nodeId);
             return;
         }
 

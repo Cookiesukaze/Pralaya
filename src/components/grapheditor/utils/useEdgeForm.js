@@ -66,7 +66,7 @@ export default function useEdgeForm() {
     };
 
     const deleteEdge = () => {
-        console.log('Delete button clicked!');  // 确认按钮点击后触发了该函数
+        // console.log('Delete button clicked!');  // 确认按钮点击后触发了该函数
 
         if (!selectedEdge.value) {
             console.error('No edge is selected.');
@@ -81,7 +81,7 @@ export default function useEdgeForm() {
             return;
         }
 
-        console.log('Deleting edge:', edgeId);  // 输出要删除的边ID
+        // console.log('Deleting edge:', edgeId);  // 输出要删除的边ID
 
         // 获取边的标签
         const edgeLabel = edge.get('model').label;
@@ -90,7 +90,7 @@ export default function useEdgeForm() {
         graph.value.removeItem(edgeId);
         updateNodesList();  // 更新节点列表
 
-        console.log('Edge deleted, clearing state');
+        // console.log('Edge deleted, clearing state');
         clearSelectedState();  // 清除选中状态
 
         // 添加到历史记录
@@ -98,7 +98,7 @@ export default function useEdgeForm() {
 
         // 确保销毁后将 selectedEdge 设置为 null
         selectedEdge.value = null;  // 确保边删除后，selectedEdge 清空
-        console.log('After clearing state, selectedEdge:', selectedEdge.value);  // 再次检查 selectedEdge 是否为 null
+        // console.log('After clearing state, selectedEdge:', selectedEdge.value);  // 再次检查 selectedEdge 是否为 null
     };
 
     // 返回节点列表供边表单使用

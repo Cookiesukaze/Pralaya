@@ -79,25 +79,24 @@ const { historyList, currentHistoryIndex, loadFromLocalStorage: loadHistory, gra
 
 // 计算属性，检查是否有选中的边
 const isEdgeSelected = computed(() => {
-  console.log('selectedEdge:', selectedEdge.value);
+  // console.log('selectedEdge:', selectedEdge.value);
   return !!selectedEdge.value;
 });
 
 // 打印 nodes 列表
 onMounted(() => {
-  console.log('Nodes in EdgeEditor:', nodes.value);
+  // console.log('Nodes in EdgeEditor:', nodes.value);
   loadNodes(); // 确保在组件挂载时加载节点列表
 });
 
 // 监听 nodes 列表的变化，并在变化时打印 nodes 列表的内容
 watch(nodes, (newNodes) => {
-  console.log('Nodes updated in EdgeEditor:', newNodes);
+  // console.log('Nodes updated in EdgeEditor:', newNodes);
 }, { immediate: true });
 
 // 监听 selectedEdge 的变化，并在变化时加载历史记录
 watch(selectedEdge, () => {
-  console.log('Selected edge changed, loading history...');
-  // 调用加载历史记录的函数
+  // console.log('Selected edge changed, loading history...');
   loadFromLocalStorage();
 });
 
@@ -155,7 +154,7 @@ const loadNodes = () => {
       };
     });
     nodes.value = validNodes;
-    console.log('Nodes loaded:', validNodes);
+    // console.log('Nodes loaded:', validNodes);
   }
 };
 </script>

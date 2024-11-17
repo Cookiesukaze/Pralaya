@@ -19,7 +19,7 @@ const addToHistory = (action) => {
                 label: model.label, // 节点的标签
                 description: model.description, // 节点的描述
                 x: model.x, // 节点的 x 坐标
-                y: model.y // 节点的 y 坐标
+                y: model.y // 节点的 y 坐��
             };
         }),
         edges: graph.value.getEdges().map(edge => {
@@ -32,9 +32,6 @@ const addToHistory = (action) => {
             };
         })
     };
-
-    // 打印保存的数据格式
-    console.log('Data to be saved:', JSON.stringify(data, null, 2));
 
     // 如果当前记录不是最新状态，删除之后的所有记录
     if (currentHistoryIndex.value !== 0) {
@@ -90,7 +87,7 @@ export default function useHistory() {
             const savedIndex = localStorage.getItem('graphHistoryIndex');
 
             if (savedHistory) {
-                console.log('Found history data in localStorage');
+                // console.log('Found history data in localStorage');
                 const parsedHistory = JSON.parse(savedHistory);
                 if (Array.isArray(parsedHistory)) {
                     historyList.value = parsedHistory;
@@ -99,15 +96,13 @@ export default function useHistory() {
                     if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
                         const currentState = historyList.value[currentHistoryIndex.value].data;
                         if (graph.value) {
-                            // 打印从历史记录中取出来的数据
-                            console.log('Loaded state from history:', JSON.stringify(currentState, null, 2));
+                            // console.log('Loaded state from history:', JSON.stringify(currentState, null, 2));
 
                             const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
                             const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
-                            
-                            // 打印有效的节点和边
-                            console.log('Valid nodes:', validNodes);
-                            console.log('Valid edges:', validEdges);
+
+                            // console.log('Valid nodes:', validNodes);
+                            // console.log('Valid edges:', validEdges);
 
                             if (validNodes.length > 0 || validEdges.length > 0) {
                                 graph.value.clear();
@@ -118,13 +113,13 @@ export default function useHistory() {
                             }
                         }
                     } else {
-                        console.log('No valid history data to load');
+                        // console.log('No valid history data to load');
                     }
                 } else {
                     throw new Error('Invalid history format');
                 }
             } else {
-                console.log('No history data found in localStorage');
+                // console.log('No history data found in localStorage');
             }
         } catch (error) {
             console.error('Failed to load history from localStorage:', error);
@@ -137,38 +132,31 @@ export default function useHistory() {
     const rollbackToHistory = (index) => {
         const historyData = historyList.value[index].data;
 
-        // 打印从历史记录中取出来的数据
-        console.log('Rolling back to state from history:', JSON.stringify(historyData, null, 2));
+        // console.log('Rolling back to state from history:', JSON.stringify(historyData, null, 2));
 
-        // 检查所有节点和边的模型数据是否有效
         const validNodes = historyData.nodes.filter(node => node && node.id && node.label);
         const validEdges = historyData.edges.filter(edge => edge && edge.source && edge.target);
 
-        // 打印有效的节点和边
-        console.log('Rolling back to valid nodes:', validNodes);
-        console.log('Rolling back to valid edges:', validEdges);
+        // console.log('Rolling back to valid nodes:', validNodes);
+        // console.log('Rolling back to valid edges:', validEdges);
 
         if (validNodes.length > 0 || validEdges.length > 0) {
-            graph.value.clear(); // 清除现有的图表数据
-            graph.value.data({ nodes: validNodes, edges: validEdges }); // 使用 data 方法而不是 changeData
+            graph.value.clear();
+            graph.value.data({ nodes: validNodes, edges: validEdges });
             graphUtils.updateNodesList();
-            // 强制重新渲染图表
             graph.value.render();
-            graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
+            graphUtils.registerGraphEvents();
         } else {
             console.error('No valid node or edge data in history:', historyData);
             return;
         }
 
-        // 清除选中的节点和边
         selectedNode.value = null;
         selectedEdge.value = null;
 
-        // 清空表单
         nodeForm.value = { label: '', description: '' };
         edgeForm.value = { source: '', target: '', label: '' };
 
-        // 更新当前索引
         currentHistoryIndex.value = index;
 
         saveToLocalStorage();
