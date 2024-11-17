@@ -9,6 +9,7 @@ const currentHistoryIndex = ref(-1)
 const MAX_HISTORY = 5;
 
 let graph = null;
+let graphUtils = null;
 
 const addToHistory = (action) => {
     const data = {
@@ -17,9 +18,9 @@ const addToHistory = (action) => {
             return {
                 id: model.id, // 节点的唯一标识符
                 label: model.label, // 节点的标签
-                description: model.description, // 节点的描述
+                description: model.description, // ��点的描述
                 x: model.x, // 节点的 x 坐标
-                y: model.y // 节点的 y 坐��
+                y: model.y // 节点的 y 坐标
             };
         }),
         edges: graph.value.getEdges().map(edge => {
@@ -113,68 +114,56 @@ const initializeHistory = (initialData) => {
     addToHistory('初始化图谱数据');
 };
 
-export default function useHistory() {
-    const graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
-    graph = graphUtils.graph;
+const loadFromLocalStorage = () => {
+    try {
+        const savedHistory = localStorage.getItem('graphHistory');
+        const savedIndex = localStorage.getItem('graphHistoryIndex');
 
-    const loadFromLocalStorage = () => {
-        try {
-            const savedHistory = localStorage.getItem('graphHistory');
-            const savedIndex = localStorage.getItem('graphHistoryIndex');
+        if (savedHistory) {
+            const parsedHistory = JSON.parse(savedHistory);
+            if (Array.isArray(parsedHistory)) {
+                historyList.value = parsedHistory;
+                currentHistoryIndex.value = savedIndex ? parseInt(savedIndex) : -1;
 
-            if (savedHistory) {
-                // console.log('Found history data in localStorage');
-                const parsedHistory = JSON.parse(savedHistory);
-                if (Array.isArray(parsedHistory)) {
-                    historyList.value = parsedHistory;
-                    currentHistoryIndex.value = savedIndex ? parseInt(savedIndex) : -1;
+                if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
+                    const currentState = historyList.value[currentHistoryIndex.value].data;
+                    if (graph.value) {
+                        const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
+                        const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
 
-                    if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
-                        const currentState = historyList.value[currentHistoryIndex.value].data;
-                        if (graph.value) {
-                            // console.log('Loaded state from history:', JSON.stringify(currentState, null, 2));
+                        console.log('Loaded nodes from history:', validNodes);
+                        console.log('Loaded edges from history:', validEdges);
 
-                            const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
-                            const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
-
-                            // console.log('Valid nodes:', validNodes);
-                            // console.log('Valid edges:', validEdges);
-
-                            if (validNodes.length > 0 || validEdges.length > 0) {
-                                graph.value.clear();
-                                graph.value.data({ nodes: validNodes, edges: validEdges });
-                                graphUtils.updateNodesList();
-                                graph.value.render();
-                                graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
-                            }
+                        if (validNodes.length > 0 || validEdges.length > 0) {
+                            graph.value.clear();
+                            graph.value.data({ nodes: validNodes, edges: validEdges });
+                            graphUtils.updateNodesList();
+                            graph.value.render();
+                            graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
                         }
-                    } else {
-                        // console.log('No valid history data to load');
                     }
-                } else {
-                    throw new Error('Invalid history format');
                 }
             } else {
-                // console.log('No history data found in localStorage');
+                throw new Error('Invalid history format');
             }
-        } catch (error) {
-            console.error('Failed to load history from localStorage:', error);
-            // 清空错误的本地存储数据
-            localStorage.removeItem('graphHistory');
-            localStorage.removeItem('graphHistoryIndex');
         }
-    };
+    } catch (error) {
+        console.error('Failed to load history from localStorage:', error);
+        // 清空错误的本地存储数据
+        localStorage.removeItem('graphHistory');
+        localStorage.removeItem('graphHistoryIndex');
+    }
+};
+
+export default function useHistory() {
+    graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
+    graph = graphUtils.graph;
 
     const rollbackToHistory = (index) => {
         const historyData = historyList.value[index].data;
 
-        // console.log('Rolling back to state from history:', JSON.stringify(historyData, null, 2));
-
         const validNodes = historyData.nodes.filter(node => node && node.id && node.label);
         const validEdges = historyData.edges.filter(edge => edge && edge.source && edge.target);
-
-        // console.log('Rolling back to valid nodes:', validNodes);
-        // console.log('Rolling back to valid edges:', validEdges);
 
         if (validNodes.length > 0 || validEdges.length > 0) {
             graph.value.clear();

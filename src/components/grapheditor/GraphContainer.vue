@@ -47,7 +47,7 @@ onMounted(() => {
                       id: `${parentId}-${nodeId}`,
                       source: parentId,
                       target: nodeId,
-                      label: ''
+                      label: '' // 初始化为空字符串
                     });
                   }
 
@@ -58,6 +58,9 @@ onMounted(() => {
 
                 traverse(initialData);
 
+                console.log('Initial nodes:', nodes);
+                console.log('Initial edges:', edges);
+
                 const { graph } = useHistory();
                 graph.value.clear();
                 graph.value.data({ nodes, edges });
@@ -67,7 +70,7 @@ onMounted(() => {
               }
               updateNodesList(); // 确保在加载历史记录后更新节点列表
             });
-          })
+          });
         }
       },
       { immediate: true }
