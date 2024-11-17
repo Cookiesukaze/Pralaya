@@ -27,6 +27,7 @@ export default function useNodeForm() {
 
         addToHistory(`添加节点 "${nodeForm.value.label}"`);
         nodeForm.value = { label: '', description: '' };  // 清空表单
+        clearSelectedState();  // 清除选中状态
     };
 
     // 更新节点

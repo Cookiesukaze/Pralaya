@@ -1,4 +1,3 @@
-// ./utils/useEdgeForm.js
 import { edgeForm, selectedEdge } from './store';  // 从 store.js 导入全局状态
 import useGraph from './useGraph';
 import useHistory from './useHistory';

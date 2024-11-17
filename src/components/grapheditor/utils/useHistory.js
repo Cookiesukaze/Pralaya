@@ -19,7 +19,7 @@ const addToHistory = (action) => {
                 label: model.label, // 节点的标签
                 description: model.description, // 节点的描述
                 x: model.x, // 节点的 x 坐标
-                y: model.y // 节点的 y 坐��
+                y: model.y // 节点的 y 坐标
             };
         }),
         edges: graph.value.getEdges().map(edge => {
@@ -114,6 +114,7 @@ export default function useHistory() {
                                 graph.value.data({ nodes: validNodes, edges: validEdges });
                                 graphUtils.updateNodesList();
                                 graph.value.render();
+                                graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
                             }
                         }
                     } else {
@@ -153,6 +154,7 @@ export default function useHistory() {
             graphUtils.updateNodesList();
             // 强制重新渲染图表
             graph.value.render();
+            graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
         } else {
             console.error('No valid node or edge data in history:', historyData);
             return;
@@ -181,7 +183,7 @@ export default function useHistory() {
             historyList.value.pop();  // 删除最后一条记录
         }
 
-        // 如果当前索引大于删除后的列表长度，更新为最��一个索引
+        // 如果当前索引大于删除后的列表长度，更新为最后一个索引
         if (currentHistoryIndex.value >= historyList.value.length) {
             currentHistoryIndex.value = historyList.value.length - 1;
         }
