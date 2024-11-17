@@ -77,6 +77,42 @@ const saveToLocalStorage = debounce(() => {
     }
 }, 300); // 300ms 的防抖时间
 
+const initializeHistory = (initialData) => {
+    const nodes = [];
+    const edges = [];
+
+    const traverse = (node, parentId = null) => {
+        const nodeId = node.name;
+        nodes.push({
+            id: nodeId,
+            label: node.name,
+            description: node.description || '',
+            x: Math.random() * 500,
+            y: Math.random() * 500
+        });
+
+        if (parentId) {
+            edges.push({
+                id: `${parentId}-${nodeId}`,
+                source: parentId,
+                target: nodeId,
+                label: ''
+            });
+        }
+
+        if (node.children) {
+            node.children.forEach(child => traverse(child, nodeId));
+        }
+    };
+
+    traverse(initialData);
+
+    graph.value.clear();
+    graph.value.data({ nodes, edges });
+    graph.value.render();
+    addToHistory('初始化图谱数据');
+};
+
 export default function useHistory() {
     const graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
     graph = graphUtils.graph;
@@ -198,6 +234,7 @@ export default function useHistory() {
         rollbackToHistory,
         deleteHistoryAfter,
         loadFromLocalStorage,
+        initializeHistory,
         graph // 确保导出 graph
     }
 }

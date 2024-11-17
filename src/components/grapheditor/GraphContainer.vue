@@ -22,11 +22,49 @@ onMounted(() => {
       () => props.graphData,
       (newData) => {
         if (newData) {
-          console.log('GraphEditor:get data:', newData)
+          console.log('GraphContainer:get data:', newData)
           nextTick(() => {
             initGraph();
             nextTick(() => {
               loadFromLocalStorage();
+              if (historyList.value.length === 0) {
+                const initialData = JSON.parse(newData.content);
+                const nodes = [];
+                const edges = [];
+
+                const traverse = (node, parentId = null) => {
+                  const nodeId = node.name;
+                  nodes.push({
+                    id: nodeId,
+                    label: node.name,
+                    description: node.description || '',
+                    x: Math.random() * 500,
+                    y: Math.random() * 500
+                  });
+
+                  if (parentId) {
+                    edges.push({
+                      id: `${parentId}-${nodeId}`,
+                      source: parentId,
+                      target: nodeId,
+                      label: ''
+                    });
+                  }
+
+                  if (node.children) {
+                    node.children.forEach(child => traverse(child, nodeId));
+                  }
+                };
+
+                traverse(initialData);
+
+                const { graph } = useHistory();
+                graph.value.clear();
+                graph.value.data({ nodes, edges });
+                graph.value.render();
+                updateNodesList();
+                addToHistory('初始化图谱数据');
+              }
               updateNodesList(); // 确保在加载历史记录后更新节点列表
             });
           })
