@@ -67,6 +67,9 @@ export default function useNodeForm() {
 
         addToHistory(`删除节点 "${nodeLabel}"`);
         clearSelectedState();  // 清除选中状态
+
+        // 确保 selectedNode 被清空
+        selectedNode.value = null;
     };
 
     return { addNode, updateNode, deleteNode };
