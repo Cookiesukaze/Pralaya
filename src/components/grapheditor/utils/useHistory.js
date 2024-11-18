@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref, watch, toRaw } from 'vue'
 import useGraph from './useGraph'
 import { edgeForm, nodeForm, selectedEdge, selectedNode } from "./store.js"
 import debounce from 'lodash/debounce'
@@ -18,7 +18,7 @@ const addToHistory = (action) => {
             return {
                 id: model.id, // 节点的唯一标识符
                 label: model.label, // 节点的标签
-                description: model.description, // ��点的描述
+                description: model.description, // 节点的描述
                 x: model.x, // 节点的 x 坐标
                 y: model.y // 节点的 y 坐标
             };
@@ -29,9 +29,9 @@ const addToHistory = (action) => {
                 id: model.id, // 边的唯一标识符
                 source: model.source, // 边的起始节点
                 target: model.target, // 边的目标节点
-                label: model.label // 边的标签
+                label: model.label || ' ' // 确保 label 至少是空字符串或空格
             };
-        })
+        }).filter(edge => edge && edge.id && edge.source && edge.target) // 过滤掉无效的边
     };
 
     // 如果当前记录不是最新状态，删除之后的所有记录
@@ -71,14 +71,22 @@ const getCircularReplacer = () => {
 
 const saveToLocalStorage = debounce(() => {
     try {
-        localStorage.setItem('graphHistory', JSON.stringify(historyList.value, getCircularReplacer()));
-        localStorage.setItem('graphHistoryIndex', currentHistoryIndex.value.toString());
+        const rawHistoryList = toRaw(historyList.value);
+        const historyData = JSON.stringify(rawHistoryList, getCircularReplacer());
+        const historyIndex = currentHistoryIndex.value.toString();
+        localStorage.setItem('graphHistory', historyData);
+        localStorage.setItem('graphHistoryIndex', historyIndex);
     } catch (error) {
         console.error('Failed to save history to localStorage:', error);
     }
 }, 300); // 300ms 的防抖时间
 
 const initializeHistory = (initialData) => {
+    if (!initialData) {
+        console.error('Invalid initialData:', initialData);
+        return;
+    }
+
     const nodes = [];
     const edges = [];
 
@@ -97,7 +105,7 @@ const initializeHistory = (initialData) => {
                 id: `${parentId}-${nodeId}`,
                 source: parentId,
                 target: nodeId,
-                label: ''
+                label: ' ' // 确保 label 至少是空字符串或空格
             });
         }
 
@@ -127,20 +135,18 @@ const loadFromLocalStorage = () => {
 
                 if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
                     const currentState = historyList.value[currentHistoryIndex.value].data;
-                    if (graph.value) {
-                        const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
-                        const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
 
-                        console.log('Loaded nodes from history:', validNodes);
-                        console.log('Loaded edges from history:', validEdges);
+                    const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
+                    const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
 
-                        if (validNodes.length > 0 || validEdges.length > 0) {
-                            graph.value.clear();
-                            graph.value.data({ nodes: validNodes, edges: validEdges });
-                            graphUtils.updateNodesList();
-                            graph.value.render();
-                            graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
-                        }
+                    if (validNodes.length > 0 || validEdges.length > 0) {
+                        graph.value.clear();
+                        graph.value.data({ nodes: validNodes, edges: validEdges });
+                        graphUtils.updateNodesList();
+                        graph.value.render();
+                        graphUtils.registerGraphEvents(); // 确保事件在加载历史数据后重新注册
+                    } else {
+                        console.error('No valid node or edge data in loaded history:', currentState);
                     }
                 }
             } else {

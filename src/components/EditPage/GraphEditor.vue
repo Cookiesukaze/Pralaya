@@ -28,12 +28,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import GraphContainer from '../grapheditor/GraphContainer.vue'
 import NodeEditor from '../grapheditor/NodeEditor.vue'
 import EdgeEditor from '../grapheditor/EdgeEditor.vue'
 import HistoryPanel from '../grapheditor/HistoryPanel.vue'
 import { currentTab } from '../grapheditor/utils/store'
+import useHistory from '../grapheditor/utils/useHistory'
 
 // 当前选中的标签页
 const props = defineProps(['graphData'])
@@ -45,4 +46,20 @@ const tabs = [
   { id: 'edge', name: '关系' },
   { id: 'history', name: '历史' }
 ]
+
+const { loadFromLocalStorage, initializeHistory } = useHistory()
+
+// 监听 currentTab 的变化，当切换到历史记录面板时重新加载历史记录
+watch(() => currentTab.value, (newTab) => {
+  if (newTab === 'history') {
+    loadFromLocalStorage(); // 加载历史记录
+  }
+});
+
+// 初始化时加载历史记录
+onMounted(() => {
+  if (props.graphData) {
+    initializeHistory(props.graphData);
+  }
+});
 </script>

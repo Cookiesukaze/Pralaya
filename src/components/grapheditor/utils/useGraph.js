@@ -118,7 +118,6 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             const savedIndex = localStorage.getItem('graphHistoryIndex');
 
             if (savedHistory) {
-                // console.log('Found history data in localStorage');
                 const parsedHistory = JSON.parse(savedHistory);
                 if (Array.isArray(parsedHistory)) {
                     historyList.value = parsedHistory;

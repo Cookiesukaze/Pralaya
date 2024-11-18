@@ -15,7 +15,7 @@ const graphContainer = ref(null)
 const props = defineProps(['graphData'])
 
 const { historyList, currentHistoryIndex, loadFromLocalStorage, addToHistory } = useHistory();
-const { initGraph, clearSelectedState, updateNodesList } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
+const { initGraph, clearSelectedState, updateNodesList, registerGraphEvents } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
 
 onMounted(() => {
   watch(
@@ -61,14 +61,18 @@ onMounted(() => {
                 console.log('Initial nodes:', nodes);
                 console.log('Initial edges:', edges);
 
-                const { graph } = useHistory();
+                const { graph, getLocalStorageSize } = useHistory();
                 graph.value.clear();
                 graph.value.data({ nodes, edges });
                 graph.value.render();
                 updateNodesList();
                 addToHistory('初始化图谱数据');
+                getLocalStorageSize(); // 调用 getLocalStorageSize 函数
               }
               updateNodesList(); // 确保在加载历史记录后更新节点列表
+              nextTick(() => {
+                registerGraphEvents(); // 确保事件在加载历史数据后重新注册
+              });
             });
           });
         }

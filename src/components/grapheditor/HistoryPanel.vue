@@ -36,8 +36,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import useHistory from './utils/useHistory'
+import { currentTab } from './utils/store' // 确保导入 currentTab
 
 const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter, loadFromLocalStorage } = useHistory()
 
@@ -46,6 +47,13 @@ const isCurrentVersion = (index) => {
   // 直接比较当前索引和 currentHistoryIndex
   return currentHistoryIndex.value === index
 }
+
+// 监听 currentTab 的变化，当切换到历史记录面板时重新加载历史记录
+watch(() => currentTab.value, (newTab) => {
+  if (newTab === 'history') {
+    loadFromLocalStorage(); // 加载历史记录
+  }
+});
 
 onMounted(() => {
   loadFromLocalStorage(); // 加载历史记录
