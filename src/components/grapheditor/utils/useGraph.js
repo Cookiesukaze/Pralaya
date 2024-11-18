@@ -46,7 +46,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                 }
             },
             defaultEdge: {
-                type: 'line',
+                type: 'quadratic', // 修改为弯曲边
                 style: {
                     stroke: '#91d5ff',
                     lineWidth: 2,
@@ -216,7 +216,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
     const handleNodeClick = (e) => {
         // console.log('Node clicked:', e); // 添加调试信息
         const node = e.item;
-        clearSelectedState();  // 清除之前选中的边或节点状态
+        clearSelectedState();  // 清除之���选中的边或节点状态
 
         if (!selectedNode || !nodeForm) {
             // console.error('selectedNode or nodeForm is not defined');
