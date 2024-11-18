@@ -27,6 +27,12 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             modes: {
                 default: ['drag-canvas', 'zoom-canvas', 'drag-node']
             },
+            layout: {
+                type: 'dagre',
+                rankdir: 'LR', // 从左到右布局
+                nodesep: 20, // 节点之间的间距
+                ranksep: 20 // 层级之间的间距
+            },
             defaultNode: {
                 type: 'circle',
                 size: 40,
@@ -202,7 +208,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
 
         // 添加延迟，确保选中状态 UI 能够及时更新
         nextTick(() => {
-            graph.value.refresh();  // 使��� refresh 方法重新渲染图表以更新选中状态
+            graph.value.refresh();  // 使用 refresh 方法重新渲染图表以更新选中状态
             // console.log('Graph refreshed after clearing selection');
         });
     };
