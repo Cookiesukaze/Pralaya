@@ -11,7 +11,7 @@ const MAX_HISTORY = 5;
 let graph = null;
 let graphUtils = null;
 
-const addToHistory = (action) => {
+const addToHistory = (action, showInHistoryPanel = true) => {
     const data = {
         nodes: graph.value.getNodes().map(node => {
             const model = node.getModel();
@@ -43,16 +43,26 @@ const addToHistory = (action) => {
     historyList.value.unshift({
         timestamp: new Date().toLocaleTimeString(),
         action,
-        data
+        data,
+        showInHistoryPanel  // 新增字段
     });
 
-    // 如果历史记录超过最大限制，移除最早的记录
-    if (historyList.value.length > MAX_HISTORY) {
-        historyList.value.pop();  // 删除最后一条记录
+    // 只计算需要在历史记录面板中显示的记录数量
+    const visibleHistoryItems = historyList.value.filter(item => item.showInHistoryPanel);
+
+    // 如果可见历史记录超过最大限制，移除最早的可见记录
+    if (visibleHistoryItems.length > MAX_HISTORY) {
+        // 保留至少一条可见的历史记录
+        if (visibleHistoryItems.length > 1) {
+            // 找到最早的可见历史记录的索引（在数组末尾）
+            const lastVisibleIndex = historyList.value.lastIndexOf(visibleHistoryItems[visibleHistoryItems.length - 1]);
+            historyList.value.splice(lastVisibleIndex, 1);
+        }
     }
 
-    // 更新当前历史记录索引
-    currentHistoryIndex.value = 0;
+    // 更新当前历史记录索引，确保指向最新的可见记录
+    currentHistoryIndex.value = historyList.value.findIndex(item => item.showInHistoryPanel);
+
     saveToLocalStorage();
 };
 
@@ -161,6 +171,19 @@ const loadFromLocalStorage = () => {
     }
 };
 
+// 添加 getLocalStorageSize 函数并导出
+const getLocalStorageSize = () => {
+    let total = 0;
+    for (let x in localStorage) {
+        if (localStorage.hasOwnProperty(x)) {
+            let amount = (localStorage[x].length * 2) / 1024 / 1024; // 转换为 MB
+            total += amount;
+            console.log(x + " = " + amount.toFixed(2) + " MB");
+        }
+    }
+    console.log("Total used localStorage size: " + total.toFixed(2) + " MB");
+};
+
 export default function useHistory() {
     graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
     graph = graphUtils.graph;
@@ -230,6 +253,7 @@ export default function useHistory() {
         deleteHistoryAfter,
         loadFromLocalStorage,
         initializeHistory,
-        graph // 确保导出 graph
+        graph, // 确保导出 graph
+        getLocalStorageSize  // 导出 getLocalStorageSize 函数
     }
 }

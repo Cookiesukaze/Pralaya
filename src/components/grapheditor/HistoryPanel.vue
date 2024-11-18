@@ -5,7 +5,7 @@
       暂无操作记录
     </div>
     <div
-        v-for="(item, index) in historyList"
+        v-for="(item, index) in displayedHistoryList"
         :key="index"
         class="history-item group"
     >
@@ -36,16 +36,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import useHistory from './utils/useHistory'
 import { currentTab } from './utils/store' // 确保导入 currentTab
 
 const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter, loadFromLocalStorage } = useHistory()
 
-// 判断当前索引是否是“当前版本”
+// 计算属性，过滤显示在 UI 中的历史记录
+const displayedHistoryList = computed(() => {
+    return historyList.value.filter(item => item.showInHistoryPanel);
+});
+
+// 修改 isCurrentVersion 函数，根据实际的历史记录索引进行判断
 const isCurrentVersion = (index) => {
-  // 直接比较当前索引和 currentHistoryIndex
-  return currentHistoryIndex.value === index
+    const actualIndex = historyList.value.findIndex(item => item === displayedHistoryList.value[index]);
+    return currentHistoryIndex.value === actualIndex;
 }
 
 // 监听 currentTab 的变化，当切换到历史记录面板时重新加载历史记录

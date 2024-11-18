@@ -14,8 +14,8 @@ const graphContainer = ref(null)
 
 const props = defineProps(['graphData'])
 
-const { historyList, currentHistoryIndex, loadFromLocalStorage, addToHistory } = useHistory();
-const { initGraph, clearSelectedState, updateNodesList, registerGraphEvents } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory);
+const { historyList, currentHistoryIndex, loadFromLocalStorage, addToHistory, getLocalStorageSize } = useHistory();
+const { graph, initGraph, clearSelectedState, updateNodesList, registerGraphEvents } = useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex);
 
 onMounted(() => {
   watch(
@@ -61,7 +61,6 @@ onMounted(() => {
                 console.log('Initial nodes:', nodes);
                 console.log('Initial edges:', edges);
 
-                const { graph, getLocalStorageSize } = useHistory();
                 graph.value.clear();
                 graph.value.data({ nodes, edges });
                 graph.value.render();
@@ -79,5 +78,14 @@ onMounted(() => {
       },
       { immediate: true }
   )
+
+  // 监听 graph 的自定义事件，确保 graph.value 不为 null
+  watch(graph, (newGraph) => {
+    if (newGraph) {
+      newGraph.on('node:dragend:history', () => {
+        addToHistory('节点位置更新', false);  // 调用 addToHistory
+      });
+    }
+  });
 })
 </script>

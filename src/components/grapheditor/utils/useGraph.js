@@ -4,7 +4,7 @@ import G6 from '@antv/g6'
 const graph = ref(null)
 const nodes = ref([])
 
-export default function useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex, addToHistory) {
+export default function useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex) {
     const initGraph = () => {
         const width = graphContainer.value.offsetWidth
         const height = graphContainer.value.offsetHeight
@@ -110,6 +110,8 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                 // console.log('Click was not on the canvas');
             }
         });
+
+        graph.value.on('node:dragend', handleNodeDragEnd);  // 监听节点拖动结束事件
     };
 
     const loadFromLocalStorage = () => {
@@ -200,7 +202,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
 
         // 添加延迟，确保选中状态 UI 能够及时更新
         nextTick(() => {
-            graph.value.refresh();  // 使用 refresh 方法重新渲染图表以更新选中状态
+            graph.value.refresh();  // 使��� refresh 方法重新渲染图表以更新选中状态
             // console.log('Graph refreshed after clearing selection');
         });
     };
@@ -270,11 +272,30 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         }
     };
 
+    const handleNodeDragEnd = (e) => {
+        // ...existing code...
+
+        // 触发自定义事件，不再调用 addToHistory
+        if (graph.value) {
+            graph.value.emit('node:dragend:history', e);
+        } else {
+            console.error('Graph is not initialized.');
+        }
+    };
+
     watch(graph, (newGraph) => {
         if (newGraph) {
             registerGraphEvents(); // 确保在图表实例变化时重新注册事件
         }
     });
 
-    return { graph, nodes, initGraph, updateNodesList, clearSelectedState, loadFromLocalStorage, registerGraphEvents };
+    return { 
+        graph, 
+        nodes, 
+        initGraph, 
+        updateNodesList, 
+        clearSelectedState, 
+        loadFromLocalStorage, 
+        registerGraphEvents 
+    };
 }
