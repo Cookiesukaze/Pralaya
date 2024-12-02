@@ -39,6 +39,12 @@
       >
         保存当前历史记录
       </button>
+      <button
+          @click="clearHistory"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+      >
+        清空历史记录
+      </button>
     </div>
   </div>
 </template>
@@ -100,6 +106,11 @@ const saveCurrentHistory = () => {
   } else {
     console.error('无效的历史记录索引:', currentHistoryIndex.value);
   }
+};
+
+const clearHistory = () => {
+  localStorage.clear();
+  location.reload();
 };
 </script>
 
