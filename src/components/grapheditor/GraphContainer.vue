@@ -64,7 +64,7 @@ onMounted(() => {
                 graph.value.render();
                 updateNodesList();
 
-                // 将初始数据���加到历史记录，并确保显示在历史记录面板中
+                // 将初始数据添加到历史记录，并确保显示在历史记录面板中
                 addToHistory('初始化图谱数据', true);
 
                 getLocalStorageSize(); // 调用 getLocalStorageSize 函数
@@ -88,8 +88,5 @@ onMounted(() => {
       registerGraphEvents();   // 手动注册事件
     }
   });
-
-  // 已经在上面调用了 setGraph，这里可以移除或注释掉
-  // setGraph(graph);
-})
+});
 </script>

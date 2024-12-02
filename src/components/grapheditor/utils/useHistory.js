@@ -79,13 +79,26 @@ const getCircularReplacer = () => {
     };
 };
 
+const getRouteKey = () => {
+    let route = window.location.pathname + window.location.hash;
+    if (route === '/' || route === '/#/' || route === '#/') {
+        route = 'root';
+    } else {
+        route = route.replace(/\//g, '_').replace(/#/g, '_');
+    }
+    console.log(`Current route: ${route}`); // 输出当前路由
+    return `graphHistory_${route}`;
+};
+
 const saveToLocalStorage = debounce(() => {
     try {
         const rawHistoryList = toRaw(historyList.value);
         const historyData = JSON.stringify(rawHistoryList, getCircularReplacer());
         const historyIndex = currentHistoryIndex.value.toString();
-        localStorage.setItem('graphHistory', historyData);
-        localStorage.setItem('graphHistoryIndex', historyIndex);
+        const routeKey = getRouteKey();
+        console.log(`Saving history to localStorage with key: ${routeKey}`); // 输出保存的键名
+        localStorage.setItem(routeKey, historyData);
+        localStorage.setItem(`${routeKey}_index`, historyIndex);
     } catch (error) {
         console.error('Failed to save history to localStorage:', error);
     }
@@ -134,14 +147,17 @@ const initializeHistory = (initialData) => {
 
 const loadFromLocalStorage = () => {
     try {
-        const savedHistory = localStorage.getItem('graphHistory');
-        const savedIndex = localStorage.getItem('graphHistoryIndex');
+        const routeKey = getRouteKey();
+        console.log(`Loading history from localStorage with key: ${routeKey}`); // 输出加载的键名
+        const savedHistory = localStorage.getItem(routeKey);
+        const savedIndex = localStorage.getItem(`${routeKey}_index`);
 
         if (savedHistory) {
             const parsedHistory = JSON.parse(savedHistory);
             if (Array.isArray(parsedHistory)) {
                 historyList.value = parsedHistory;
                 currentHistoryIndex.value = savedIndex ? parseInt(savedIndex) : -1;
+                console.log(`Loaded history:`, parsedHistory); // 输出加载的历史记录
 
                 if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
                     const currentState = historyList.value[currentHistoryIndex.value].data;
@@ -166,8 +182,9 @@ const loadFromLocalStorage = () => {
     } catch (error) {
         console.error('Failed to load history from localStorage:', error);
         // 清空错误的本地存储数据
-        localStorage.removeItem('graphHistory');
-        localStorage.removeItem('graphHistoryIndex');
+        const routeKey = getRouteKey();
+        localStorage.removeItem(routeKey);
+        localStorage.removeItem(`${routeKey}_index`);
     }
 };
 
