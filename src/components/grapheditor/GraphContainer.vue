@@ -17,7 +17,7 @@ const props = defineProps(['graphData'])
 // 使用 defineEmits 定义事件
 const emit = defineEmits(['tab-change']);
 
-const { loadFromLocalStorage, addToHistory, getLocalStorageSize, setGraph, historyList, currentHistoryIndex, updateCurrentHistory } = useHistory();
+const { loadFromLocalStorage, addToHistory, getLocalStorageSize, historyList, currentHistoryIndex, updateCurrentHistory } = useHistory();
 
 const { graph, initGraph, clearSelectedState, updateNodesList, registerGraphEvents } = useGraph(
     graphContainer,     // graphContainer
@@ -44,40 +44,17 @@ onMounted(() => {
             initGraph();
             nextTick(() => {
               if (graph.value) {
-                // 设置 graph 给 useHistory
-                setGraph(graph);
                 loadFromLocalStorage(); // 调用从 useHistory 导入的函数
               }
               if (historyList.value.length === 0) {
-                const initialData = JSON.parse(newData.content);
-                const nodes = [];
-                const edges = [];
-
-                const traverse = (node, parentId = null) => {
-                  const nodeId = node.name;
-                  nodes.push({
-                    id: nodeId,
-                    label: node.name,
-                    description: node.description || '',
-                    x: Math.random() * 500,
-                    y: Math.random() * 500
-                  });
-
-                  if (parentId) {
-                    edges.push({
-                      id: `${parentId}-${nodeId}`,
-                      source: parentId,
-                      target: nodeId,
-                      label: '' // 初始化为空字符串
-                    });
-                  }
-
-                  if (node.children) {
-                    node.children.forEach(child => traverse(child, nodeId));
-                  }
-                };
-
-                traverse(initialData);
+                let nodes, edges;
+                try {
+                  nodes = JSON.parse(newData.nodes);
+                  edges = JSON.parse(newData.edges);
+                } catch (error) {
+                  console.error('Failed to parse nodes or edges:', error);
+                  return;
+                }
 
                 console.log('Initial nodes:', nodes);
                 console.log('Initial edges:', edges);
@@ -87,7 +64,7 @@ onMounted(() => {
                 graph.value.render();
                 updateNodesList();
 
-                // 将初始数据添加到历史记录，并确保显示在历史记录面板中
+                // 将初始数据���加到历史记录，并确保显示在历史记录面板中
                 addToHistory('初始化图谱数据', true);
 
                 getLocalStorageSize(); // 调用 getLocalStorageSize 函数
@@ -106,7 +83,6 @@ onMounted(() => {
   // 初始化时加载当前历史记录索引的数据
   nextTick(() => {
     if (graph.value) {
-      setGraph(graph);       // 调用 setGraph 设置 graph
       loadFromLocalStorage(); // 调用从 useHistory 导入的函数
       updateNodesList();       // 手动更新节点列表
       registerGraphEvents();   // 手动注册事件
