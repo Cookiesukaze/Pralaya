@@ -1,0 +1,167 @@
+[
+    {
+        "source": "0",
+        "target": "1"
+    },
+    {
+        "source": "1",
+        "target": "2"
+    },
+    {
+        "source": "2",
+        "target": "3",
+        "label": "记录"
+    },
+    {
+        "source": "2",
+        "target": "4",
+        "label": "记录"
+    },
+    {
+        "source": "2",
+        "target": "5",
+        "label": "设定"
+    },
+    {
+        "source": "1",
+        "target": "6"
+    },
+    {
+        "source": "6",
+        "target": "7",
+        "label": "安全"
+    },
+    {
+        "source": "6",
+        "target": "8",
+        "label": "风险"
+    },
+    {
+        "source": "0",
+        "target": "9"
+    },
+    {
+        "source": "9",
+        "target": "10"
+    },
+    {
+        "source": "10",
+        "target": "11",
+        "label": "身份"
+    },
+    {
+        "source": "10",
+        "target": "12",
+        "label": "注意事项"
+    },
+    {
+        "source": "9",
+        "target": "13"
+    },
+    {
+        "source": "13",
+        "target": "14",
+        "label": "收益"
+    },
+    {
+        "source": "13",
+        "target": "15",
+        "label": "特点"
+    },
+    {
+        "source": "0",
+        "target": "16"
+    },
+    {
+        "source": "16",
+        "target": "17"
+    },
+    {
+        "source": "17",
+        "target": "18",
+        "label": "覆盖"
+    },
+    {
+        "source": "17",
+        "target": "19",
+        "label": "应对"
+    },
+    {
+        "source": "16",
+        "target": "20"
+    },
+    {
+        "source": "20",
+        "target": "21",
+        "label": "原理"
+    },
+    {
+        "source": "20",
+        "target": "22",
+        "label": "缓解"
+    },
+    {
+        "source": "0",
+        "target": "23"
+    },
+    {
+        "source": "23",
+        "target": "24"
+    },
+    {
+        "source": "24",
+        "target": "25",
+        "label": "方法"
+    },
+    {
+        "source": "24",
+        "target": "26",
+        "label": "目标"
+    },
+    {
+        "source": "23",
+        "target": "27"
+    },
+    {
+        "source": "27",
+        "target": "28",
+        "label": "征税对象"
+    },
+    {
+        "source": "27",
+        "target": "29",
+        "label": "相关"
+    },
+    {
+        "source": "0",
+        "target": "30"
+    },
+    {
+        "source": "30",
+        "target": "31"
+    },
+    {
+        "source": "31",
+        "target": "32",
+        "label": "考虑因素"
+    },
+    {
+        "source": "31",
+        "target": "33",
+        "label": "储蓄工具"
+    },
+    {
+        "source": "30",
+        "target": "34"
+    },
+    {
+        "source": "34",
+        "target": "35",
+        "label": "方式"
+    },
+    {
+        "source": "34",
+        "target": "36",
+        "label": "方式"
+    }
+]

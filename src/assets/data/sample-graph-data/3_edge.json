@@ -1,0 +1,130 @@
+[
+    {
+        "source": "0",
+        "target": "1"
+    },
+    {
+        "source": "1",
+        "target": "2"
+    },
+    {
+        "source": "2",
+        "target": "3",
+        "label": "原则"
+    },
+    {
+        "source": "2",
+        "target": "4",
+        "label": "建议"
+    },
+    {
+        "source": "1",
+        "target": "5"
+    },
+    {
+        "source": "5",
+        "target": "6",
+        "label": "肌肉修复"
+    },
+    {
+        "source": "5",
+        "target": "7",
+        "label": "免疫功能"
+    },
+    {
+        "source": "0",
+        "target": "8"
+    },
+    {
+        "source": "8",
+        "target": "9"
+    },
+    {
+        "source": "9",
+        "target": "10",
+        "label": "益处"
+    },
+    {
+        "source": "9",
+        "target": "11",
+        "label": "作用"
+    },
+    {
+        "source": "8",
+        "target": "12"
+    },
+    {
+        "source": "12",
+        "target": "13",
+        "label": "增强心肺"
+    },
+    {
+        "source": "12",
+        "target": "14",
+        "label": "增加肌肉"
+    },
+    {
+        "source": "0",
+        "target": "15"
+    },
+    {
+        "source": "15",
+        "target": "16"
+    },
+    {
+        "source": "16",
+        "target": "17",
+        "label": "放松技巧"
+    },
+    {
+        "source": "16",
+        "target": "18",
+        "label": "心理帮助"
+    },
+    {
+        "source": "15",
+        "target": "19"
+    },
+    {
+        "source": "19",
+        "target": "20",
+        "label": "心理障碍"
+    },
+    {
+        "source": "19",
+        "target": "21",
+        "label": "常见问题"
+    },
+    {
+        "source": "0",
+        "target": "22"
+    },
+    {
+        "source": "22",
+        "target": "23"
+    },
+    {
+        "source": "23",
+        "target": "24",
+        "label": "预防"
+    },
+    {
+        "source": "23",
+        "target": "25",
+        "label": "作用"
+    },
+    {
+        "source": "22",
+        "target": "26"
+    },
+    {
+        "source": "26",
+        "target": "27",
+        "label": "预防措施"
+    },
+    {
+        "source": "26",
+        "target": "28",
+        "label": "早期发现"
+    }
+]

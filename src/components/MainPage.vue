@@ -84,7 +84,7 @@ const selectGraph = (id) => {
 
 const jsonPath = computed(() => {
   console.log("MainPage: Computing jsonPath, selectedGraph:", selectedGraph.value);
-  return selectedGraph.value?.id ? `${selectedGraph.value.id}.json` : `1.json`;
+  return selectedGraph.value?.id ? `${selectedGraph.value.id}` : `1`;
 });
 
 const topbarClass = computed(() => {

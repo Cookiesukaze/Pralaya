@@ -1,0 +1,74 @@
+[
+    {
+        "source": "0",
+        "target": "1"
+    },
+    {
+        "source": "1",
+        "target": "2"
+    },
+    {
+        "source": "2",
+        "target": "3",
+        "label": "编程范式"
+    },
+    {
+        "source": "2",
+        "target": "4",
+        "label": "特性"
+    },
+    {
+        "source": "1",
+        "target": "5"
+    },
+    {
+        "source": "5",
+        "target": "6",
+        "label": "核心特性"
+    },
+    {
+        "source": "5",
+        "target": "7",
+        "label": "优势"
+    },
+    {
+        "source": "0",
+        "target": "8"
+    },
+    {
+        "source": "8",
+        "target": "9"
+    },
+    {
+        "source": "9",
+        "target": "10"
+    },
+    {
+        "source": "10",
+        "target": "11",
+        "label": "要求"
+    },
+    {
+        "source": "10",
+        "target": "12",
+        "label": "限制"
+    },
+    {
+        "source": "8",
+        "target": "13"
+    },
+    {
+        "source": "13",
+        "target": "14"
+    },
+    {
+        "source": "14",
+        "target": "15",
+        "label": "分类"
+    },
+    {
+        "source": "14",
+        "target": "16",
+        "label": "分类"
+    }
+]

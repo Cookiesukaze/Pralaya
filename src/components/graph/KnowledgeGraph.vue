@@ -41,30 +41,32 @@ const loadGraphData = async () => {
     console.warn('KnowledgeGraph: 没有传递 jsonPath');
     return;
   }
-  const filePath = `../../assets/data/sample-graph-data/${props.jsonPath}`.replace(/\/{2,}/g, '/');
+  const nodeFilePath = `../../assets/data/sample-graph-data/${props.jsonPath}_node.json`.replace(/\/{2,}/g, '/');
+  const edgeFilePath = `../../assets/data/sample-graph-data/${props.jsonPath}_edge.json`.replace(/\/{2,}/g, '/');
   try {
-    // 检查 graphs 中是否存在 content 字段
     const graphWithContent = graphs.value.find(graph => graph.id.toString() === props.jsonPath.split('.')[0]);
 
-    let rawData;
-    if (graphWithContent && graphWithContent.content) {
-      rawData = JSON.parse(graphWithContent.content);
-      console.log('KnowledgeGraph: 使用 props.graphs 中的内容',rawData);
+    let nodesData, edgesData;
+    if (graphWithContent && graphWithContent.nodes && graphWithContent.edges) {
+      nodesData = graphWithContent.nodes;
+      edgesData = graphWithContent.edges;
+      console.log('KnowledgeGraph: 使用 props.graphs 中的内容');
     } else {
-      // 从本地文件加载
-      const loadFile = graphFiles[filePath];
-      if (!loadFile) {
-        throw new Error(`文件 ${filePath} 未找到`);
+      const loadNodeFile = graphFiles[nodeFilePath];
+      const loadEdgeFile = graphFiles[edgeFilePath];
+      if (!loadNodeFile || !loadEdgeFile) {
+        throw new Error(`文件 ${nodeFilePath} 或 ${edgeFilePath} 未找到`);
       }
-      rawData = await loadFile();
-      rawData = rawData.default;
-      console.log('KnowledgeGraph: 使用 本地文件的 json',rawData);
+      nodesData = await loadNodeFile();
+      edgesData = await loadEdgeFile();
+      nodesData = nodesData.default;
+      edgesData = edgesData.default;
+      console.log('KnowledgeGraph: 使用 本地文件的 json');
     }
-    if (graph) {    // 每次加载图表之前，销毁已有的图表实例
+    if (graph) {
       graph.destroy();
     }
-    // 解析和初始化图表
-    const { nodes, edges } = parseGraphData(rawData);
+    const { nodes, edges } = parseGraphData(nodesData, edgesData);
     graph = initializeGraph(knowledgeGraphRef.value, { nodes, edges });
   } catch (error) {
     console.error('KnowledgeGraph: 加载图表数据出错:', error);

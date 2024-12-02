@@ -4,47 +4,9 @@
 import G6 from "@antv/g6";
 import {nextTick} from "vue";
 
-export const parseGraphData = (data, parentId = null, nodes = [], edges = []) => {
-    const nodeId = data.name;
-    nodes.push({
-        id: nodeId,
-        label: data.name,
-        description: data.description,
-        x: Math.random() * 800,
-        y: Math.random() * 600
-    });
-
-    if (parentId) {
-        edges.push({
-            source: parentId,
-            target: nodeId
-        });
-    }
-
-    if (data.children) {
-        data.children.forEach((child) => {
-            parseGraphData(child, nodeId, nodes, edges);
-        });
-    }
-
-    if (data.keyword_relations) {
-        data.keyword_relations.forEach((relationObj, index) => {
-            const keywordId = `${nodeId}-keyword-${index}`;
-            nodes.push({
-                id: keywordId,
-                label: relationObj.keyword,
-                x: Math.random() * 800,
-                y: Math.random() * 600
-            });
-
-            edges.push({
-                source: nodeId,
-                target: keywordId,
-                label: relationObj.relation,
-                description: `关系: ${relationObj.relation}`
-            });
-        });
-    }
+export const parseGraphData = (nodesData, edgesData) => {
+    const nodes = typeof nodesData === 'string' ? JSON.parse(nodesData) : nodesData;
+    const edges = typeof edgesData === 'string' ? JSON.parse(edgesData) : edgesData;
     return { nodes, edges };
 };
 
@@ -79,33 +41,27 @@ export const initializeGraph = (container, graphData, options = {}) => {
     return graph;
 };
 
-export const parseTreeGraphData = (data) => {
+export const parseTreeGraphData = (nodesData, edgesData) => {
+    const nodes = typeof nodesData === 'string' ? JSON.parse(nodesData) : nodesData;
+    const edges = typeof edgesData === 'string' ? JSON.parse(edgesData) : edgesData;
     const processNode = (nodeData) => {
         const node = {
-            id: nodeData.name,
-            label: nodeData.name,
+            id: nodeData.id,
+            label: nodeData.label,
             description: nodeData.description,
             children: []
         };
-
-        if (nodeData.children) {
-            node.children = nodeData.children.map(child => processNode(child));
-        }
-
-        if (nodeData.keyword_relations) {
-            const keywordNodes = nodeData.keyword_relations.map((relation, index) => ({
-                id: `${nodeData.name}-keyword-${index}`,
-                label: relation.keyword,
-                edgeLabel: relation.relation,
-                edge: {
-                    description: `关系: ${relation.relation}`
-                }
-            }));
-            node.children.push(...keywordNodes);
-        }
+        const childEdges = edges.filter(edge => edge.source === nodeData.id);
+        childEdges.forEach(edge => {
+            const childNode = nodes.find(n => n.id === edge.target);
+            if (childNode) {
+                node.children.push(processNode(childNode));
+            }
+        });
         return node;
     };
-    return processNode(data);
+    const rootNode = nodes.find(node => !edges.some(edge => edge.target === node.id));
+    return processNode(rootNode);
 };
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {

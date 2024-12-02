@@ -1,0 +1,110 @@
+[
+    {
+        "source": "0",
+        "target": "1"
+    },
+    {
+        "source": "1",
+        "target": "2"
+    },
+    {
+        "source": "2",
+        "target": "3"
+    },
+    {
+        "source": "3",
+        "target": "4",
+        "label": "景点"
+    },
+    {
+        "source": "3",
+        "target": "5",
+        "label": "博物馆"
+    },
+    {
+        "source": "2",
+        "target": "6"
+    },
+    {
+        "source": "6",
+        "target": "7",
+        "label": "海滩"
+    },
+    {
+        "source": "6",
+        "target": "8",
+        "label": "文化"
+    },
+    {
+        "source": "1",
+        "target": "9"
+    },
+    {
+        "source": "9",
+        "target": "10"
+    },
+    {
+        "source": "10",
+        "target": "11",
+        "label": "历史遗址"
+    },
+    {
+        "source": "10",
+        "target": "12",
+        "label": "宗教"
+    },
+    {
+        "source": "0",
+        "target": "13"
+    },
+    {
+        "source": "13",
+        "target": "14"
+    },
+    {
+        "source": "14",
+        "target": "15"
+    },
+    {
+        "source": "15",
+        "target": "16",
+        "label": "地标"
+    },
+    {
+        "source": "15",
+        "target": "17",
+        "label": "文化遗产"
+    },
+    {
+        "source": "14",
+        "target": "18"
+    },
+    {
+        "source": "18",
+        "target": "19",
+        "label": "寺庙"
+    },
+    {
+        "source": "18",
+        "target": "20",
+        "label": "传统街区"
+    },
+    {
+        "source": "13",
+        "target": "21"
+    },
+    {
+        "source": "21",
+        "target": "22"
+    },
+    {
+        "source": "22",
+        "target": "23",
+        "label": "历史建筑"
+    },
+    {
+        "source": "22",
+        "target": "24",
+        "label": "美食"
+    }
+]

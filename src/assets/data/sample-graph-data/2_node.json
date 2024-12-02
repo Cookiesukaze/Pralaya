@@ -1,0 +1,127 @@
+[
+    {
+        "id": "0",
+        "label": "旅游指南",
+        "description": ""
+    },
+    {
+        "id": "1",
+        "label": "欧洲旅行",
+        "description": ""
+    },
+    {
+        "id": "2",
+        "label": "法国",
+        "description": ""
+    },
+    {
+        "id": "3",
+        "label": "巴黎",
+        "description": "巴黎是法国的首都，以埃菲尔铁塔、卢浮宫和香榭丽舍大街等著名景点闻名全球。"
+    },
+    {
+        "id": "4",
+        "label": "埃菲尔铁塔",
+        "description": ""
+    },
+    {
+        "id": "5",
+        "label": "卢浮宫",
+        "description": ""
+    },
+    {
+        "id": "6",
+        "label": "尼斯",
+        "description": "尼斯位于法国南部，以蔚蓝海岸和丰富的历史文化吸引着游客。"
+    },
+    {
+        "id": "7",
+        "label": "蔚蓝海岸",
+        "description": ""
+    },
+    {
+        "id": "8",
+        "label": "艺术博物馆",
+        "description": ""
+    },
+    {
+        "id": "9",
+        "label": "意大利",
+        "description": ""
+    },
+    {
+        "id": "10",
+        "label": "罗马",
+        "description": "罗马是意大利的首都，以古罗马遗址、斗兽场、梵蒂冈等著称，是历史爱好者的理想旅游目的地。"
+    },
+    {
+        "id": "11",
+        "label": "斗兽场",
+        "description": ""
+    },
+    {
+        "id": "12",
+        "label": "梵蒂冈",
+        "description": ""
+    },
+    {
+        "id": "13",
+        "label": "亚洲旅行",
+        "description": ""
+    },
+    {
+        "id": "14",
+        "label": "日本",
+        "description": ""
+    },
+    {
+        "id": "15",
+        "label": "东京",
+        "description": "东京是日本的首都，以东京塔、浅草寺和新宿购物区著称，既有现代都市感，也保留了传统文化。"
+    },
+    {
+        "id": "16",
+        "label": "东京塔",
+        "description": ""
+    },
+    {
+        "id": "17",
+        "label": "浅草寺",
+        "description": ""
+    },
+    {
+        "id": "18",
+        "label": "京都",
+        "description": "京都是日本的古都，以其保存完好的寺庙、神社和花园闻名，是日本文化的象征。"
+    },
+    {
+        "id": "19",
+        "label": "金阁寺",
+        "description": ""
+    },
+    {
+        "id": "20",
+        "label": "祗园",
+        "description": ""
+    },
+    {
+        "id": "21",
+        "label": "泰国",
+        "description": ""
+    },
+    {
+        "id": "22",
+        "label": "曼谷",
+        "description": "曼谷是泰国的首都，以大皇宫、卧佛寺以及夜市和美食闻名，是东南亚最热门的旅游城市之一。"
+    },
+    {
+        "id": "23",
+        "label": "大皇宫",
+        "description": ""
+    },
+    {
+        "id": "24",
+        "label": "夜市",
+        "description": ""
+    }
+]
