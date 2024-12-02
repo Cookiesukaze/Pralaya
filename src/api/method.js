@@ -234,3 +234,20 @@ export const createEmptyGraph = () => {
         }
     });
 }
+
+export const updateGraphNodesAndEdges = (id, nodes, edges) => {
+    return axios({
+        url: `/graph/${id}/nodes-edges`,
+        method: "PATCH",
+        data: {
+            nodes: nodes,
+            edges: edges
+        },
+        config: {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            timeout: 3000
+        }
+    });
+};

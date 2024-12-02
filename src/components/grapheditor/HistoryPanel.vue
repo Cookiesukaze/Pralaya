@@ -32,6 +32,14 @@
         当前版本
       </div>
     </div>
+    <div v-if="historyList.length > 0" class="text-center py-4">
+      <button
+          @click="saveCurrentHistory"
+          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        保存当前历史记录
+      </button>
+    </div>
   </div>
 </template>
 
@@ -39,6 +47,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import useHistory from './utils/useHistory'
 import { currentTab } from './utils/store' // 确保导入 currentTab
+import { updateGraphNodesAndEdges } from '../../api/method.js' // 导入 updateGraphNodesAndEdges 函数
+import { useRoute } from 'vue-router' // 导入 useRoute 函数
 
 const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter, loadFromLocalStorage } = useHistory()
 
@@ -63,6 +73,34 @@ watch(() => currentTab.value, (newTab) => {
 onMounted(() => {
   loadFromLocalStorage(); // 加载历史记录
 });
+
+const route = useRoute(); // 获取路由实例
+
+const saveCurrentHistory = () => {
+  const graphId = route.params.id; // 从路由参数中获取图的 id
+  if (currentHistoryIndex.value >= 0 && currentHistoryIndex.value < historyList.value.length) {
+    const currentState = historyList.value[currentHistoryIndex.value].data;
+    const nodes = currentState.nodes.map(node => ({
+      id: node.id,
+      label: node.label,
+      description: node.description
+    }));
+    const edges = currentState.edges.map(edge => ({
+      source: edge.source,
+      target: edge.target,
+      label: edge.label
+    }));
+    updateGraphNodesAndEdges(graphId, JSON.stringify(nodes), JSON.stringify(edges))
+      .then(response => {
+        console.log('保存成功:', response);
+      })
+      .catch(error => {
+        console.error('保存失败:', error);
+      });
+  } else {
+    console.error('无效的历史记录索引:', currentHistoryIndex.value);
+  }
+};
 </script>
 
 <style scoped>
