@@ -2,7 +2,7 @@
 <template>
   <div>
     <label class="block text-sm font-medium text-gray-700 mb-2">
-      知识库 <span class="text-red-500">*</span>
+      知识库 
     </label>
 
     <!-- 上传区域 -->

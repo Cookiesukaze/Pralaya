@@ -75,7 +75,7 @@
           @delete="handleOutlineFileDelete"
           @upload="handleOutlineFileUpload"
       />
-      <p v-if="outlineErrors.files" class="mt-1 text-sm text-red-600">{{ outlineErrors.files }}</p>
+      <p v-if="errors.outlineFiles" class="mt-1 text-sm text-red-600">{{ errors.outlineFiles }}</p>
 
       <!-- 文件列表 -->
       <div>
@@ -264,9 +264,6 @@ const handleIconSelect = (icon) => {
 // 表单验证
 const { errors, validateForm } = useFormValidation()
 
-const outlineErrors = reactive({
-  files: ''
-})
 
 // 表单提交
 const submitForm = async () => {

@@ -1,7 +1,9 @@
 <!-- OutlineList.vue -->
 <template>
   <div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">知识图谱大纲</label>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      知识图谱大纲 <span class="text-red-500">*</span>
+    </label>
 
     <!-- 上传区域 -->
     <div

@@ -88,13 +88,13 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
         } catch (error) {
             console.error('handleFileDelete: 删除文件失败:', error);
             if (retryCount > 0) {
-                console.log(`将在 ${delayMs/1000} 秒后重试, 剩余重试次数: ${retryCount}`);
+                console.log(`将在 ${delayMs / 1000} 秒后重试, 剩余重试次数: ${retryCount}`);
                 // 等待一段时间后重试
-                await new Promise(resolve => setTimeout(resolve, delayMs));
-                // 递归调用,重试次数减1
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+                // 递归调用, 重试次数减1
                 return handleFileDelete(fileId, retryCount - 1, delayMs);
             }
-            throw error; // 如果重试次数用完仍然失败,则抛出错误
+            throw error; // 如果重试次数用完仍然失败, 则抛出错误
         }
     };
 

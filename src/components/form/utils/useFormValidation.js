@@ -3,15 +3,17 @@ import { reactive } from 'vue'
 export function useFormValidation() {
     const errors = reactive({
         name: '',
-        files: ''
+        files: '',
+        outlineFiles: ''
     })
 
-    const validateForm = (formData, files) => {
+    const validateForm = (formData, files, outlineFiles) => {
         let isValid = true
 
         // 重置错误信息
         errors.name = ''
         errors.files = ''
+        errors.outlineFiles = ''
 
         // 验证名称
         if (!formData.name?.trim()) {
@@ -23,11 +25,17 @@ export function useFormValidation() {
         }
 
         // 验证文件数量 - files 是一个 ref，需要访问其 value 属性
-        if (!Array.isArray(files)) {
-            errors.files = '请至少上传一个文件'
+        if (Array.isArray(files) && files.length > 10) {
+            errors.files = '文件数量不能超过10个'
             isValid = false
-        } else if (files.length === 0) {
-            errors.files = '请至少上传一个文件'
+        }
+
+        // 验证大纲文件数量 - outlineFiles 是一个 ref，需要访问其 value 属性
+        if (!Array.isArray(outlineFiles) || outlineFiles.length === 0) {
+            errors.outlineFiles = '请上传一个大纲文件'
+            isValid = false
+        } else if (outlineFiles.length > 1) {
+            errors.outlineFiles = '只能上传一个大纲文件'
             isValid = false
         }
 
