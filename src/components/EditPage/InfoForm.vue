@@ -66,6 +66,16 @@
         <p class="mt-1 text-sm text-red-600">{{ errors.prompt }}</p>
       </div>
 
+      <!-- 知识图谱大纲 -->
+      <OutlineList
+          v-model="outlineFiles"
+          :is-uploading="isOutlineUploading"
+          :upload-progress="outlineUploadProgress"
+          @delete="handleOutlineFileDelete"
+          @upload="handleOutlineFileUpload"
+      />
+      <p v-if="outlineErrors.files" class="mt-1 text-sm text-red-600">{{ outlineErrors.files }}</p>
+
       <!-- 文件列表 -->
       <div>
         <FileList
@@ -98,6 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import IconPicker from '../form/IconPicker.vue'
 import FileList from '../form/FileList.vue'
+import OutlineList from '../form/OutlineList.vue'
 import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
 import { getGraphById, knowledgeBaseAPI } from '../../api/method'
@@ -160,6 +171,24 @@ const {
   console.log('文件上传成功:', processedFiles)
 })
 
+// 知识图谱大纲文件处理
+const {
+  files: outlineFiles,
+  isUploading: isOutlineUploading,
+  uploadProgress: outlineUploadProgress,
+  uploadError: outlineUploadError,
+  handleFileUpload: handleOutlineFileUpload,
+  handleFileDelete: handleOutlineFileDelete,
+  handleDrop: handleOutlineDrop,
+  handleDragOver: handleOutlineDragOver,
+  reset: resetOutline,
+  uploadFiles: uploadOutlineFiles,
+  deleteFiles: deleteOutlineFiles,
+  pendingDeleteFileIds: pendingOutlineDeleteFileIds
+} = useFileHandler(graphId, (processedFiles) => {
+  console.log('大纲文件上传成功:', processedFiles)
+}, true) // 传递 isOutline: true
+
 // 监听 graphData 变化，获取知识库ID
 watch(
     () => props.graphData,
@@ -198,13 +227,31 @@ watch(
         } else {
           files.value = []
         }
+
+        // 添加对 outline 的处理
+        if (newData.outline) {
+          try {
+            const outlineData = JSON.parse(newData.outline)
+            if (outlineData.files && Array.isArray(outlineData.files)) {
+              outlineFiles.value = outlineData.files.map((file) => ({
+                id: file.file_id,
+                name: file.name,
+                size: file.size,
+                format: file.format,
+                status: 'success'
+              }))
+            }
+          } catch (error) {
+            console.error("大纲文件列表解析失败", error)
+            outlineFiles.value = []
+          }
+        } else {
+          outlineFiles.value = []
+        }
       }
     },
     { immediate: true }
 )
-
-
-
 
 // 处理图标选择
 const handleIconSelect = (icon) => {
@@ -215,13 +262,15 @@ const handleIconSelect = (icon) => {
 // 表单验证
 const { errors, validateForm } = useFormValidation()
 
-
+const outlineErrors = reactive({
+  files: ''
+})
 
 // 表单提交
 const submitForm = async () => {
   try {
     globalError.value = '';
-    if (!validateForm(formData, files.value)) {
+    if (!validateForm(formData, files.value, outlineFiles.value)) {
       return;
     }
 
@@ -253,6 +302,7 @@ const submitForm = async () => {
 // 组件卸载时清理
 onUnmounted(() => {
   reset() // 调用之前定义的 reset 函数
+  resetOutline() // 调用大纲文件的 reset 函数
 })
 </script>
 

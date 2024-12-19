@@ -113,7 +113,7 @@ export const postChat = async (data, onChunkReceived) => {
 
 // method.js所有的知识库管理
 export const knowledgeBaseAPI = {
-uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
+    uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress, isOutline = false) => {
         if (!(formData instanceof FormData)) {
             throw new Error('formData must be an instance of FormData')
         }
@@ -129,15 +129,18 @@ uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress) => {
                     onUploadProgress: onProgress
                 }
             })
-        console.log("文件上传返回结果：", response.data)
+            console.log("文件上传返回结果：", response.data)
 
-        // 2. 然后更新图的文件列表
-        const updateResponse = await axios({
-            url: `/graph/${graphId}/files`,
-            method: 'patch',
-            data: response.data
-        })
-        console.log("更新图文件列表结果：", updateResponse.data)
+            // 根据 isOutline 参数，调用不同的 URL 更新图的文件列表
+            const updateUrl = isOutline ? `/graph/${graphId}/outline` : `/graph/${graphId}/files`;
+
+            // 更新图的文件列表
+            const updateResponse = await axios({
+                url: updateUrl,
+                method: 'patch',
+                data: response.data
+            });
+            console.log("更新图文件列表结果：", updateResponse.data);
 
             return response
         } catch (error) {

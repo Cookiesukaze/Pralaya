@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { getGraphById, knowledgeBaseAPI } from '../../../api/method'
 
-export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = () => {}) {
+export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = () => {}, isOutline = false) {
     const knowledgeBaseId = ref(initialKnowledgeBaseId)
     const files = ref([])
     const isUploading = ref(false)
@@ -110,7 +110,6 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
     }
 
     // 上传文件到服务器
-    // 上传文件到服务器
     const uploadFiles = async (baseId) => {
         if (pendingUploadFiles.value.length === 0) return []
 
@@ -145,7 +144,8 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
                         )
                         fileData.progress = percentCompleted
                         updateTotalProgress()
-                    }
+                    },
+                    isOutline // 传递 isOutline 参数
                 )
 
                 uploadResults.push(result.data)
