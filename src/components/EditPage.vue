@@ -50,12 +50,10 @@ const goToMainPage = () => {
 
 // 获取图谱详情
 const fetchData = async () => {
-  if (!isEditing) return;
-
   try {
     isLoading.value = true;
     await fetchGraph();
-    graphData.value = graphs.value[graphId - 1];
+    graphData.value = graphs.value.find(graph => graph.id === parseInt(graphId));
     console.log('EditPage: 获取到的图谱详情:', graphData.value);
   } catch (error) {
     console.error('EditPage: 获取图谱详情失败:', error);
@@ -65,9 +63,7 @@ const fetchData = async () => {
 };
 
 onMounted(() => {
-  if (isEditing) {
-    fetchData();
-  }
+  fetchData();
 });
 </script>
 

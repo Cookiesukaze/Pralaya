@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon } from '@heroicons/vue/24/outline'
+import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import { defineProps, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -82,7 +82,8 @@ const iconComponents = {
   BeakerIcon,
   BookOpenIcon,
   BriefcaseIcon,
-  CalculatorIcon
+  CalculatorIcon,
+  QuestionMarkCircleIcon
 }
 
 const toggleSidebar = () => {

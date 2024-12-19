@@ -31,7 +31,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, PencilSquareIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon } from '@heroicons/vue/24/outline';
+import { BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, PencilSquareIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline';
 import { defineProps } from 'vue';
 
 // 从父组件接收当前选中的图表

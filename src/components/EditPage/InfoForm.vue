@@ -154,6 +154,42 @@ const selectedIcon = ref({
   component: HeroIcons.QuestionMarkCircleIcon // 设置默认图标
 })
 
+// 更新 graphData
+const updateGraphData = () => {
+  if (!props.graphData) {
+    console.error('props.graphData 不存在');
+    return;
+  }
+  // 更新 graphData 的其他字段
+  props.graphData.name = formData.name || '';
+  props.graphData.description = formData.description || '';
+  props.graphData.prompt = formData.prompt || '';
+  props.graphData.icon = selectedIcon.value?.name || '';
+
+  // 确保 outline 和 filenameList 是对象
+  if (typeof props.graphData.outline === 'string') {
+    try {
+      props.graphData.outline = JSON.parse(props.graphData.outline);
+    } catch (error) {
+      console.error('解析 outline 失败:', error);
+      props.graphData.outline = { files: [] };
+    }
+  } else if (!props.graphData.outline) {
+    props.graphData.outline = { files: [] };
+  }
+
+  if (typeof props.graphData.filenameList === 'string') {
+    try {
+      props.graphData.filenameList = JSON.parse(props.graphData.filenameList);
+    } catch (error) {
+      console.error('解析 filenameList 失败:', error);
+      props.graphData.filenameList = { files: [] };
+    }
+  } else if (!props.graphData.filenameList) {
+    props.graphData.filenameList = { files: [] };
+  }
+};
+
 // 文件处理
 const {
   files,
@@ -170,8 +206,32 @@ const {
   pendingDeleteFileIds
 } = useFileHandler(graphId, (processedFiles) => {
   // 上传成功后的回调
-  console.log('文件上传成功:', processedFiles)
-})
+  console.log('文件上传成功:', processedFiles);
+  // 更新 graphData
+  updateGraphData();
+  // 更新前端本地信息
+  if (props.graphData && props.graphData.filenameList) {
+    props.graphData.filenameList.files = processedFiles.map(file => ({
+      name: file.name,
+      size: file.size,
+      format: file.format,
+      file_id: file.id
+    }));
+  }
+}, false, (uploadedFile) => {
+  // 更新 graphData 中的 filenameList
+  if (props.graphData) {
+    if (!props.graphData.filenameList) {
+      props.graphData.filenameList = { files: [] };
+    }
+    props.graphData.filenameList.files.push({
+      name: uploadedFile.name,
+      size: uploadedFile.size,
+      format: uploadedFile.format,
+      file_id: uploadedFile.id
+    });
+  }
+});
 
 // 知识图谱大纲文件处理
 const {
@@ -188,8 +248,32 @@ const {
   deleteFiles: deleteOutlineFiles,
   pendingDeleteFileIds: pendingOutlineDeleteFileIds
 } = useFileHandler(graphId, (processedFiles) => {
-  console.log('大纲文件上传成功:', processedFiles)
-}, true) // 传递 isOutline: true
+  console.log('大纲文件上传成功:', processedFiles);
+  // 更新 graphData
+  updateGraphData();
+  // 更新前端本地信息
+  if (props.graphData && props.graphData.outline) {
+    props.graphData.outline.files = processedFiles.map(file => ({
+      name: file.name,
+      size: file.size,
+      format: file.format,
+      file_id: file.id
+    }));
+  }
+}, true, (uploadedFile) => {
+  // 更新 graphData 中的 outline
+  if (props.graphData) {
+    if (!props.graphData.outline) {
+      props.graphData.outline = { files: [] };
+    }
+    props.graphData.outline.files.push({
+      name: uploadedFile.name,
+      size: uploadedFile.size,
+      format: uploadedFile.format,
+      file_id: uploadedFile.id
+    });
+  }
+});
 
 // 监听 graphData 变化，获取知识库ID
 watch(
@@ -280,7 +364,9 @@ const submitForm = async () => {
       name: formData.name,
       description: formData.description,
       icon: selectedIcon.value?.name || '',
-      prompt: formData.prompt || ''
+      prompt: formData.prompt || '',
+      filenameList: JSON.stringify(props.graphData.filenameList),
+      outline: JSON.stringify(props.graphData.outline)
     };
 
     if (isEditing) {
