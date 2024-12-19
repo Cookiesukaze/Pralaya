@@ -25,7 +25,9 @@
           <component :is="selectedIcon?.component || QuestionMarkCircleIcon" class="w-6 h-6" />
         </button>
         <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-2">知识图谱名称</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            知识图谱名称 <span class="text-red-500">*</span>
+          </label>
           <input
               v-model="formData.name"
               :class="{ 'border-red-500': errors.name }"
@@ -54,7 +56,6 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
           智能问答系统提示词
-          <span class="text-gray-500 text-xs ml-1">(选填)</span>
         </label>
         <textarea
             v-model="formData.prompt"
@@ -85,6 +86,7 @@
             @delete="handleFileDelete"
             @upload="handleFileUpload"
         />
+
         <p v-if="errors.files" class="mt-1 text-sm text-red-600">{{ errors.files }}</p>
       </div>
     </div>

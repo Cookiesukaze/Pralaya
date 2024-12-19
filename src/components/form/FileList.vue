@@ -1,7 +1,9 @@
 <!-- FileList.vue -->
 <template>
   <div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">知识库</label>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      知识库 <span class="text-red-500">*</span>
+    </label>
 
     <!-- 上传区域 -->
     <div
@@ -137,7 +139,7 @@ const removeFile = (file) => {
     return
   }
 
-  emit('delete', file.id)
+  emit('delete', file.id) // 触发删除事件
 }
 
 // 格式化文件大小

@@ -222,6 +222,7 @@ export const knowledgeBaseAPI = {
 
 };
 
+// 创建空图谱
 export const createEmptyGraph = () => {
     return axios({
         url: "/graph",
