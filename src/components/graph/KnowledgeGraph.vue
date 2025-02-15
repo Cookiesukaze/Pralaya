@@ -1,5 +1,5 @@
 <template>
-  <div ref="outerContainer" style="position: relative;">
+  <div ref="outerContainer" class="graph-outer-container" style="position: relative;">
     <div ref="knowledgeGraphRef" class="graph-container w-full"></div>
     <GraphToolbar
         :onRefresh="refreshGraph"
@@ -146,4 +146,16 @@ watch(() => props.jsonPath, (newPath) => {
   }
 });
 </script>
+
+<style scoped>
+.graph-outer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+}
+
+.graph-container {
+  flex-grow: 1; /* 图谱区域撑满剩余空间 */
+}
+</style>
 

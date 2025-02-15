@@ -1,5 +1,5 @@
 <template>
-  <div ref="outerContainer" style="position: relative;">
+  <div ref="outerContainer" class="graph-outer-container" style="position: relative;">
     <div ref="treeGraphRef" class="graph-container w-full"></div>
     <GraphToolbar
         :onRefresh="refreshGraph"
@@ -144,5 +144,17 @@ watch(() => props.jsonPath, (newPath) => {
   }
 });
 </script>
+
+<style>
+.graph-outer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+}
+
+.graph-container {
+  flex-grow: 1;
+}
+</style>
 
 
