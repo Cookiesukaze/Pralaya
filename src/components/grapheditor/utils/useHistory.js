@@ -11,28 +11,43 @@ const MAX_HISTORY = 5;
 let graph = null;
 let graphUtils = null;
 
-const addToHistory = (action, showInHistoryPanel = true) => {
+const addToHistory = (action, showInHistoryPanel = true, isPositionOnly = false) => {
+    // 收集图的所有信息，包括节点、边和视图状态（例如缩放）
     const data = {
         nodes: graph.value.getNodes().map(node => {
             const model = node.getModel();
             return {
-                id: model.id, // 节点的唯一标识符
-                label: model.label, // 节点的标签
-                description: model.description, // 节点的描述
-                x: model.x, // 节点的 x 坐标
-                y: model.y // 节点的 y 坐标
+                id: model.id,
+                label: model.label,
+                description: model.description,
+                x: model.x,
+                y: model.y
             };
         }),
         edges: graph.value.getEdges().map(edge => {
             const model = edge.getModel();
             return {
-                id: model.id, // 边的唯一标识符
-                source: model.source, // 边的起始节点
-                target: model.target, // 边的目标节点
-                label: model.label || ' ' // 确保 label 至少是空字符串或空格
+                id: model.id,
+                source: model.source,
+                target: model.target,
+                label: model.label || ' '
             };
-        }).filter(edge => edge && edge.id && edge.source && edge.target) // 过滤掉无效的边
+        }).filter(edge => edge && edge.id && edge.source && edge.target),
+        transform: {
+            zoom: graph.value.getZoom()
+            // 可在此处增加其它视图状态信息
+        }
     };
+
+    if (isPositionOnly) {
+        // 若仅为位置更新，覆盖当前的历史记录，不新增记录
+        if (currentHistoryIndex.value >= 0) {
+            historyList.value[currentHistoryIndex.value].data = data;
+            historyList.value[currentHistoryIndex.value].timestamp = new Date().toLocaleTimeString();
+        }
+        saveToLocalStorage();
+        return;
+    }
 
     // 如果当前记录不是最新状态，删除之后的所有记录
     if (currentHistoryIndex.value !== 0) {
@@ -102,7 +117,7 @@ const saveToLocalStorage = debounce(() => {
     } catch (error) {
         console.error('Failed to save history to localStorage:', error);
     }
-}, 300); // 300ms 的防抖时间
+}, 100); // 将防抖时间调整为 100ms
 
 const initializeHistory = (initialData) => {
     if (!initialData) {
@@ -204,6 +219,13 @@ const getLocalStorageSize = () => {
 export default function useHistory() {
     graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
     graph = graphUtils.graph;
+
+    // 注册拖拽结束事件，当节点拖拽结束时只更新位置数据而不新增记录
+    if (graph.value) {
+        graph.value.on('node:dragend:history', (e) => {
+            addToHistory('拖拽节点位置更新', true, true);
+        });
+    }
 
     const rollbackToHistory = (index) => {
         const historyData = historyList.value[index].data;

@@ -31,7 +31,11 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             width,
             height,
             modes: {
-                default: ['drag-canvas', 'zoom-canvas', 'drag-node']
+                default: [
+                    'drag-canvas',
+                    'zoom-canvas',
+                    { type: 'drag-node', delegate: true } // 改为委托拖拽模式
+                ]
             },
             layout: {
                 type: 'dagre',

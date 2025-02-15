@@ -129,17 +129,16 @@ const handleFiles = (fileList) => {
 
 // 删除文件
 const removeFile = (file) => {
-  if (!file.id) {
+  // 打印最新的文件列表以便调试
+  console.log('最新文件列表:', props.modelValue);
+  
+  // 判断文件是否仍在上传中
+  if (file.status === 'pending' || (!file.id && !file.file_id)) {
     console.warn('文件尚未上传，无法删除。')
     return
   }
-
-  if (file.isDisabled) {
-    console.warn('文件暂时不可删除。')
-    return
-  }
-
-  emit('delete', file.id)
+  // 允许删除已上传的文件
+  emit('delete', file.id || file.file_id)
 }
 
 // 格式化文件大小

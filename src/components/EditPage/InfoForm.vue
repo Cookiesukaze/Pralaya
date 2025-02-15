@@ -253,6 +253,7 @@ const {
   updateGraphData();
   // 更新前端本地信息
   if (props.graphData && props.graphData.outline) {
+
     props.graphData.outline.files = processedFiles.map(file => ({
       name: file.name,
       size: file.size,

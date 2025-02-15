@@ -79,6 +79,7 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
     // 处理文件删除
     const handleFileDelete = async (fileId, retryCount = 5, delayMs = 4000) => {
         try {
+            console.log('handleFileDelete: 获得待删除的id',fileId)
             const fileToDelete = files.value.find((file) => file.id === fileId);
             if (!fileToDelete) return;
             // 调用 API 删除文件
@@ -150,15 +151,17 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
 
                 uploadResults.push(result.data)
 
-                // 更新文件状态
+                // 修改后：根据 name 匹配文件，从返回的 files 数组中获取 file_id
+                console.log('useFileHandler: 文件上传成功:', result.data)
                 const fileIndex = files.value.findIndex((f) => f.name === fileData.name)
                 if (fileIndex !== -1) {
+                    const uploadedFile = result.data.files.find(file => file.name === fileData.name)
                     files.value.splice(fileIndex, 1, {
                         ...files.value[fileIndex],
-                        id: result.data.id,
+                        id: uploadedFile ? uploadedFile.file_id : undefined,
                         status: 'success',
                         progress: 100
-                    });
+                    })
                 }
             }
 
