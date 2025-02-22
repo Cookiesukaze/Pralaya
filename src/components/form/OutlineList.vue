@@ -144,6 +144,8 @@ const removeFile = (file) => {
     toast.error('文件尚未上传，无法删除。')
     return
   }
+  // 显示文件删除中的弹窗
+  toast.processing('文件删除中...')
   // 允许删除已上传的文件
   emit('delete', file.id || file.file_id)
   toast.success('文件删除成功')

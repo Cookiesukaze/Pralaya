@@ -147,6 +147,8 @@ const removeFile = (file) => {
     return
   }
 
+  // 显示文件删除中的弹窗
+  toast.processing('文件删除中...')
   emit('delete', file.id) // 触发删除事件
   toast.success('文件删除成功')
 }
