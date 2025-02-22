@@ -367,8 +367,8 @@ const submitForm = async () => {
       description: formData.description,
       icon: selectedIcon.value?.name || '',
       prompt: formData.prompt || '',
-      filenameList: JSON.stringify(props.graphData.filenameList),
-      outline: JSON.stringify(props.graphData.outline)
+      filenameList: JSON.stringify(props.graphData.filenameList).replace(/\\/g, '').replace(/^"|"$/g, ''),
+      outline: JSON.stringify(props.graphData.outline).replace(/\\/g, '').replace(/^"|"$/g, '')
     };
 
     if (isEditing) {
