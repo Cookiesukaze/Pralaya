@@ -115,6 +115,7 @@ import { useFormValidation } from '../form/utils/useFormValidation'
 import { useFileHandler } from '../form/utils/useFileHandler'
 import { getGraphById, knowledgeBaseAPI } from '../../api/method'
 import * as HeroIcons from '@heroicons/vue/24/outline'
+import { toast } from '../../assets/scripts/utils/toast'
 
 // **补充：定义 props**
 const props = defineProps({
@@ -374,12 +375,13 @@ const submitForm = async () => {
       // 更新知识库信息
       await knowledgeBaseAPI.updateKnowledgeBase(graphId, formPayload);
       // 显示成功消息
-      console.log('更新成功');
+      toast.success('更新成功');
     } else {
       // 创建新知识库的逻辑...
     }
   } catch (error) {
     console.error('提交失败:', error);
+    toast.error('提交失败');
   } finally {
     isSubmitting.value = false;
   }

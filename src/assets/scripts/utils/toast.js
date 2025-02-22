@@ -45,7 +45,8 @@ class ToastManager {
             text: message,
             duration: -1,
             style: {
-                background: "#3498db"
+                background: "#3498db",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // 修改阴影色
             }
         }).showToast()
         return this.currentToast
@@ -59,7 +60,8 @@ class ToastManager {
             text: message,
             duration: duration,
             style: {
-                background: "#07bc0c"
+                background: "#07bc0c",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // 修改阴影色
             }
         }).showToast()
         return this.currentToast
@@ -73,7 +75,23 @@ class ToastManager {
             text: message,
             duration: duration,
             style: {
-                background: "#e74c3c"
+                background: "#e74c3c",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // 修改阴影色
+            }
+        }).showToast()
+        return this.currentToast
+    }
+
+    processing(message = "正在处理请求...", position = null) {
+        this.hideCurrentToast()
+        this.currentToast = Toastify({
+            ...this.defaultConfig,
+            ...(position && this.POSITIONS[position]),
+            text: message,
+            duration: -1,
+            style: {
+                background: "#f39c12",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" // 修改阴影色
             }
         }).showToast()
         return this.currentToast
@@ -98,3 +116,6 @@ class ToastManager {
 }
 
 export const toast = new ToastManager()
+
+// 设置弹窗位置为右下角
+toast.setDefaultPosition("top", "center")

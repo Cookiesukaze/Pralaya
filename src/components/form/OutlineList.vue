@@ -80,8 +80,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { DocumentIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { toast } from '../../assets/scripts/utils/toast'
 
 // 定义 Props
 const props = defineProps({
@@ -96,6 +97,10 @@ const props = defineProps({
   uploadProgress: {
     type: Number,
     default: 0
+  },
+  uploadError: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -124,6 +129,7 @@ const handleFileChange = (event) => {
 // 处理文件列表
 const handleFiles = (fileList) => {
   const fileArray = Array.from(fileList)
+  toast.loading('文件上传中...')
   emit('upload', fileArray)
 }
 
@@ -135,10 +141,12 @@ const removeFile = (file) => {
   // 判断文件是否仍在上传中
   if (file.status === 'pending' || (!file.id && !file.file_id)) {
     console.warn('文件尚未上传，无法删除。')
+    toast.error('文件尚未上传，无法删除。')
     return
   }
   // 允许删除已上传的文件
   emit('delete', file.id || file.file_id)
+  toast.success('文件删除成功')
 }
 
 // 格式化文件大小
@@ -149,6 +157,18 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+watch(() => props.isUploading, (newVal) => {
+  if (!newVal) {
+    toast.success('文件上传成功')
+  }
+})
+
+watch(() => props.uploadError, (newVal) => {
+  if (newVal) {
+    toast.error('文件上传失败')
+  }
+})
 </script>
 
 <style scoped>
