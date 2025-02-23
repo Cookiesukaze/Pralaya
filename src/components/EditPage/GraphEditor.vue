@@ -50,7 +50,7 @@ watch(() => props.graphData, (newGraphData) => {
 
 // 计算属性判断图谱是否不可用
 const isGraphUnavailable = computed(() => {
-  return props.graphData.isAvailable === null || props.graphData.isAvailable === 'NO'
+  return !props.graphData || props.graphData.isAvailable === null || props.graphData.isAvailable === 'NO'
 })
 
 // 标签页配置
