@@ -1,6 +1,6 @@
 <!-- GraphEditor.vue -->
 <template>
-  <div class="h-screen bg-white shadow-lg">
+  <div class="relative h-screen bg-white shadow-lg">
     <GraphContainer :graphData="graphData" />
     <div class="h-2/5 overflow-y-auto p-4">
       <div class="flex space-x-4 border-b border-gray-200 mb-4">
@@ -24,11 +24,14 @@
       <EdgeEditor v-if="currentTab === 'edge'" />
       <HistoryPanel v-if="currentTab === 'history'" />
     </div>
+    <div v-if="isGraphUnavailable" class="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
+      <span class="text-white text-lg">图谱编辑暂不可用</span>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import GraphContainer from '../grapheditor/GraphContainer.vue'
 import NodeEditor from '../grapheditor/NodeEditor.vue'
 import EdgeEditor from '../grapheditor/EdgeEditor.vue'
@@ -39,6 +42,16 @@ import useHistory from '../grapheditor/utils/useHistory'
 // 当前选中的标签页
 const props = defineProps(['graphData'])
 // const currentTab = ref('node')
+
+// 打印传递过来的 graphData
+watch(() => props.graphData, (newGraphData) => {
+  console.log("GraphEditor:", newGraphData)
+})
+
+// 计算属性判断图谱是否不可用
+const isGraphUnavailable = computed(() => {
+  return props.graphData.isAvailable === null || props.graphData.isAvailable === 'NO'
+})
 
 // 标签页配置
 const tabs = [
