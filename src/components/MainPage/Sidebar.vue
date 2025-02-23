@@ -1,5 +1,5 @@
 <template>
-  <div :class="isSidebarCollapsed ? 'lg:w-20' : 'lg:w-72'" class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300">
+  <div :class="isSidebarCollapsed ? 'w-20' : 'w-72'" class="fixed inset-y-0 z-50 flex flex-col transition-all duration-300">
     <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-themeBorderGrey125 bg-white px-4 sidebar-hide-scrollbar">
       <div class="flex h-16 shrink-0 items-center justify-between">
         <img v-if="!isSidebarCollapsed" class="h-8 w-auto" :src="company.logo" alt="Company logo" />
