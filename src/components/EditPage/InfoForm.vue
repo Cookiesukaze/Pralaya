@@ -373,6 +373,7 @@ const submitForm = async () => {
 
     if (isEditing) {
       // 更新知识库信息
+      console.log("InfoForm提交表单：",formPayload)
       await knowledgeBaseAPI.updateKnowledgeBase(graphId, formPayload);
       // 显示成功消息
       toast.success('更新成功');
