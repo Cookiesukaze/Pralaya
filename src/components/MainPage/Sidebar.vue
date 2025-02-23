@@ -21,13 +21,17 @@
             <div v-if="!isSidebarCollapsed" class="text-xs font-semibold leading-6 text-themeFontGrey">Your Graph</div>
             <ul role="list" class="-mx-2 mt-2 space-y-1 list-none">
               <li v-for="graph in graphs" :key="graph.id">
-                <a @click="selectGraph(graph.id)"
-                   :class="[
+                <a @click="graph.isAvailable !== null && graph.isAvailable !== 'NO' && selectGraph(graph.id)"
+                   :class="[ 
                      graph.current ? 'bg-themeGrey25 text-themeBlue' : 'text-themeFontBlack hover:text-themeBlue hover:bg-themeGrey25',
+                     graph.isAvailable === null || graph.isAvailable === 'NO' ? 'cursor-not-allowed opacity-50' : '',
                      'group flex items-center',
                      isSidebarCollapsed ? 'justify-center p-3' : 'gap-x-3 px-4 py-2',
                      'rounded-md text-sm leading-6 font-semibold'
-                   ]">
+                   ]"
+                   :aria-disabled="graph.isAvailable === null || graph.isAvailable === 'NO'"
+                   @mouseover="showTooltip(graph.isAvailable, graph.id, $event)"
+                   @mouseleave="hideTooltip">
                   <component
                       :is="iconComponents[graph.icon]"
                       :class="[graph.current ? 'text-themeBlue' : 'text-themeFontGrey group-hover:text-themeBlue ', 'h-6 w-6 shrink-0']"
@@ -56,12 +60,15 @@
         </a>
       </li>
     </div>
+    <div v-if="tooltipVisible" :style="{ top: tooltipPosition.top + 'px', left: tooltipPosition.left + 'px' }" class="absolute z-50 p-2 bg-white border border-gray-300 rounded shadow-lg text-xs text-gray-700">
+      {{ tooltipText }}
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -69,6 +76,11 @@ const props = defineProps({
   graphs: Array,
   user: Object,
   company: Object,
+})
+
+// 打印传递过来的 graphs
+watch(() => props.graphs, (newGraphs) => {
+  console.log("Sidebar:", newGraphs)
 })
 
 const emit = defineEmits(['toggle-sidebar', 'select-graph'])
@@ -97,6 +109,27 @@ const selectGraph = (id) => {
 const router = useRouter()
 const createNewGraph = () => {
   router.push({ name: 'CreatePage' })
+}
+
+// Tooltip logic
+const tooltipVisible = ref(false)
+const tooltipText = ref('')
+const tooltipPosition = ref({ top: 0, left: 0 })
+
+const showTooltip = (isAvailable, id, event) => {
+  if (isAvailable === null) {
+    tooltipText.value = `知识图谱处理中 (ID: ${id})`
+  } else if (isAvailable === 'NO') {
+    tooltipText.value = `知识图谱处理失败 (ID: ${id})`
+  } else {
+    return
+  }
+  tooltipPosition.value = { top: event.clientY + 10, left: event.clientX + 10 }
+  tooltipVisible.value = true
+}
+
+const hideTooltip = () => {
+  tooltipVisible.value = false
 }
 </script>
 
