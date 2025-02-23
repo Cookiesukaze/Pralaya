@@ -235,7 +235,7 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
     // 验证文件
     const validateFile = (file) => {
         const maxSize = 50 * 1024 * 1024 // 50MB
-        const allowedTypes = ['txt', 'pdf', 'doc', 'docx']
+        const allowedTypes = ['txt', 'pdf', 'doc', 'docx', 'md']
 
         const fileType = file.name.split('.').pop().toLowerCase()
 

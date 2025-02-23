@@ -129,8 +129,40 @@ const handleFileChange = (event) => {
 // 处理文件列表
 const handleFiles = (fileList) => {
   const fileArray = Array.from(fileList)
-  toast.loading('文件上传中...')
-  emit('upload', fileArray)
+  const validFiles = []
+
+  for (const file of fileArray) {
+    try {
+      validateFile(file)
+      validFiles.push(file)
+    } catch (error) {
+      console.error(`文件 ${file.name} 验证失败:`, error.message)
+      toast.error(`文件 ${file.name} 验证失败: ${error.message}`)
+    }
+  }
+
+  if (validFiles.length > 0) {
+    toast.loading('文件上传中...')
+    emit('upload', validFiles)
+  }
+}
+
+// 验证文件
+const validateFile = (file) => {
+  const maxSize = 50 * 1024 * 1024 // 50MB
+  const allowedTypes = ['txt', 'pdf', 'doc', 'docx', 'md']
+
+  const fileType = file.name.split('.').pop().toLowerCase()
+
+  if (!allowedTypes.includes(fileType)) {
+    throw new Error(`不支持的文件类型: ${fileType}`)
+  }
+
+  if (file.size > maxSize) {
+    throw new Error(`文件大小不能超过 50MB`)
+  }
+
+  return true
 }
 
 // 删除文件
