@@ -42,7 +42,7 @@
 .theme-grey-input {
   width: 100%;
   align-items: center;
-  background-color: #fff;
+  background-color: rgb(255, 255, 255);
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   outline: none;

@@ -22,5 +22,8 @@ export const bot = {
 // 假数据 - 公司信息
 export const company = {
     name: '产品名',
-    logo: 'https://pic.imgdb.cn/item/672985c3d29ded1a8c5c11b0.png',
+    // logo: 'https://pic1.imgdb.cn/item/67bade29d0e0a243d4028131.png',
+    // logo: 'https://pic1.imgdb.cn/item/67bade27d0e0a243d402812d.png',
+    // logo: 'https://pic.imgdb.cn/item/672985c3d29ded1a8c5c11b0.png'
+    logo: 'https://pic1.imgdb.cn/item/67baee3fd0e0a243d4028cbe.png'
 };

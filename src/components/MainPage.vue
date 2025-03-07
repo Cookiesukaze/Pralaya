@@ -63,7 +63,7 @@ const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
 const userAvatar = ref(fakeUser.value.avatar);
 const botAvatar = ref(fakeBot.avatar);
 const chatMessages = ref([
-  { from: 'bot', text: 'Hello! How can I help you today?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+  { from: 'bot', text: '您好，有什么能帮助您的吗？', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
 ]);
 
 const toggleSidebar = () => {

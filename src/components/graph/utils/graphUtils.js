@@ -145,7 +145,7 @@ export const tooltipStyles = `
         background-color: rgba(255, 255, 255, 0.9);
         padding: 10px 8px;
         box-shadow: rgb(174, 174, 174) 0px 0px 10px;
-        white-space: pre-wrap; 
+        white-space: pre-wrap;
     }
 `;
 

@@ -2,7 +2,7 @@
   <div class="bg-themeBorderGrey px-0.5 py-0.5 flex flex-col items-center h-full">
     <div class="max-w-md w-full bg-white shadow-themeShadowGrey125-1 rounded-lg overflow-hidden flex flex-col flex-grow">
       <div class="p-4 border-b border-themeBorderGrey">
-        <h1 class="text-lg font-semibold text-themeFontBlack">Chat</h1>
+        <h1 class="text-lg font-semibold text-themeFontGrey">聊天</h1>
       </div>
 
       <div class="p-4 flex-grow overflow-y-scroll message-container" ref="messageContainer">
@@ -34,8 +34,8 @@
       </div>
 
       <div class="p-4 border-t border-themeBorderGrey flex">
-        <input v-model="newMessage" @keyup.enter="sendMessage" class="w-full p-2 border  rounded-lg theme-grey-input" type="text" placeholder="Type a message...">
-        <button @click="sendMessage" class="ml-2 px-4 py-2 text-white rounded-lg theme-button">Send</button>
+        <input v-model="newMessage" @keyup.enter="sendMessage" class="w-full p-2 border  rounded-lg theme-grey-input" type="text" placeholder="编辑信息...">
+        <button @click="sendMessage" class="ml-2 px-4 py-2 text-white rounded-lg theme-button" style="white-space: nowrap; font-size: 0.875rem;">发送</button>
       </div>
     </div>
   </div>
@@ -90,7 +90,7 @@ export default {
           console.error('Chat: Error fetching bot reply:', error);
           this.messages.push({
             from: 'bot',
-            text: "Sorry, I'm having trouble responding right now.",
+            text: "抱歉，出错了，暂时无法响应。",
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
         }

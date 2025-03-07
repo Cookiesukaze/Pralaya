@@ -1,7 +1,7 @@
 <template>
-  <div class="flex justify-between items-center bg-white shadow-themeShadowGrey125-2 px-6 py-4">
+  <div class="flex justify-between items-center shadow-themeShadowGrey125-2 px-6 py-4 border-b border-themeBorderGrey125"  style="background-color: #ffffff;">
     <!-- 当前图表的名字 -->
-    <div class="text-lg font-semibold text-themeFontBlack">{{ selectedGraph.name }}</div>
+    <div class="text-lg font-semibold text-themeFontGrey">{{ selectedGraph.name }}</div>
 
     <!-- 右侧的下拉菜单 -->
     <div class="relative">

@@ -1,5 +1,5 @@
 <template>
-  <div class="search-bar ">
+  <div class="search-bar  ">
     <input class="theme-grey-input" v-model="query" @input="handleSearch" placeholder="Search nodes..." />
   </div>
 </template>
@@ -30,7 +30,7 @@ defineExpose({
   /* 模仿聊天框的边框和宽度样式 */
   width: 100%;
   padding: 16px ; /* 上内边距 10px，右内边距 10px，下内边距 20px，左内边距 10px */
-  background-color: #fff;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   margin-top: auto; /* 推至容器底部 */
