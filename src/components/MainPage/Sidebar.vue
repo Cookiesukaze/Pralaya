@@ -26,7 +26,7 @@
                      graph.isAvailable === null || graph.isAvailable === 'NO' ? 'cursor-not-allowed opacity-50' : '',
                      'group flex items-center',
                      isSidebarCollapsed ? 'justify-center p-3' : 'gap-x-3 px-4 py-2',
-                     'rounded-md text-sm leading-6 font-semibold'
+                     'rounded-md text-sm leading-6 '
                    ]"
                    :aria-disabled="graph.isAvailable === null || graph.isAvailable === 'NO'"
                    @mouseover="showTooltip(graph.isAvailable, graph.id, $event)"
@@ -36,7 +36,7 @@
                       :class="[graph.current ? 'text-white' : 'text-white group-hover:text-themeBlue25 ', 'h-6 w-6 shrink-0']"
                       aria-hidden="true"
                   />
-                  <span v-if="!isSidebarCollapsed" :class="[graph.current ? 'text-white ' : 'text-white group-hover:text-themeBlue25']" class="truncate">{{ graph.name }}</span>
+                  <span v-if="!isSidebarCollapsed" :class="[graph.current ? 'text-white font-semibold' : 'text-white group-hover:text-themeBlue25']" class="truncate">{{ graph.name }}</span>
                 </a>
               </li>
             </ul>

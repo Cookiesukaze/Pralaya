@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-screen">
 <!--    selectGraph有数据了才能被渲染，防止提前渲染-->
-    <div :class="topbarClass" v-if="selectedGraph">
+    <div :class="topbarClass" class="border-r-4  border-themeGrey " v-if="selectedGraph">
       <Topbar :selectedGraph="selectedGraph" />
     </div>
 
@@ -15,7 +15,7 @@
           @select-graph="selectGraph"
       />
 
-      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow border-l-4  border-themeBorderGrey">
+      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow border-b-4  border-themeGrey">
         <CourseGraph
             v-if="graphs.length > 0"
             ref="mainCourseGraphRef"
@@ -25,7 +25,7 @@
         />
       </div>
 
-      <div class="w-80 bg-white border-l flex flex-col">
+      <div class="w-80 border-b-4 border-r-4 border-themeGrey  flex flex-col">
         <Chat
             v-if="selectedGraph && userAvatar"
             :messages="chatMessages"

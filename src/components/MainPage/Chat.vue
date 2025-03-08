@@ -1,6 +1,6 @@
 <template>
   <div class="bg-themeBorderGrey pl-2 pt-1 pr-0 pb-0 flex flex-col items-center h-full">
-    <div class="max-w-md w-full bg-white rounded-tl-lg rounded-tr-none rounded-br-none rounded-bl-none border-t-8 border-l-8 border-themeBorderGrey125 overflow-hidden flex flex-col flex-grow shadow-custom">
+    <div class="max-w-md w-full bg-white rounded-tl-lg rounded-tr-none rounded-br-none rounded-bl-none border-t-8 border-l-8 border-themeGrey25 overflow-hidden flex flex-col flex-grow shadow-custom">
       <div class="p-4 pl-6 pt-6 border-b border-themeBorderGrey ">
         <h1 class="text-lg font-semibold text-themeFontGrey">聊天</h1>
       </div>
@@ -146,7 +146,7 @@ body {
 
 /* 自定义阴影效果 */
 .shadow-custom {
-  box-shadow: -4px -4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: -4px -4px 8px rgb(203 204 224 / 0.5);
 }
 
 /* 调整边框和圆角 */
