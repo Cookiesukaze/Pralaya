@@ -12,6 +12,8 @@ export default {
         themeBlue75: '#7786fd',
         themeBlue50: '#9ea8fb',
         themeBlue25: '#c9cffd',
+        themeGrey: '#768ab1',
+        themeGrey75: '#8d9dbc',
         themeGrey25: '#f8f8fc',
         themeBorderGrey: '#eeeef5',
         themeBorderGrey125: '#cbcce0',

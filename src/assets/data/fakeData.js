@@ -25,5 +25,7 @@ export const company = {
     // logo: 'https://pic1.imgdb.cn/item/67bade29d0e0a243d4028131.png',
     // logo: 'https://pic1.imgdb.cn/item/67bade27d0e0a243d402812d.png',
     // logo: 'https://pic.imgdb.cn/item/672985c3d29ded1a8c5c11b0.png'
-    logo: 'https://pic1.imgdb.cn/item/67baee3fd0e0a243d4028cbe.png'
+    // logo: 'https://pic1.imgdb.cn/item/67baee3fd0e0a243d4028cbe.png'
+    // logo: 'https://pic1.imgdb.cn/item/67cb03fd066befcec6e06a83.png'
+    logo: 'https://pic1.imgdb.cn/item/67cb043a066befcec6e06a8b.png'
 };
