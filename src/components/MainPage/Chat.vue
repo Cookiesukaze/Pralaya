@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-themeBorderGrey px-0.5 py-0.5 flex flex-col items-center h-full">
-    <div class="max-w-md w-full bg-white shadow-themeShadowGrey125-1 rounded-lg overflow-hidden flex flex-col flex-grow">
-      <div class="p-4 border-b border-themeBorderGrey">
+  <div class="bg-themeBorderGrey pl-2 pt-1 pr-0 pb-0 flex flex-col items-center h-full">
+    <div class="max-w-md w-full bg-white rounded-tl-lg rounded-tr-none rounded-br-none rounded-bl-none border-t-8 border-l-8 border-themeBorderGrey125 overflow-hidden flex flex-col flex-grow shadow-custom">
+      <div class="p-4 pl-6 pt-6 border-b border-themeBorderGrey ">
         <h1 class="text-lg font-semibold text-themeFontGrey">聊天</h1>
       </div>
 
-      <div class="p-4 flex-grow overflow-y-scroll message-container" ref="messageContainer">
+      <div class="p-4 pl-6 flex-grow overflow-y-scroll message-container" ref="messageContainer">
         <div
             v-for="(message, index) in messages"
             :key="index"
@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-themeBorderGrey flex">
+      <div class="p-4 pl-6 border-t border-themeBorderGrey flex">
         <input v-model="newMessage" @keyup.enter="sendMessage" class="w-full p-2 border  rounded-lg theme-grey-input" type="text" placeholder="编辑信息...">
         <button @click="sendMessage" class="ml-2 px-4 py-2 text-white rounded-lg theme-button" style="white-space: nowrap; font-size: 0.875rem;">发送</button>
       </div>
@@ -144,5 +144,25 @@ body {
   word-break: break-all; /* 防止长链接超出容器宽度 */
 }
 
+/* 自定义阴影效果 */
+.shadow-custom {
+  box-shadow: -4px -4px 8px rgba(0, 0, 0, 0.1);
+}
 
+/* 调整边框和圆角 */
+.rounded-tl-lg {
+  border-top-left-radius: 1.5rem;
+}
+
+.rounded-tr-none {
+  border-top-right-radius: 0;
+}
+
+.rounded-br-none {
+  border-bottom-right-radius: 0;
+}
+
+.rounded-bl-none {
+  border-bottom-left-radius: 0;
+}
 </style>

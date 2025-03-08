@@ -15,7 +15,7 @@
           @select-graph="selectGraph"
       />
 
-      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow">
+      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow border-l-4  border-themeBorderGrey">
         <CourseGraph
             v-if="graphs.length > 0"
             ref="mainCourseGraphRef"

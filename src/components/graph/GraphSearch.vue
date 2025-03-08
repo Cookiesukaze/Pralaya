@@ -1,6 +1,6 @@
 <template>
-  <div class="search-bar  ">
-    <input class="theme-grey-input" v-model="query" @input="handleSearch" placeholder="Search nodes..." />
+  <div class="search-bar  border-t-2  border-themeBorderGrey">
+    <input class="theme-grey-input" v-model="query" @input="handleSearch" placeholder="搜索结点..." />
   </div>
 </template>
 
