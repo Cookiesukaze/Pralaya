@@ -73,6 +73,8 @@ export default {
 
         try {
           let botMessage = null;
+          const totalStartTime = performance.now(); // 总响应时间开始计时
+          let streamStartTime = null; // 初始化流式传播开始时间
 
           // 发送消息时，附加 selectedGraphId
           await postChat({
@@ -82,10 +84,17 @@ export default {
             if (!botMessage) {
               botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
               this.messages.push(botMessage);
+              streamStartTime = performance.now(); // 流式传播开始计时
             }
             botMessage.text += chunk; // 逐块更新消息
             this.scrollToBottom();
           });
+
+          const totalEndTime = performance.now(); // 总响应时间结束计时
+          if (streamStartTime) {
+            console.log(`Chat: 流式传输时长: ${(totalEndTime - streamStartTime).toFixed(2)} ms`); // 打印流式传播时长
+          }
+          console.log(`Chat: 总响应时长: ${(totalEndTime - totalStartTime).toFixed(2)} ms`); // 打印总响应时长
         } catch (error) {
           console.error('Chat: Error fetching bot reply:', error);
           this.messages.push({
