@@ -6,7 +6,10 @@
       <div v-if="showInitialBubble" class="initial-bubble bg-gray-100 p-4 rounded-lg mb-6">
         <p class="font-bold text-lg mb-2">知识问答</p>
         <p class="text-sm text-gray-600">
-          在这里，您可以提问与知识图谱相关的问题，我们将为您提供精准的回答。知识问答功能旨在帮助您快速获取与知识图谱相关的信息，提升您的学习和工作效率。
+          在这里，您可以提问与知识图谱相关的问题，我们将为您提供精准的回答。
+          知识问答功能旨在帮助您快速获取与知识图谱相关的信息，
+          提升您的学习和工作效率。
+          <a href="https://example.com" target="_blank" class="link">了解更多</a>
         </p>
       </div>
 
@@ -25,6 +28,7 @@
             :class="{'bg-themeGrey25': message.from !== 'user', 'bg-themeBlue text-white': message.from === 'user'}"
             class="p-2 rounded-lg"
           >
+            <!-- 使用 v-html 渲染消息内容，支持 HTML -->
             <p class="text-sm break-words" :class="{'text-themeFontBlack': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
           </div>
           <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
@@ -140,7 +144,10 @@ export default {
       });
     },
     formatMessage(text) {
-      return text.replace(/\n/g, '<br>');
+      // 将消息中的 URL 转换为可点击的链接，并保留换行符
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
+      return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
     }
   },
   updated() {
@@ -149,7 +156,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .message-container {
   height: calc(100% - 70px);
   overflow-y: auto;
@@ -198,5 +205,15 @@ export default {
   background-color: transparent; /* 无背景色 */
   cursor: pointer;
   transition: border-color 0.2s ease;
+}
+
+.link {
+  color: #3b82f6; /* 灰蓝色 */
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #2563eb; /* 深灰蓝色 */
 }
 </style>

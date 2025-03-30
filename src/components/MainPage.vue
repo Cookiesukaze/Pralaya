@@ -27,22 +27,34 @@
         />
         
         <!-- 知识问答 -->
-        <KnowledgeChat
-          v-if="activeTab === 1 && selectedGraph"
-          :userAvatar="userAvatar"
-          :botAvatar="botAvatar"
-          :selectedGraphId="selectedGraph?.id?.toString() || '1'"
-        />
+        <keep-alive>
+          <KnowledgeChat
+            v-if="activeTab === 1 && selectedGraph"
+            :userAvatar="userAvatar"
+            :botAvatar="botAvatar"
+            :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+          />
+        </keep-alive>
         
-        <!-- 代码纠错 - 暂时显示占位文本 -->
-        <div v-if="activeTab === 2" class="flex items-center justify-center h-full">
-          <p class="text-lg text-gray-500">代码纠错功能即将推出...</p>
-        </div>
+        <!-- 代码纠错 -->
+        <keep-alive>
+          <CodeChat
+            v-if="activeTab === 2 && selectedGraph"
+            :userAvatar="userAvatar"
+            :botAvatar="botAvatar"
+            :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+          />
+        </keep-alive>
         
-        <!-- 学习建议 - 暂时显示占位文本 -->
-        <div v-if="activeTab === 3" class="flex items-center justify-center h-full">
-          <p class="text-lg text-gray-500">学习建议功能即将推出...</p>
-        </div>
+        <!-- 学习建议 -->
+        <keep-alive>
+          <RecommendChat
+            v-if="activeTab === 3 && selectedGraph"
+            :userAvatar="userAvatar"
+            :botAvatar="botAvatar"
+            :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+          />
+        </keep-alive>
       </div>
 
       <div class="w-80 border-b-4 border-r-4 border-themeGrey flex flex-col">
@@ -65,6 +77,8 @@ import CourseGraph from './MainPage/CourseGraph.vue';
 import Topbar from './MainPage/Topbar.vue';
 import Chat from "./MainPage/Chat.vue";
 import KnowledgeChat from "./Chat/KnowledgeChat.vue";
+import CodeChat from "./Chat/CodeChat.vue";
+import RecommendChat from "./Chat/RecommendChat.vue";
 import { company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
 import { graph as fakeGraphs, user as fakeUser, fetchGraph, fetchUser } from '../services/dataManager';
 
