@@ -1,8 +1,38 @@
 <template>
-  <div class="bg-themeBorderGrey border-t-8  border-themeGrey flex justify-between items-center shadow-themeShadowGrey125-2 px-6 py-4" style="height: 50px;">
-    <!-- 当前图表的名字 -->
-    <div class="bg-white rounded-t-md rounded-b-none px-6 py-2  mt-3">
-      <div class="text-lg font-semibold text-themeFontGrey">{{ selectedGraph.name }}</div>
+  <div class="bg-themeBorderGrey border-t-8 border-themeGrey flex justify-between items-center shadow-themeShadowGrey125-2 px-6 py-4" style="height: 50px;">
+    <!-- 卡片区域 -->
+    <div class="flex relative space-x-2">
+      <!-- 卡片1：图表名称 -->
+      <div 
+        :class="{'bg-white active-tab-shadow': activeTab === 0, 'bg-gray-200 hover:bg-gray-100': activeTab !== 0}"
+        class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
+        @click="setActiveTab(0)">
+        <div :class="{'font-semibold text-themeFontGrey': activeTab === 0, 'font-normal text-gray-400': activeTab !== 0}" class="text-base whitespace-nowrap pt-1">{{ selectedGraph.name }}</div>
+      </div>
+      
+      <!-- 卡片2：知识问答 -->
+      <div 
+        :class="{'bg-white active-tab-shadow': activeTab === 1, 'bg-gray-200 hover:bg-gray-100': activeTab !== 1}"
+        class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
+        @click="setActiveTab(1)">
+        <div :class="{'font-semibold text-themeFontGrey': activeTab === 1, 'font-normal text-gray-400': activeTab !== 1}" class="text-base whitespace-nowrap pt-1">知识问答</div>
+      </div>
+      
+      <!-- 卡片3：代码纠错 -->
+      <div 
+        :class="{'bg-white active-tab-shadow': activeTab === 2, 'bg-gray-200 hover:bg-gray-100': activeTab !== 2}"
+        class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
+        @click="setActiveTab(2)">
+        <div :class="{'font-semibold text-themeFontGrey': activeTab === 2, 'font-normal text-gray-400': activeTab !== 2}" class="text-base whitespace-nowrap pt-1">代码纠错</div>
+      </div>
+      
+      <!-- 卡片4：学习建议 -->
+      <div 
+        :class="{'bg-white active-tab-shadow': activeTab === 3, 'bg-gray-200 hover:bg-gray-100': activeTab !== 3}"
+        class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
+        @click="setActiveTab(3)">
+        <div :class="{'font-semibold text-themeFontGrey': activeTab === 3, 'font-normal text-gray-400': activeTab !== 3}" class="text-base whitespace-nowrap pt-1">学习建议</div>
+      </div>
     </div>
 
     <!-- 右侧的下拉菜单 -->
@@ -43,6 +73,14 @@ const props = defineProps({
 
 // 控制下拉菜单的显示状态
 const isDropdownOpen = ref(false);
+
+// 跟踪当前活跃的选项卡，默认为0（第一个卡片）
+const activeTab = ref(0);
+
+// 设置活跃选项卡
+const setActiveTab = (index) => {
+  activeTab.value = index;
+};
 
 // 图标映射
 const iconComponents = {
@@ -92,5 +130,22 @@ const editGraph = () => {
 /* 自定义样式 */
 .shadow-md {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* 卡片重叠效果 */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* 活跃卡片的立体阴影效果 - 更浅的冷灰色阴影 */
+.active-tab-shadow {
+  box-shadow: 
+    -3px -3px 5px rgba(180, 190, 210, 0.15),  /* 左上 - 冷灰色 */
+    3px -3px 5px rgba(180, 190, 210, 0.15),   /* 右上 - 冷灰色 */
+    -3px 0 5px rgba(180, 190, 210, 0.15),     /* 左 - 冷灰色 */
+    3px 0 5px rgba(180, 190, 210, 0.15);      /* 右 - 冷灰色 */
+  position: relative;
+  z-index: 5;  /* 确保选中的卡片在其他卡片之上 */
+  transform: translateY(-1px);  /* 轻微上移，增强立体感 */
 }
 </style>
