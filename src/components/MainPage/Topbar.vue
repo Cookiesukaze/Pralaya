@@ -6,7 +6,7 @@
       <div 
         :class="{'bg-white active-tab-shadow': activeTab === 0, 'bg-gray-200 hover:bg-gray-100': activeTab !== 0}"
         class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
-        @click="setActiveTab(0)">
+        @click="handleTabClick(0)">
         <div :class="{'font-semibold text-themeFontGrey': activeTab === 0, 'font-normal text-gray-400': activeTab !== 0}" class="text-base whitespace-nowrap pt-1">{{ selectedGraph.name }}</div>
       </div>
       
@@ -14,7 +14,7 @@
       <div 
         :class="{'bg-white active-tab-shadow': activeTab === 1, 'bg-gray-200 hover:bg-gray-100': activeTab !== 1}"
         class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
-        @click="setActiveTab(1)">
+        @click="handleTabClick(1)">
         <div :class="{'font-semibold text-themeFontGrey': activeTab === 1, 'font-normal text-gray-400': activeTab !== 1}" class="text-base whitespace-nowrap pt-1">知识问答</div>
       </div>
       
@@ -22,7 +22,7 @@
       <div 
         :class="{'bg-white active-tab-shadow': activeTab === 2, 'bg-gray-200 hover:bg-gray-100': activeTab !== 2}"
         class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
-        @click="setActiveTab(2)">
+        @click="handleTabClick(2)">
         <div :class="{'font-semibold text-themeFontGrey': activeTab === 2, 'font-normal text-gray-400': activeTab !== 2}" class="text-base whitespace-nowrap pt-1">代码纠错</div>
       </div>
       
@@ -30,7 +30,7 @@
       <div 
         :class="{'bg-white active-tab-shadow': activeTab === 3, 'bg-gray-200 hover:bg-gray-100': activeTab !== 3}"
         class="rounded-t-lg rounded-b-none px-6 py-1 mt-3 cursor-pointer transition-all duration-300 min-w-[100px]"
-        @click="setActiveTab(3)">
+        @click="handleTabClick(3)">
         <div :class="{'font-semibold text-themeFontGrey': activeTab === 3, 'font-normal text-gray-400': activeTab !== 3}" class="text-base whitespace-nowrap pt-1">学习建议</div>
       </div>
     </div>
@@ -64,12 +64,15 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { BookmarkSquareIcon, ChartBarIcon, UserGroupIcon, HeartIcon, PencilSquareIcon, AcademicCapIcon, BeakerIcon, BookOpenIcon, BriefcaseIcon, CalculatorIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline';
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 // 从父组件接收当前选中的图表
 const props = defineProps({
   selectedGraph: Object
 });
+
+// 定义emit事件
+const emit = defineEmits(['tab-change']);
 
 // 控制下拉菜单的显示状态
 const isDropdownOpen = ref(false);
@@ -77,7 +80,13 @@ const isDropdownOpen = ref(false);
 // 跟踪当前活跃的选项卡，默认为0（第一个卡片）
 const activeTab = ref(0);
 
-// 设置活跃选项卡
+// 处理选项卡点击，包括内部状态更新和向父组件发送事件
+const handleTabClick = (index) => {
+  activeTab.value = index;
+  emit('tab-change', index);
+};
+
+// 设置活跃选项卡（仅内部状态更新，不发射事件）
 const setActiveTab = (index) => {
   activeTab.value = index;
 };

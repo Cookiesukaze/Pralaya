@@ -1,37 +1,57 @@
 <template>
   <div class="flex flex-col h-screen">
-<!--    selectGraph有数据了才能被渲染，防止提前渲染-->
-    <div :class="topbarClass" class="border-r-4  border-themeGrey " v-if="selectedGraph">
-      <Topbar :selectedGraph="selectedGraph" />
+    <!--selectGraph有数据了才能被渲染，防止提前渲染-->
+    <div :class="topbarClass" class="border-r-4 border-themeGrey" v-if="selectedGraph">
+      <Topbar :selectedGraph="selectedGraph" @tab-change="handleTabChange" />
     </div>
 
     <div class="flex flex-1">
       <Sidebar
-          :isSidebarCollapsed="isSidebarCollapsed"
-          :graphs="graphs"
-          :user="user"
-          :company="company"
-          @toggle-sidebar="toggleSidebar"
-          @select-graph="selectGraph"
+        :isSidebarCollapsed="isSidebarCollapsed"
+        :graphs="graphs"
+        :user="user"
+        :company="company"
+        @toggle-sidebar="toggleSidebar"
+        @select-graph="selectGraph"
       />
 
-      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow border-b-4  border-themeGrey">
+      <!-- 中间区域根据顶部栏选项卡切换内容 -->
+      <div ref="courseGraphContainer" :style="courseGraphStyle" class="flex-grow border-b-4 border-themeGrey">
+        <!-- 图谱展示 -->
         <CourseGraph
-            v-if="graphs.length > 0"
-            ref="mainCourseGraphRef"
+          v-if="activeTab === 0 && graphs.length > 0"
+          ref="mainCourseGraphRef"
           :isSidebarCollapsed="isSidebarCollapsed"
           :jsonPath="jsonPath"
           :graphs="graphs"
         />
+        
+        <!-- 知识问答 -->
+        <KnowledgeChat
+          v-if="activeTab === 1 && selectedGraph"
+          :userAvatar="userAvatar"
+          :botAvatar="botAvatar"
+          :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+        />
+        
+        <!-- 代码纠错 - 暂时显示占位文本 -->
+        <div v-if="activeTab === 2" class="flex items-center justify-center h-full">
+          <p class="text-lg text-gray-500">代码纠错功能即将推出...</p>
+        </div>
+        
+        <!-- 学习建议 - 暂时显示占位文本 -->
+        <div v-if="activeTab === 3" class="flex items-center justify-center h-full">
+          <p class="text-lg text-gray-500">学习建议功能即将推出...</p>
+        </div>
       </div>
 
-      <div class="w-80 border-b-4 border-r-4 border-themeGrey  flex flex-col">
+      <div class="w-80 border-b-4 border-r-4 border-themeGrey flex flex-col">
         <Chat
-            v-if="selectedGraph && userAvatar"
-            :messages="chatMessages"
-            :userAvatar="userAvatar"
-            :botAvatar="botAvatar"
-            :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+          v-if="selectedGraph && userAvatar"
+          :messages="chatMessages"
+          :userAvatar="userAvatar"
+          :botAvatar="botAvatar"
+          :selectedGraphId="selectedGraph?.id?.toString() || '1'"
         />
       </div>
     </div>
@@ -39,17 +59,14 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, onBeforeUnmount, nextTick} from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import Sidebar from './MainPage/Sidebar.vue';
 import CourseGraph from './MainPage/CourseGraph.vue';
 import Topbar from './MainPage/Topbar.vue';
-// import { graphs as fakeGraphs, user as fakeUser, company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
-// import { fetchGraph, fetchUser} from '../services/dataManager';
-import { company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
-import { graph as fakeGraphs, user as fakeUser, fetchGraph, fetchUser} from '../services/dataManager';
-
-
 import Chat from "./MainPage/Chat.vue";
+import KnowledgeChat from "./Chat/KnowledgeChat.vue";
+import { company as fakeCompany, bot as fakeBot } from '../assets/data/fakeData';
+import { graph as fakeGraphs, user as fakeUser, fetchGraph, fetchUser } from '../services/dataManager';
 
 const isSidebarCollapsed = ref(false);
 const graphs = ref(fakeGraphs);
@@ -57,8 +74,9 @@ const user = ref(fakeUser);
 const bot = ref(fakeBot);
 const company = ref(fakeCompany);
 const selectedGraph = ref(null);
+const activeTab = ref(0); // 当前激活的选项卡
 
-const mainCourseGraphRef = ref(null); // 改为 mainCourseGraphRef
+const mainCourseGraphRef = ref(null);
 
 const userAvatar = ref(fakeUser.value.avatar);
 const botAvatar = ref(fakeBot.avatar);
@@ -80,6 +98,12 @@ const selectGraph = (id) => {
     selectedGraph.value = selected;
     console.log("MainPage: New selected graph:", selectedGraph.value);
   }
+};
+
+// 处理顶部栏选项卡切换
+const handleTabChange = (tabIndex) => {
+  console.log("MainPage: Tab changed to:", tabIndex);
+  activeTab.value = tabIndex;
 };
 
 const jsonPath = computed(() => {
