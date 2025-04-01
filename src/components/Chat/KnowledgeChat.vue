@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white h-full flex flex-col">
+  <div class="bg-white flex flex-col" style="height: calc(100vh - 64px);">
     <!-- 聊天消息区域 -->
-    <div class="flex-grow overflow-y-auto message-container p-6" ref="messageContainer">
+    <div class="flex-1 overflow-y-auto message-container p-6" ref="messageContainer">
       <!-- 初始气泡 -->
       <div v-if="showInitialBubble" class="initial-bubble bg-gray-100 p-4 rounded-lg mb-6">
         <p class="font-bold text-lg mb-2">知识问答</p>
@@ -158,17 +158,14 @@ export default {
 
 <style>
 .message-container {
-  height: calc(100% - 70px);
+  flex: 1;
   overflow-y: auto;
+  -ms-overflow-style: none; /* IE 和 Edge 隐藏滚动条 */
+  scrollbar-width: none; /* Firefox 隐藏滚动条 */
 }
 
 .message-container::-webkit-scrollbar {
-  display: none;
-}
-
-.message-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  display: none; /* 隐藏滚动条 */
 }
 
 .break-words {
@@ -201,6 +198,8 @@ export default {
   margin: 0 auto;
 }
 
+
+
 .recommendation-bubble {
   background-color: transparent; /* 无背景色 */
   cursor: pointer;
@@ -215,5 +214,9 @@ export default {
 
 .link:hover {
   color: #2563eb; /* 深灰蓝色 */
+}
+
+.bg-white {
+  max-height: 100vh; /* 限制组件最大高度为屏幕高度 */
 }
 </style>

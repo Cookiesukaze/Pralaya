@@ -111,6 +111,57 @@ export const postChat = async (data, onChunkReceived) => {
     return result;
 };
 
+
+export const postCodeChat = async (data, onChunkReceived) => {
+    const response = await fetch("http://127.0.0.1:5012/code_chat", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) // 这里的 data 包含 message 和 graphId
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let result = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('Chat: Received chunk:', chunk);
+        result += chunk;
+        onChunkReceived(chunk);
+    }
+
+    return result;
+};
+
+export const postResourcesChat = async (data, onChunkReceived) => {
+    const response = await fetch("http://127.0.0.1:5013/resources_chat", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) // 这里的 data 包含 message 和 graphId
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let result = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('Chat: Received chunk:', chunk);
+        result += chunk;
+        onChunkReceived(chunk);
+    }
+    return result;
+};
+
+
 // method.js所有的知识库管理
 export const knowledgeBaseAPI = {
     uploadDocument: async (knowledgeBaseId, graphId, formData, onProgress, isOutline = false) => {
