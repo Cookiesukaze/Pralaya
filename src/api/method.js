@@ -87,7 +87,8 @@ export const fakePost = (data) => {
 }
 
 export const postChat = async (data, onChunkReceived) => {
-    const response = await fetch("http://127.0.0.1:5000/chat", {
+    // http://127.0.0.1:5000/chat 之前的
+    const response = await fetch("http://127.0.0.1:5011/knowledge_chat", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'

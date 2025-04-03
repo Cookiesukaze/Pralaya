@@ -56,6 +56,7 @@
       <input
         v-model="newMessage"
         @keyup.enter="sendMessage"
+        @paste="handlePaste"
         class="theme-grey-input w-full"
         type="text"
         placeholder="输入代码片段或问题..."
@@ -83,6 +84,12 @@ export default {
     };
   },
   methods: {
+    handlePaste(event) {
+    event.preventDefault(); // 阻止默认粘贴行为
+    const clipboardData = event.clipboardData || window.clipboardData;
+    const pastedText = clipboardData.getData('text'); // 获取纯文本内容
+    this.newMessage += pastedText; // 将纯文本内容追加到输入框中
+  },
     async sendMessage() {
       console.log('Chat: User Avatar:', this.userAvatar);
       if (this.newMessage.trim() !== '') {
