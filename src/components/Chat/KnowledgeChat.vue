@@ -138,7 +138,7 @@ export default {
           console.error('KnowledgeChat: Error fetching bot reply:', error);
           this.messages.push({
             from: 'bot',
-            text: "# Markdown 渲染测试文档\n\n## 基础文本格式\n\n这是普通文本，下面展示各种格式：**粗体文本**，*斜体文本*，***粗斜体文本***，~~删除线文本~~。\n\n抱歉，`出错了`，暂时^上标^无法响应。\n\n## 引用和列表\n\n> 抱歉，出错了，暂时无法响应。\n>> 这是嵌套引用\n\n无序列表：\n- 抱歉\n- 出错了\n- 暂时无法响应\n\n有序列表：\n1. 抱歉\n2. 出错了\n3. 暂时无法响应\n\n任务列表：\n- [x] 尝试连接\n- [ ] 成功响应\n- [ ] 完成请求\n\n## 代码展示\n\n行内代码：`console.log(\"抱歉，出错了，暂时无法响应。\")`\n\n```javascript\nfunction errorHandler() {\n  try {\n    throw new Error(\"出错了\");\n  } catch (error) {\n    return \"抱歉，出错了，暂时无法响应。\";\n  }\n}\n```\n\n## 链接和图片\n\n[错误文档链接](https://example.com/error)\n\n![错误图标](https://example.com/error.png)\n\n## 表格\n\n| 状态码 | 描述 | 消息 |\n|-------|------|------|\n| 404 | 未找到 | 抱歉 |\n| 500 | 服务器错误 | 出错了 |\n| 503 | 服务不可用 | 暂时无法响应 |\n\n---\n\n### 特殊格式\n\n这里是一些<span style=\"color:red\">HTML内联样式</span>（部分渲染器支持）\n\n抱歉，出错了，暂时==高亮==无法响应。",
+            text: "抱歉，出错了，暂时无法响应。",
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
         }
