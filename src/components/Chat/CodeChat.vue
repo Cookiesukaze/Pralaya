@@ -69,6 +69,9 @@
 <script>
 import { reactive } from 'vue';
 import {postCodeChat} from "../../api/method.js";
+import marked from '../../utils/markdownConfig';
+import DOMPurify from 'dompurify';
+import '../../assets/styles/markdown.css';
 
 export default {
   props: {
@@ -150,9 +153,22 @@ export default {
       });
     },
     formatMessage(text) {
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
-      return formattedText.replace(/\n/g, '<br>');
+      // 检查文本是否包含可能的 Markdown 标记
+      const containsMarkdown = /[\*\_\#\`\~\>\-\+\[\]\(\)\!]/.test(text);
+
+      if (containsMarkdown) {
+        // 使用 marked 解析 Markdown
+        const rawHtml = marked.parse(text);
+        // 使用 DOMPurify 清理 HTML 以防止 XSS 攻击
+        const cleanHtml = DOMPurify.sanitize(rawHtml);
+        // 将解析后的 HTML 包装在 markdown-body 类中以应用样式
+        return `<div class="markdown-body">${cleanHtml}</div>`;
+      } else {
+        // 如果不包含 Markdown，则使用原来的格式化方法
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
+        return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
+      }
     }
   },
   updated() {

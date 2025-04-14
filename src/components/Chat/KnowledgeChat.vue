@@ -55,12 +55,12 @@
 
     <!-- 输入区域 -->
     <div class="search-bar border-t-2 border-themeBorderGrey p-4">
-      <input 
-        v-model="newMessage" 
-        @keyup.enter="sendMessage" 
+      <input
+        v-model="newMessage"
+        @keyup.enter="sendMessage"
         @paste="handlePaste"
-        class="theme-grey-input w-full" 
-        type="text" 
+        class="theme-grey-input w-full"
+        type="text"
         placeholder="输入问题..."
       />
       <button @click="sendMessage" class="ml-2 px-4 py-2 text-white rounded-lg theme-button send-button">发送</button>
@@ -71,6 +71,9 @@
 <script>
 import { reactive } from 'vue';
 import { postChat } from '../../api/method.js';
+import marked from '../../utils/markdownConfig';
+import DOMPurify from 'dompurify';
+import '../../assets/styles/markdown.css';
 
 export default {
   props: {
@@ -135,7 +138,7 @@ export default {
           console.error('KnowledgeChat: Error fetching bot reply:', error);
           this.messages.push({
             from: 'bot',
-            text: "抱歉，出错了，暂时无法响应。",
+            text: "# Markdown 渲染测试文档\n\n## 基础文本格式\n\n这是普通文本，下面展示各种格式：**粗体文本**，*斜体文本*，***粗斜体文本***，~~删除线文本~~。\n\n抱歉，`出错了`，暂时^上标^无法响应。\n\n## 引用和列表\n\n> 抱歉，出错了，暂时无法响应。\n>> 这是嵌套引用\n\n无序列表：\n- 抱歉\n- 出错了\n- 暂时无法响应\n\n有序列表：\n1. 抱歉\n2. 出错了\n3. 暂时无法响应\n\n任务列表：\n- [x] 尝试连接\n- [ ] 成功响应\n- [ ] 完成请求\n\n## 代码展示\n\n行内代码：`console.log(\"抱歉，出错了，暂时无法响应。\")`\n\n```javascript\nfunction errorHandler() {\n  try {\n    throw new Error(\"出错了\");\n  } catch (error) {\n    return \"抱歉，出错了，暂时无法响应。\";\n  }\n}\n```\n\n## 链接和图片\n\n[错误文档链接](https://example.com/error)\n\n![错误图标](https://example.com/error.png)\n\n## 表格\n\n| 状态码 | 描述 | 消息 |\n|-------|------|------|\n| 404 | 未找到 | 抱歉 |\n| 500 | 服务器错误 | 出错了 |\n| 503 | 服务不可用 | 暂时无法响应 |\n\n---\n\n### 特殊格式\n\n这里是一些<span style=\"color:red\">HTML内联样式</span>（部分渲染器支持）\n\n抱歉，出错了，暂时==高亮==无法响应。",
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
         }
@@ -151,10 +154,22 @@ export default {
       });
     },
     formatMessage(text) {
-      // 将消息中的 URL 转换为可点击的链接，并保留换行符
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
-      return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
+      // 检查文本是否包含可能的 Markdown 标记
+      const containsMarkdown = /[\*\_\#\`\~\>\-\+\[\]\(\)\!]/.test(text);
+
+      if (containsMarkdown) {
+        // 使用 marked 解析 Markdown
+        const rawHtml = marked.parse(text);
+        // 使用 DOMPurify 清理 HTML 以防止 XSS 攻击
+        const cleanHtml = DOMPurify.sanitize(rawHtml);
+        // 将解析后的 HTML 包装在 markdown-body 类中以应用样式
+        return `<div class="markdown-body">${cleanHtml}</div>`;
+      } else {
+        // 如果不包含 Markdown，则使用原来的格式化方法
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
+        return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
+      }
     }
   },
   updated() {
