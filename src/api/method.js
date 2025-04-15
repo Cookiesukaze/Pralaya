@@ -88,7 +88,7 @@ export const fakePost = (data) => {
 
 export const postChat = async (data, onChunkReceived) => {
     // 使用新的知识库聊天API
-    const response = await fetch("/api/knowledge/chat", {
+    const response = await fetch("http://localhost:8080/api/knowledge/chat", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -246,17 +246,15 @@ export const knowledgeBaseAPI = {
                 throw new Error('No file found in FormData');
             }
 
-            // 创建新的FormData，添加知识库名称和文件
+            // 创建新的FormData，只添加文件
             const newFormData = new FormData();
-            newFormData.append('graph_knowledge_base_id', knowledgeBaseId);
             newFormData.append('file', file);
-            newFormData.append('override', 'false');
+            // 不再添加graph_knowledge_base_id和override参数
 
             // 调用新的API上传文档
-            const response = await fetch(`/api/knowledge/${knowledgeBaseId}/documents`, {
+            const response = await fetch(`http://localhost:8080/api/knowledge/${knowledgeBaseId}/documents`, {
                 method: 'POST',
                 body: newFormData,
-                // 不能设置Content-Type，让浏览器自动设置multipart/form-data边界
             });
 
             if (!response.ok) {
@@ -267,28 +265,42 @@ export const knowledgeBaseAPI = {
             const responseData = await response.json();
             console.log("文件上传返回结果：", responseData);
 
-            if (!responseData.success) {
-                throw new Error(responseData.error || '上传文件失败');
-            }
+            // 准备文件信息
+            const fileInfo = {
+                name: file.name,
+                size: file.size.toString(),
+                format: file.name.split('.').pop().toUpperCase(),
+                file_id: file.name
+            };
 
             // 根据 isOutline 参数，调用不同的 URL 更新图的文件列表
-            const updateUrl = isOutline ? `/graph/${graphId}/outline` : `/graph/${graphId}/files`;
+            const updateUrl = isOutline ? `http://localhost:8080/graph/${graphId}/outline` : `http://localhost:8080/graph/${graphId}/files`;
 
-            // 更新图的文件列表 - 保留原有的更新逻辑
-            const updateResponse = await axios({
-                url: updateUrl,
-                method: 'patch',
-                data: {
-                    fileName: file.name,
-                    fileId: file.name // 使用文件名作为ID
-                }
+            // 更新图的文件列表 - 修改为与示例代码一致的结构
+            const updateResponse = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: [fileInfo]
+                })
             });
-            console.log("更新图文件列表结果：", updateResponse.data);
 
+            if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                throw new Error(`更新文件列表失败: ${errorText}`);
+            }
+
+            const updateData = await updateResponse.json();
+            console.log("更新图文件列表结果：", updateData);
+
+            // 确保返回的数据中文件名和ID一致
             return {
                 data: {
                     fileName: file.name,
-                    fileId: file.name // 使用文件名作为ID
+                    fileId: file.name,
+                    file_id: file.name  // 添加file_id字段，与id保持一致
                 }
             };
         } catch (error) {
@@ -300,7 +312,7 @@ export const knowledgeBaseAPI = {
     deleteDocument: async (fileName, knowledgeBaseName) => {
         try {
             // 新的删除文档API使用URL路径参数和查询参数
-            const url = `/api/knowledge/documents/${fileName}?graph_knowledge_base_id=${knowledgeBaseName}`;
+            const url = `http://localhost:8080/api/knowledge/documents/${fileName}?graph_knowledge_base_id=${knowledgeBaseName}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -355,7 +367,7 @@ export const knowledgeBaseAPI = {
     createKnowledgeBase: async (data) => {
         try {
             // 准备请求参数
-            const url = `/api/knowledge?name=${encodeURIComponent(data.name)}&description=${encodeURIComponent(data.description || '')}&embeddingId=3`;
+            const url = `http://localhost:8080/api/knowledge?name=${encodeURIComponent(data.name)}&description=${encodeURIComponent(data.description || '')}&embeddingId=3`;
 
             // 调用新的API创建知识库
             const response = await fetch(url, {
@@ -394,7 +406,7 @@ export const knowledgeBaseAPI = {
     deleteKnowledgeBase: async (knowledgeBaseName) => {
         try {
             // 调用新的API删除知识库
-            const response = await fetch(`/api/knowledge/${knowledgeBaseName}`, {
+            const response = await fetch(`http://localhost:8080/api/knowledge/${knowledgeBaseName}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'

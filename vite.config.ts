@@ -10,5 +10,15 @@ export default defineConfig({
     postcss: {
       plugins: [tailwindcss, autoprefixer]
     }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080', // 后端服务器地址
+        changeOrigin: true,
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })
+

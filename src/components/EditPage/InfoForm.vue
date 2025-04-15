@@ -216,7 +216,7 @@ const {
       name: file.name,
       size: file.size,
       format: file.format,
-      file_id: file.id
+      file_id: file.name // 始终使用文件名作为file_id
     }));
   }
 }, false, (uploadedFile) => {
@@ -229,7 +229,7 @@ const {
       name: uploadedFile.name,
       size: uploadedFile.size,
       format: uploadedFile.format,
-      file_id: uploadedFile.id
+      file_id: uploadedFile.name // 始终使用文件名作为file_id
     });
   }
 });
@@ -259,7 +259,7 @@ const {
       name: file.name,
       size: file.size,
       format: file.format,
-      file_id: file.id
+      file_id: file.name // 始终使用文件名作为file_id
     }));
   }
 }, true, (uploadedFile) => {
@@ -272,7 +272,7 @@ const {
       name: uploadedFile.name,
       size: uploadedFile.size,
       format: uploadedFile.format,
-      file_id: uploadedFile.id
+      file_id: uploadedFile.name // 始终使用文件名作为file_id
     });
   }
 });

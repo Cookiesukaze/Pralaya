@@ -116,85 +116,77 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
         e.preventDefault()
     }
 
-    // 上传文件到服务器
-    const uploadFiles = async (baseId) => {
-        if (pendingUploadFiles.value.length === 0) return []
+    /// 上传文件到服务器
+const uploadFiles = async (baseId) => {
+    if (pendingUploadFiles.value.length === 0) return []
 
-        // 获取图信息
-        const graph = await getGraphById(baseId)
-        const baseKnowledgeId = graph.data.knowledgeBaseId
-        console.log('useFileHandler: 获得知识库ID:', baseKnowledgeId)
+    // 获取图信息
+    const graph = await getGraphById(baseId)
+    const baseKnowledgeId = graph.data.knowledgeBaseId
+    console.log('useFileHandler: 获得知识库ID:', baseKnowledgeId)
 
-        const uploadResults = []
-        isUploading.value = true
-        uploadError.value = null
+    const uploadResults = []
+    isUploading.value = true
+    uploadError.value = null
 
-        try {
-            console.log('useFileHandler: 开始上传文件:', pendingUploadFiles.value)
+    try {
+        console.log('useFileHandler: 开始上传文件:', pendingUploadFiles.value)
 
-            for (const fileData of pendingUploadFiles.value) {
-                const formData = new FormData()
-                formData.append('file', fileData.file)
+        for (const fileData of pendingUploadFiles.value) {
+            const formData = new FormData()
+            formData.append('file', fileData.file)
 
-                // 打印 FormData 内容
-                for (let pair of formData.entries()) {
-                    console.log(pair[0], pair[1])
-                }
+            // 更新进度显示
+            fileData.progress = 10;
+            updateTotalProgress();
 
-                // 更新进度显示
-                fileData.progress = 10;
+            try {
+                const result = await knowledgeBaseAPI.uploadDocument(
+                    baseKnowledgeId,
+                    baseId, // 图的 ID
+                    formData,
+                    null, // 新API不支持进度回调
+                    isOutline // 传递 isOutline 参数
+                )
+
+                // 上传完成后设置进度为100%
+                fileData.progress = 100;
                 updateTotalProgress();
 
-                try {
-                    const result = await knowledgeBaseAPI.uploadDocument(
-                        baseKnowledgeId,
-                        baseId, // 图的 ID
-                        formData,
-                        null, // 新API不支持进度回调
-                        isOutline // 传递 isOutline 参数
-                    )
+                uploadResults.push(result.data)
 
-                    // 上传完成后设置进度为100%
-                    fileData.progress = 100;
-                    updateTotalProgress();
-
-                    uploadResults.push(result.data)
-
-                    // 修改后：使用文件名作为ID
-                    console.log('useFileHandler: 文件上传成功:', result.data)
-                    const fileIndex = files.value.findIndex((f) => f.name === fileData.name)
-                    if (fileIndex !== -1) {
-                        files.value.splice(fileIndex, 1, {
-                            ...files.value[fileIndex],
-                            id: result.data.fileId || result.data.fileName || fileData.name, // 使用文件名作为ID
-                            status: 'success',
-                            progress: 100
-                        })
-                    }
-                } catch (error) {
-                    console.error(`文件 ${fileData.name} 上传失败:`, error);
-                    fileData.status = 'error';
-                    fileData.progress = 0;
-                    updateTotalProgress();
+                // 始终使用文件名作为ID
+                console.log('useFileHandler: 文件上传成功:', result.data)
+                const fileIndex = files.value.findIndex((f) => f.name === fileData.name)
+                if (fileIndex !== -1) {
+                    files.value.splice(fileIndex, 1, {
+                        ...files.value[fileIndex],
+                        id: fileData.name, // 始终使用文件名作为ID
+                        file_id: fileData.name, // 同时设置file_id也为文件名
+                        status: 'success',
+                        progress: 100
+                    })
                 }
+            } catch (error) {
+                console.error(`文件 ${fileData.name} 上传失败:`, error);
+                fileData.status = 'error';
+                fileData.progress = 0;
+                updateTotalProgress();
             }
-
-            pendingUploadFiles.value = []
-
-            // **页面刷新：文件上传完成后刷新页面**
-            // window.location.reload(); // 添加这行代码来刷新页面
-
-            return uploadResults
-        } catch (error) {
-            console.error('useFileHandler: 文件上传过程中出错:', error)
-            uploadError.value = error.message || '文件上传失败'
-            throw error
-        } finally {
-            isUploading.value = false
-            uploadProgress.value = 0
         }
-    }
 
+        pendingUploadFiles.value = []
+
+        return uploadResults
+    } catch (error) {
+        console.error('useFileHandler: 文件上传过程中出错:', error)
+        uploadError.value = error.message || '文件上传失败'
+        throw error
+    } finally {
+        isUploading.value = false
+        uploadProgress.value = 0
+    }
+}
     // 批量删除文件
     const deleteFiles = async () => {
         try {
