@@ -312,7 +312,8 @@ export const knowledgeBaseAPI = {
     deleteDocument: async (fileName, knowledgeBaseName) => {
         try {
             // 新的删除文档API使用URL路径参数和查询参数
-            const url = `http://localhost:8080/api/knowledge/documents/${fileName}?graph_knowledge_base_id=${knowledgeBaseName}`;
+            // 根据后端示例代码，使用 knowledgeBaseId 作为查询参数名
+            const url = `http://localhost:8080/api/knowledge/documents/${encodeURIComponent(fileName)}?knowledgeBaseId=${encodeURIComponent(knowledgeBaseName)}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -329,8 +330,9 @@ export const knowledgeBaseAPI = {
             const responseData = await response.json();
             console.log('删除文档响应:', responseData);
 
-            if (!responseData.success) {
-                throw new Error(responseData.error || '删除文档失败');
+            // 根据控制台输出，响应中没有 success 字段，而是有 deletionSuccess 字段
+            if (responseData.deletionSuccess === false) {
+                throw new Error(responseData.message || '删除文档失败');
             }
 
             return responseData;
