@@ -2,7 +2,7 @@
 <template>
   <div>
     <label class="block text-sm font-medium text-gray-700 mb-2">
-      知识图谱大纲 <span class="text-red-500">*</span>
+      知识图谱大纲 <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(仅限一个文件)</span>
     </label>
 
     <!-- 上传区域 -->
@@ -18,7 +18,6 @@
         <input
             type="file"
             ref="fileInput"
-            multiple
             class="hidden"
             accept=".txt,.pdf,.doc,.docx"
             @change="handleFileChange"
@@ -30,7 +29,7 @@
         >
           选择文件
         </button>
-        <p class="mt-2 text-sm text-gray-500">或将文件拖拽到这里上传</p>
+        <p class="mt-2 text-sm text-gray-500">或将文件拖拽到这里上传（最多一个文件）</p>
       </div>
 
       <!-- 上传进度条 -->
@@ -114,6 +113,13 @@ const isDragging = ref(false)
 const handleDrop = (event) => {
   isDragging.value = false
   const droppedFiles = event.dataTransfer.files
+
+  // 检查是否尝试拖拽多个文件
+  if (droppedFiles.length > 1) {
+    toast.error('大纲文件最多只能上传一个')
+    return
+  }
+
   if (droppedFiles.length) {
     handleFiles(droppedFiles)
   }
@@ -130,6 +136,18 @@ const handleFileChange = (event) => {
 const handleFiles = (fileList) => {
   const fileArray = Array.from(fileList)
   const validFiles = []
+
+  // 检查是否已经有文件
+  if (props.modelValue && props.modelValue.length > 0) {
+    toast.error('大纲文件最多只能上传一个')
+    return
+  }
+
+  // 检查是否尝试上传多个文件
+  if (fileArray.length > 1) {
+    toast.error('大纲文件最多只能上传一个')
+    return
+  }
 
   for (const file of fileArray) {
     try {
@@ -169,7 +187,7 @@ const validateFile = (file) => {
 const removeFile = (file) => {
   // 打印最新的文件列表以便调试
   console.log('最新文件列表:', props.modelValue);
-  
+
   // 判断文件是否仍在上传中
   if (file.status === 'pending' || (!file.id && !file.file_id)) {
     console.warn('文件尚未上传，无法删除。')
