@@ -322,12 +322,47 @@
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 0.5rem 0;
 }
 
 .bg-themeBlue .markdown-body code {
   color: #e6e6e6;
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Enhance code blocks in light theme */
+.bg-themeGrey25 .markdown-body pre {
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 0.5rem 0;
+}
+
+.bg-themeGrey25 .markdown-body code {
+  background-color: #f0f2f5;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  color: #24292e;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Add syntax highlighting line numbers */
+.markdown-body pre {
+  position: relative;
+  padding-left: 3.5em;
+  counter-reset: line;
+}
+
+.markdown-body pre > code {
+  display: block;
+  position: relative;
+  font-size: 0.85em;
+  line-height: 1.5;
 }
 
 /* Ensure lists display properly in the chat context */
@@ -341,6 +376,29 @@
 .message-container .markdown-body pre {
   max-width: 100%;
   overflow-x: auto;
+}
+
+/* Improve table styling */
+.markdown-body table {
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--borderColor-default);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.markdown-body table th {
+  background-color: var(--bgColor-muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Improve blockquote styling */
+.markdown-body blockquote {
+  background-color: var(--bgColor-neutral-muted);
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  margin: 0.5em 0;
 }
 
 /* Syntax highlighting for code blocks */
