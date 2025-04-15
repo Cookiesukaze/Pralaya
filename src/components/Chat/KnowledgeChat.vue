@@ -53,8 +53,18 @@
       </button>
     </div>
 
+    <!-- 操作按钮区 -->
+    <div class="flex justify-between items-center px-4 py-2 border-t border-themeBorderGrey">
+      <button @click="clearHistory" class="text-sm text-gray-500 hover:text-gray-700 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        清除历史
+      </button>
+    </div>
+
     <!-- 输入区域 -->
-    <div class="search-bar border-t-2 border-themeBorderGrey p-4">
+    <div class="search-bar border-t border-themeBorderGrey p-4">
       <input
         v-model="newMessage"
         @keyup.enter="sendMessage"
@@ -69,8 +79,8 @@
 </template>
 
 <script>
-import { reactive } from 'vue';
-import { postChat } from '../../api/method.js';
+import { reactive, ref, onMounted } from 'vue';
+import { postKnowledgeChat, getGraphById, clearKnowledgeChatHistory } from '../../api/method.js';
 import marked from '../../utils/markdownConfig';
 import DOMPurify from 'dompurify';
 import '../../assets/styles/markdown.css';
@@ -85,8 +95,27 @@ export default {
     return {
       messages: [],
       newMessage: '',
-      showInitialBubble: true // 控制初始气泡和推荐输入的显示
+      showInitialBubble: true, // 控制初始气泡和推荐输入的显示
+      graphKnowledgeBaseId: null, // 存储知识库ID
+      conversationId: `chat_${Date.now()}${Math.floor(Math.random() * 1000000)}` // 生成唯一会话ID
     };
+  },
+
+  async mounted() {
+    // 在组件挂载时获取知识库ID
+    try {
+      if (this.selectedGraphId) {
+        const response = await getGraphById(this.selectedGraphId);
+        if (response && response.data && response.data.knowledgeBaseId) {
+          this.graphKnowledgeBaseId = response.data.knowledgeBaseId;
+          console.log('KnowledgeChat: 获取到知识库ID:', this.graphKnowledgeBaseId);
+        } else {
+          console.error('KnowledgeChat: 无法获取知识库ID');
+        }
+      }
+    } catch (error) {
+      console.error('KnowledgeChat: 获取知识库ID时出错:', error);
+    }
   },
   methods: {
     handlePaste(event) {
@@ -111,14 +140,27 @@ export default {
         this.scrollToBottom();
 
         try {
+          // 如果没有获取到知识库ID，尝试再次获取
+          if (!this.graphKnowledgeBaseId && this.selectedGraphId) {
+            try {
+              const response = await getGraphById(this.selectedGraphId);
+              if (response && response.data && response.data.knowledgeBaseId) {
+                this.graphKnowledgeBaseId = response.data.knowledgeBaseId;
+                console.log('KnowledgeChat: 重新获取到知识库ID:', this.graphKnowledgeBaseId);
+              }
+            } catch (error) {
+              console.error('KnowledgeChat: 重新获取知识库ID时出错:', error);
+            }
+          }
+
           let botMessage = null;
           const totalStartTime = performance.now();
           let streamStartTime = null;
 
-          await postChat({
+          await postKnowledgeChat({
             message: userMessage,
-            graphId: this.selectedGraphId,
-            mode: 'knowledge' // 添加模式标识，区分普通聊天
+            graphKnowledgeBaseId: this.graphKnowledgeBaseId,
+            conversation_id: this.conversationId
           }, (chunk) => {
             if (!botMessage) {
               botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
@@ -146,6 +188,27 @@ export default {
     },
     applyRecommendation(text) {
       this.newMessage = text; // 将推荐输入放入输入框
+    },
+
+    // 清除历史记录
+    async clearHistory() {
+      try {
+        // 清除服务器端历史
+        await clearKnowledgeChatHistory(this.conversationId);
+
+        // 清除前端显示的消息
+        this.messages = [];
+
+        // 重新显示初始气泡
+        this.showInitialBubble = true;
+
+        // 生成新的会话ID
+        this.conversationId = `chat_${Date.now()}${Math.floor(Math.random() * 1000000)}`;
+
+        console.log('KnowledgeChat: 历史记录已清除, 新会话ID:', this.conversationId);
+      } catch (error) {
+        console.error('KnowledgeChat: 清除历史记录失败:', error);
+      }
     },
     scrollToBottom() {
       this.$nextTick(() => {

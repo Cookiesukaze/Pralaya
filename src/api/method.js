@@ -88,15 +88,15 @@ export const fakePost = (data) => {
 
 export const postChat = async (data, onChunkReceived) => {
     // 使用新的知识库聊天API
-    const response = await fetch("http://127.0.0.1:5000/chat/kb_chat", {
+    const response = await fetch("/api/knowledge/chat", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             query: data.message,
-            kb_name: data.graphId,
-            top_k: 5,
+            graph_knowledge_base_id: data.graphId,
+            topK: 5,
             history: data.history || [],
             mode: "local_kb",
             score_threshold: 1,
@@ -105,6 +105,40 @@ export const postChat = async (data, onChunkReceived) => {
             prompt_name: "default",
             return_direct: true,
             stream: false
+        })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let result = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('Chat: Received chunk:', chunk);
+        result += chunk;
+        onChunkReceived(chunk);
+    }
+
+    return result;
+};
+
+// 新的知识库聊天API，使用Flask后端
+export const postKnowledgeChat = async (data, onChunkReceived) => {
+    // 使用Flask后端的知识库聊天API
+    const response = await fetch("http://127.0.0.1:5011/knowledge_chat", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message: data.message,
+            graphKnowledgeBaseId: data.graphKnowledgeBaseId,
+            conversation_id: data.conversation_id || 'default',
+            model: "gpt-4o",
+            temperature: 0.7,
+            stream: true
         })
     });
 
@@ -174,6 +208,30 @@ export const postResourcesChat = async (data, onChunkReceived) => {
     return result;
 };
 
+// 清除知识库聊天历史
+export const clearKnowledgeChatHistory = async (conversationId) => {
+    try {
+        const response = await fetch("http://127.0.0.1:5011/clear_history", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                conversation_id: conversationId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`清除历史失败: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('清除聊天历史失败:', error);
+        throw error;
+    }
+};
+
 
 // method.js所有的知识库管理
 export const knowledgeBaseAPI = {
@@ -190,12 +248,12 @@ export const knowledgeBaseAPI = {
 
             // 创建新的FormData，添加知识库名称和文件
             const newFormData = new FormData();
-            newFormData.append('knowledge_base_name', knowledgeBaseId);
-            newFormData.append('files', file);
+            newFormData.append('graph_knowledge_base_id', knowledgeBaseId);
+            newFormData.append('file', file);
             newFormData.append('override', 'false');
 
             // 调用新的API上传文档
-            const response = await fetch('http://127.0.0.1:5000/knowledge_base/upload_docs', {
+            const response = await fetch(`/api/knowledge/${knowledgeBaseId}/documents`, {
                 method: 'POST',
                 body: newFormData,
                 // 不能设置Content-Type，让浏览器自动设置multipart/form-data边界
@@ -241,20 +299,14 @@ export const knowledgeBaseAPI = {
 
     deleteDocument: async (fileName, knowledgeBaseName) => {
         try {
-            // 新的删除文档API需要知识库名称和文件名
-            const requestBody = {
-                knowledge_base_name: knowledgeBaseName,
-                file_names: [fileName],
-                delete_content: false,
-                not_refresh_vs_cache: false
-            };
+            // 新的删除文档API使用URL路径参数和查询参数
+            const url = `/api/knowledge/documents/${fileName}?graph_knowledge_base_id=${knowledgeBaseName}`;
 
-            const response = await fetch('http://127.0.0.1:5000/knowledge_base/delete_docs', {
-                method: 'POST',
+            const response = await fetch(url, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
+                }
             });
 
             if (!response.ok) {
@@ -302,21 +354,15 @@ export const knowledgeBaseAPI = {
 
     createKnowledgeBase: async (data) => {
         try {
-            // 准备请求体
-            const requestBody = {
-                knowledge_base_name: data.name,
-                vector_store_type: "faiss",
-                kb_info: data.description || "",
-                embed_model: "text-embedding-3-large" // 默认使用这个嵌入模型
-            };
+            // 准备请求参数
+            const url = `/api/knowledge?name=${encodeURIComponent(data.name)}&description=${encodeURIComponent(data.description || '')}&embeddingId=3`;
 
             // 调用新的API创建知识库
-            const response = await fetch('http://127.0.0.1:5000/knowledge_base/create_knowledge_base', {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
+                }
             });
 
             if (!response.ok) {
@@ -334,7 +380,7 @@ export const knowledgeBaseAPI = {
             // 返回与原API兼容的响应格式
             return {
                 data: {
-                    id: data.name, // 使用知识库名称作为ID
+                    id: data.id, // 使用知识库名称作为ID
                     name: data.name,
                     description: data.description
                 }
@@ -348,12 +394,11 @@ export const knowledgeBaseAPI = {
     deleteKnowledgeBase: async (knowledgeBaseName) => {
         try {
             // 调用新的API删除知识库
-            const response = await fetch('http://127.0.0.1:5000/knowledge_base/delete_knowledge_base', {
-                method: 'POST',
+            const response = await fetch(`/api/knowledge/${knowledgeBaseName}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(knowledgeBaseName)
+                }
             });
 
             if (!response.ok) {

@@ -47,14 +47,14 @@ export function useFileHandler(initialKnowledgeBaseId = null, onUploadSuccess = 
             format: file.name.split('.').pop().toLowerCase(),
             status: 'pending',
             progress: 0,
-            tempId: `${file.name}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            tempId: `${Date.now()}${Math.floor(Math.random() * 1000000)}`,
         }))
 
         pendingUploadFiles.value.push(...processedFiles)
         files.value.push(...processedFiles)
 
-        const tempName = `kb_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 5)}`
-
+        // TODO: 仔细检查从这里开始的逻辑
+        const tempName = `${Date.now()}${Math.floor(Math.random() * 1000000)}`
         try {
             // 如果没有 knowledgeBaseId，则创建一个新的知识库
             if (!knowledgeBaseId.value) {
