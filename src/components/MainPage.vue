@@ -64,6 +64,7 @@
           :userAvatar="userAvatar"
           :botAvatar="botAvatar"
           :selectedGraphId="selectedGraph?.id?.toString() || '1'"
+          :selectedGraph="selectedGraph"
         />
       </div>
     </div>

@@ -40,11 +40,13 @@ export default {
   props: {
     userAvatar: String,
     botAvatar: String,
-    selectedGraphId: String
+    selectedGraphId: String,
+    selectedGraph: Object
   },
   data() {
     return {
-      resourceGroup1: [
+      // 备选资源，当从图谱中无法获取资源时使用
+      fallbackResources: [
         {
           title: "Java SE Documentation",
           description: "Oracle官方Java文档，包含Java语言规范、API参考、教程和指南，是学习Java最权威的资源。",
@@ -54,71 +56,40 @@ export default {
           icon: "https://www.oracle.com/favicon.ico",
           imageUrl: this.generateScreenshotUrl("https://docs.oracle.com/en/java/"),
           time: "推荐时间: 2024-03-22"
-        },
-        {
-          title: "尚硅谷Java零基础教程",
-          description: "尚硅谷推出的Java零基础入门到精通教程，系统讲解Java基础知识、面向对象、集合、IO流、多线程等核心内容。",
-          tags: ["Java", "视频教程", "入门"],
-          url: "https://www.bilibili.com/video/BV1Kb411W75N",
-          domain: "bilibili.com",
-          icon: "https://www.bilibili.com/favicon.ico",
-          imageUrl: this.generateScreenshotUrl("https://www.bilibili.com/video/BV1Kb411W75N"),
-          time: "推荐时间: 2024-03-22"
-        },
-        {
-          title: "Spring官方文档",
-          description: "Spring框架官方文档，包含Spring Boot、Spring Cloud等主流Java框架的完整指南和教程，是Java开发者必备资源。",
-          tags: ["Java", "Spring", "框架"],
-          url: "https://spring.io/guides",
-          domain: "spring.io",
-          icon: "https://spring.io/favicon.ico",
-          imageUrl: this.generateScreenshotUrl("https://spring.io/guides"),
-          time: "推荐时间: 2024-03-22"
-        },
-      ],
-      resourceGroup2: [
-        {
-          title: "C语言教程 - 菜鸟教程",
-          description: "菜鸟教程提供的C语言入门教程，从基础语法到高级特性，通俗易懂，含有大量示例代码和实践练习。",
-          tags: ["C语言", "教程", "入门"],
-          url: "https://www.runoob.com/cprogramming/c-tutorial.html",
-          domain: "runoob.com",
-          icon: "https://static.runoob.com/images/favicon.ico",
-          imageUrl: this.generateScreenshotUrl("https://www.runoob.com/cprogramming/c-tutorial.html"),
-          time: "推荐时间: 2024-03-22"
-        },
-        {
-          title: "浙江大学翁恺教授C语言教程",
-          description: "翁恺教授的C语言视频教程，讲解清晰，由浅入深，适合零基础学习C语言编程的入门者。",
-          tags: ["C语言", "视频教程", "大学课程"],
-          url: "https://www.bilibili.com/video/BV19W411B7w1",
-          domain: "bilibili.com",
-          icon: "https://www.bilibili.com/favicon.ico",
-          imageUrl: this.generateScreenshotUrl("https://www.bilibili.com/video/BV19W411B7w1"),
-          time: "推荐时间: 2024-03-22"
-        },
-        {
-          title: "cppreference.com - C参考手册",
-          description: "最全面的C语言参考手册，包含C语言标准库函数、语法规则和编程实践的详细说明和示例代码。",
-          tags: ["C语言", "参考手册", "标准库"],
-          url: "https://zh.cppreference.com/w/c",
-          domain: "cppreference.com",
-          icon: "https://zh.cppreference.com/favicon.ico",
-          imageUrl: this.generateScreenshotUrl("https://zh.cppreference.com/w/c"),
-          time: "推荐时间: 2024-03-22"
-        },
+        }
       ]
     };
   },
   computed: {
     displayedResources() {
-      return this.selectedGraphId === "1" ? this.resourceGroup1 : this.resourceGroup2;
+      if (!this.selectedGraph || !this.selectedGraph.resources) {
+        return this.fallbackResources;
+      }
+      
+      try {
+        // 尝试解析 resources 字段的 JSON 字符串
+        const parsedResources = JSON.parse(this.selectedGraph.resources);
+        
+        // 确保解析后的结果是一个数组
+        if (Array.isArray(parsedResources) && parsedResources.length > 0) {
+          // 为每个资源添加 imageUrl
+          return parsedResources.map(resource => ({
+            ...resource,
+            imageUrl: this.generateScreenshotUrl(resource.url)
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing resources JSON:', error);
+      }
+      
+      // 如果解析失败或结果不是数组，返回备选资源
+      return this.fallbackResources;
     }
   },
   methods: {
     generateScreenshotUrl(url) {
       // 使用 s0.wp.com/mshots/v1 服务生成截图链接
-      return `https://s0.wp.com/mshots/v1/${url}`;
+      return `https://s0.wp.com/mshots/v1/${encodeURIComponent(url)}`;
     },
     hideLoading(event) {
       const loadingOverlay = event.target.parentElement.querySelector('.loading-overlay');
@@ -133,7 +104,10 @@ export default {
         loadingOverlay.style.display = 'none';
       }
       // 使用备用截图服务重新加载
-      img.src = this.generateScreenshotUrl(img.src.split('https://s0.wp.com/mshots/v1/')[1]);
+      const originalUrl = img.src.split('https://s0.wp.com/mshots/v1/')[1];
+      if (originalUrl) {
+        img.src = this.generateScreenshotUrl(decodeURIComponent(originalUrl));
+      }
     },
     scrollToBottom() {
       this.$nextTick(() => {
