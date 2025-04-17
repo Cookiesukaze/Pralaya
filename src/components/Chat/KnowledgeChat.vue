@@ -73,7 +73,7 @@
 <script>
 import { reactive, ref, onMounted } from 'vue';
 import { postKnowledgeChat, getGraphById, clearKnowledgeChatHistory } from '../../api/method.js';
-import marked from '../../utils/markdownConfig';
+import md from '../../utils/markdownConfig';
 import DOMPurify from 'dompurify';
 import '../../assets/styles/markdown.css';
 
@@ -154,6 +154,7 @@ export default {
             graphKnowledgeBaseId: this.graphKnowledgeBaseId,
             conversation_id: this.conversationId
           }, (chunk) => {
+            console.log('Received chunk:', chunk); // 添加调试日志
             if (!botMessage) {
               botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
               this.messages.push(botMessage);
@@ -169,12 +170,7 @@ export default {
           }
           console.log(`KnowledgeChat: 总响应时长: ${(totalEndTime - totalStartTime).toFixed(2)} ms`);
         } catch (error) {
-          console.error('KnowledgeChat: Error fetching bot reply:', error);
-          this.messages.push({
-            from: 'bot',
-            text: "抱歉，出错了，暂时无法响应。",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          });
+          console.error('消息发送错误:', error);
         }
       }
     },
@@ -209,26 +205,18 @@ export default {
       });
     },
     formatMessage(text) {
-      // 始终尝试将文本作为 Markdown 处理
       try {
-        // 使用 marked 解析 Markdown
-        const rawHtml = marked.parse(text);
-        // 使用 DOMPurify 清理 HTML 以防止 XSS 攻击
+        const rawHtml = md.render(text);
         const cleanHtml = DOMPurify.sanitize(rawHtml, {
-          ADD_ATTR: ['target', 'rel'], // 允许这些属性通过清理
-          FORBID_TAGS: ['style', 'script'], // 禁止这些标签
-          FORBID_ATTR: ['style'] // 禁止内联样式
+          FORBID_TAGS: ['style', 'script'],
+          FORBID_ATTR: ['style'],
+          ALLOW_DATA_ATTR: true
         });
-
-        // 将解析后的 HTML 包装在 markdown-body 类中以应用样式
+        
         return `<div class="markdown-body">${cleanHtml}</div>`;
       } catch (error) {
         console.error('Markdown 解析错误:', error);
-
-        // 如果解析失败，回退到基本文本格式化
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
-        return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
+        return `<div class="markdown-body">${text.replace(/\n/g, '<br>')}</div>`;
       }
     }
   },
@@ -242,12 +230,12 @@ export default {
 .message-container {
   flex: 1;
   overflow-y: auto;
-  -ms-overflow-style: none; /* IE 和 Edge 隐藏滚动条 */
-  scrollbar-width: none; /* Firefox 隐藏滚动条 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .message-container::-webkit-scrollbar {
-  display: none; /* 隐藏滚动条 */
+  display: none;
 }
 
 .break-words {
@@ -280,25 +268,13 @@ export default {
   margin: 0 auto;
 }
 
-
-
 .recommendation-bubble {
-  background-color: transparent; /* 无背景色 */
+  background-color: transparent;
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
-.link {
-  color: #3b82f6; /* 灰蓝色 */
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.link:hover {
-  color: #2563eb; /* 深灰蓝色 */
-}
-
 .bg-white {
-  max-height: 100vh; /* 限制组件最大高度为屏幕高度 */
+  max-height: 100vh;
 }
 </style>

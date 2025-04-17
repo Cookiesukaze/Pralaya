@@ -69,7 +69,7 @@
 <script>
 import { reactive } from 'vue';
 import {postResourcesChat} from "../../api/method.js";
-import marked from '../../utils/markdownConfig';
+import md from '../../utils/markdownConfig';
 import DOMPurify from 'dompurify';
 import '../../assets/styles/markdown.css';
 
@@ -152,26 +152,18 @@ export default {
       });
     },
     formatMessage(text) {
-      // 始终尝试将文本作为 Markdown 处理
       try {
-        // 使用 marked 解析 Markdown
-        const rawHtml = marked.parse(text);
-        // 使用 DOMPurify 清理 HTML 以防止 XSS 攻击
+        const rawHtml = md.render(text);
         const cleanHtml = DOMPurify.sanitize(rawHtml, {
-          ADD_ATTR: ['target', 'rel'], // 允许这些属性通过清理
-          FORBID_TAGS: ['style', 'script'], // 禁止这些标签
-          FORBID_ATTR: ['style'] // 禁止内联样式
+          FORBID_TAGS: ['style', 'script'],
+          FORBID_ATTR: ['style'],
+          ALLOW_DATA_ATTR: true
         });
-
-        // 将解析后的 HTML 包装在 markdown-body 类中以应用样式
+        
         return `<div class="markdown-body">${cleanHtml}</div>`;
       } catch (error) {
         console.error('Markdown 解析错误:', error);
-
-        // 如果解析失败，回退到基本文本格式化
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        const formattedText = text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="link">${url}</a>`);
-        return formattedText.replace(/\n/g, '<br>'); // 将换行符替换为 <br>
+        return `<div class="markdown-body">${text.replace(/\n/g, '<br>')}</div>`;
       }
     }
   },
