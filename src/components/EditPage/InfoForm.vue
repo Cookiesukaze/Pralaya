@@ -368,7 +368,10 @@ const submitForm = async () => {
       icon: selectedIcon.value?.name || '',
       prompt: formData.prompt || '',
       filenameList: JSON.stringify(props.graphData.filenameList).replace(/\\/g, '').replace(/^"|"$/g, ''),
-      outline: JSON.stringify(props.graphData.outline).replace(/\\/g, '').replace(/^"|"$/g, '')
+      outline: JSON.stringify(props.graphData.outline).replace(/\\/g, '').replace(/^"|"$/g, ''),
+      nodes: JSON.stringify(props.graphData.nodes).replace(/\\/g, '').replace(/^"|"$/g, ''),
+      edges: JSON.stringify(props.graphData.edges).replace(/\\/g, '').replace(/^"|"$/g, ''),
+      resources: JSON.stringify(props.graphData.resources).replace(/\\/g, '').replace(/^"|"$/g, ''),
     };
 
     if (isEditing) {
