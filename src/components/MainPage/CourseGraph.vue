@@ -77,7 +77,7 @@ defineExpose({
 
 <style scoped>
 .graph-wrapper {
-  //background-color: #f4f3f9;
+  /* background-color: #f4f3f9; */
   position: relative;
   width: 100%;
   height: 100%;

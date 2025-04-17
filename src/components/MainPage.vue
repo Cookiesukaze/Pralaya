@@ -27,34 +27,28 @@
         />
         
         <!-- 知识问答 -->
-        <keep-alive>
           <KnowledgeChat
             v-if="activeTab === 1 && selectedGraph"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
             :selectedGraphId="selectedGraph?.id?.toString() || '1'"
           />
-        </keep-alive>
         
         <!-- 代码纠错 -->
-        <keep-alive>
           <CodeChat
             v-if="activeTab === 2 && selectedGraph"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
             :selectedGraphId="selectedGraph?.id?.toString() || '1'"
           />
-        </keep-alive>
         
         <!-- 学习建议 -->
-        <keep-alive>
           <RecommendChat
             v-if="activeTab === 3 && selectedGraph"
             :userAvatar="userAvatar"
             :botAvatar="botAvatar"
             :selectedGraphId="selectedGraph?.id?.toString() || '1'"
           />
-        </keep-alive>
       </div>
 
       <div class="w-80 border-b-4 border-r-4 border-themeGrey flex flex-col">
