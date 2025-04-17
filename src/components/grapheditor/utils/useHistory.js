@@ -2,6 +2,7 @@ import { ref, watch, toRaw } from 'vue'
 import useGraph from './useGraph'
 import { edgeForm, nodeForm, selectedEdge, selectedNode } from "./store.js"
 import debounce from 'lodash/debounce'
+import { updateGraphHistory } from '../../../api/method.js'
 
 const historyList = ref([])
 const currentHistoryIndex = ref(-1)
@@ -11,74 +12,64 @@ const MAX_HISTORY = 5;
 let graph = null;
 let graphUtils = null;
 
-const addToHistory = (action, showInHistoryPanel = true, isPositionOnly = false) => {
-    // 收集图的所有信息，包括节点、边和视图状态（例如缩放）
-    const data = {
-        nodes: graph.value.getNodes().map(node => {
-            const model = node.getModel();
-            return {
-                id: model.id,
-                label: model.label,
-                description: model.description,
-                x: model.x,
-                y: model.y
-            };
-        }),
-        edges: graph.value.getEdges().map(edge => {
-            const model = edge.getModel();
-            return {
-                id: model.id,
-                source: model.source,
-                target: model.target,
-                label: model.label || ' '
-            };
-        }).filter(edge => edge && edge.id && edge.source && edge.target),
-        transform: {
-            zoom: graph.value.getZoom()
-            // 可在此处增加其它视图状态信息
-        }
-    };
+const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = false) => {
+    // 如果只是位置更新,不记录历史
+    if (isPositionOnly) return
 
-    if (isPositionOnly) {
-        // 若仅为位置更新，覆盖当前的历史记录，不新增记录
-        if (currentHistoryIndex.value >= 0) {
-            historyList.value[currentHistoryIndex.value].data = data;
-            historyList.value[currentHistoryIndex.value].timestamp = new Date().toLocaleTimeString();
-        }
-        saveToLocalStorage();
-        return;
+    // 收集当前图的状态
+    const currentState = {
+        nodes: graph.value.getNodes().map(node => ({
+            id: node.getModel().id,
+            label: node.getModel().label,
+            description: node.getModel().description
+        })),
+        edges: graph.value.getEdges().map(edge => ({
+            id: edge.getModel().id,
+            source: edge.getModel().source,
+            target: edge.getModel().target,
+            label: edge.getModel().label || ' '
+        })).filter(edge => edge && edge.source && edge.target)
     }
 
-    // 如果当前记录不是最新状态，删除之后的所有记录
-    if (currentHistoryIndex.value !== 0) {
-        historyList.value = historyList.value.slice(0, currentHistoryIndex.value + 1);
-    }
-
-    // 将新记录添加到列表的开头
-    historyList.value.unshift({
+    // 创建新的历史记录
+    const newHistory = {
         timestamp: new Date().toLocaleTimeString(),
         action,
-        data,
-        showInHistoryPanel  // 新增字段
-    });
-
-    // 只计算需要在历史记录面板中显示的记录数量
-    const visibleHistoryItems = historyList.value.filter(item => item.showInHistoryPanel);
-
-    // 如果可见历史记录超过最大限制，移除最早的可见记录
-    if (visibleHistoryItems.length > MAX_HISTORY) {
-        // 保留至少一条可见的历史记录
-        if (visibleHistoryItems.length > 1) {
-            // 找到最早的可见历史记录的索引（在数组末尾）
-            const lastVisibleIndex = historyList.value.lastIndexOf(visibleHistoryItems[visibleHistoryItems.length - 1]);
-            historyList.value.splice(lastVisibleIndex, 1);
-        }
+        data: currentState,
+        showInHistoryPanel
     }
 
-    // 更新当前历史记录索引，确保指向最新的可见记录
-    currentHistoryIndex.value = historyList.value.findIndex(item => item.showInHistoryPanel);
+    // 更新前端状态
+    if (currentHistoryIndex.value !== 0) {
+        historyList.value = historyList.value.slice(0, currentHistoryIndex.value + 1)
+    }
+    historyList.value.unshift(newHistory)
+    currentHistoryIndex.value = 0
 
-    saveToLocalStorage();
+    // 维护最大历史记录数
+    const visibleHistoryItems = historyList.value.filter(item => item.showInHistoryPanel)
+    if (visibleHistoryItems.length > MAX_HISTORY) {
+        const lastVisibleIndex = historyList.value.lastIndexOf(
+            visibleHistoryItems[visibleHistoryItems.length - 1]
+        )
+        historyList.value.splice(lastVisibleIndex, 1)
+    }
+
+    // 获取当前路由中的图谱ID
+    const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1]
+    if (!graphId) return
+
+    // 调用API更新后端数据
+    try {
+        await updateGraphHistory(
+            graphId,
+            JSON.stringify(currentState.nodes),
+            JSON.stringify(currentState.edges),
+            JSON.stringify(historyList.value)
+        )
+    } catch (error) {
+        console.error('Failed to update graph history:', error)
+    }
 };
 
 const getCircularReplacer = () => {

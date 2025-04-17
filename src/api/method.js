@@ -468,3 +468,24 @@ export const updateGraphNodesAndEdges = (id, nodes, edges) => {
         }
     });
 };
+
+// 更新图谱的历史记录、节点和边
+export const updateGraphHistory = (graphId, nodes, edges, history) => {
+    return request({
+        url: `/api/graph/${graphId}/history`,
+        method: 'put',
+        data: {
+            nodes,
+            edges,
+            history
+        }
+    })
+}
+
+// 获取图谱的历史记录
+export const getGraphHistory = (graphId) => {
+    return request({
+        url: `/api/graph/${graphId}/history`,
+        method: 'get'
+    })
+}

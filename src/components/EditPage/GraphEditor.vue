@@ -38,6 +38,7 @@ import EdgeEditor from '../grapheditor/EdgeEditor.vue'
 import HistoryPanel from '../grapheditor/HistoryPanel.vue'
 import { currentTab } from '../grapheditor/utils/store'
 import useHistory from '../grapheditor/utils/useHistory'
+import { getGraphHistory } from '../../api/method'
 
 // 当前选中的标签页
 const props = defineProps(['graphData'])
@@ -69,10 +70,37 @@ watch(() => currentTab.value, (newTab) => {
   }
 });
 
-// 初始化时加载历史记录
-onMounted(() => {
+// 初始化时从后端获取历史记录
+onMounted(async () => {
   if (props.graphData) {
-    initializeHistory(props.graphData);
+    try {
+      const graphId = props.graphData.id
+      const response = await getGraphHistory(graphId)
+      
+      if (response.data.history) {
+        historyList.value = JSON.parse(response.data.history)
+        currentHistoryIndex.value = 0
+        
+        // 如果有历史记录,使用最新的状态
+        if (historyList.value.length > 0) {
+          const currentState = historyList.value[0].data
+          graph.value.clear()
+          graph.value.data({
+            nodes: currentState.nodes,
+            edges: currentState.edges
+          })
+          graph.value.render()
+        } else {
+          // 没有历史记录,使用初始数据
+          initializeHistory(props.graphData)
+        }
+      } else {
+        initializeHistory(props.graphData)
+      }
+    } catch (error) {
+      console.error('Failed to load graph history:', error)
+      initializeHistory(props.graphData)
+    }
   }
-});
+})
 </script>
