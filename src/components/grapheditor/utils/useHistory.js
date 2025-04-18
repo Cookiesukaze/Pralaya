@@ -114,6 +114,13 @@ const deleteHistoryAfter = (index) => {
     edgeForm.value = { source: '', target: '', label: '' };
 };
 
+const clearHistory = () => {
+    console.log('useHistory: 清理历史记录');
+    historyList.value = [];
+    currentHistoryIndex.value = -1;
+    isInitialized = false;
+};
+
 export default function useHistory() {
     graphUtils = useGraph(null, selectedNode, selectedEdge, nodeForm, edgeForm, null, historyList, currentHistoryIndex, addToHistory);
     graph = graphUtils.graph;
@@ -135,6 +142,7 @@ export default function useHistory() {
         addToHistory,
         rollbackToHistory,
         deleteHistoryAfter,
-        graph
+        graph,
+        clearHistory
     };
 }

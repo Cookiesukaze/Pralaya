@@ -50,14 +50,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, onBeforeUnmount } from 'vue'
 import useHistory from './utils/useHistory'
 import { currentTab } from './utils/store'
 import { getGraphHistory, updateGraphHistory } from '../../api/method.js'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter } = useHistory()
+const { 
+    historyList, 
+    currentHistoryIndex, 
+    rollbackToHistory, 
+    deleteHistoryAfter, 
+    clearHistory: clearHistoryState  // 重命名导入的 clearHistory
+} = useHistory()
+
+// 监听路由变化
+watch(
+    () => route.params.id,
+    (newId, oldId) => {
+        if (newId !== oldId) {
+            console.log('HistoryPanel: 检测到路由变化，清理历史记录');
+            clearHistoryState();
+        }
+    }
+);
+
+// 组件卸载时清理
+onBeforeUnmount(() => {
+    console.log('HistoryPanel: 组件卸载，清理历史记录');
+    clearHistoryState();
+});
 
 // 计算属性，过滤显示在 UI 中的历史记录
 const displayedHistoryList = computed(() => {

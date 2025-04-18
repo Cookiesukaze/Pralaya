@@ -31,7 +31,8 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import GraphContainer from '../grapheditor/GraphContainer.vue'
 import NodeEditor from '../grapheditor/NodeEditor.vue'
 import EdgeEditor from '../grapheditor/EdgeEditor.vue'
@@ -40,8 +41,26 @@ import { currentTab } from '../grapheditor/utils/store'
 import useHistory from '../grapheditor/utils/useHistory'
 import { getGraphHistory } from '../../api/method'
 
+const route = useRoute()
 const props = defineProps(['graphData'])
-const { historyList, currentHistoryIndex, graph } = useHistory()
+const { historyList, currentHistoryIndex, graph, clearHistory } = useHistory()
+
+// 监听路由变化
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId !== oldId) {
+      console.log('GraphEditor: 检测到路由变化，清理历史记录');
+      clearHistory();
+    }
+  }
+);
+
+// 组件卸载时清理
+onBeforeUnmount(() => {
+  console.log('GraphEditor: 组件卸载，清理历史记录');
+  clearHistory();
+});
 
 // 计算属性判断图谱是否不可用
 const isGraphUnavailable = computed(() => {
@@ -57,6 +76,7 @@ const tabs = [
 
 // 从后端加载历史记录
 const loadHistoryFromBackend = async () => {
+  console.log('GraphEditor: 开始加载历史记录');
   if (props.graphData) {
     try {
       const graphId = props.graphData.id
@@ -76,9 +96,10 @@ const loadHistoryFromBackend = async () => {
           })
           graph.value.render()
         }
+        console.log('GraphEditor: 历史记录加载成功');
       }
     } catch (error) {
-      console.error('Failed to load graph history:', error)
+      console.error('GraphEditor: 加载历史记录失败:', error)
     }
   }
 }
