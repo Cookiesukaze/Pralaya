@@ -72,9 +72,70 @@ const isCurrentVersion = (index) => {
 };
 
 // 修改回滚和删除的处理
-const handleRollback = (index) => {
-    // 直接使用当前索引
+const handleRollback = async (index) => {
+    console.log('HistoryPanel: 正在回滚到索引', index);
+    
+    // 执行回滚
     rollbackToHistory(index);
+    
+    // 获取图谱ID
+    const graphId = route.params.id;
+    if (!graphId) {
+        console.error('HistoryPanel: 未找到图谱ID');
+        return;
+    }
+
+    try {
+        // 获取当前状态并清理数据
+        const currentState = historyList.value[index].data;
+        
+        // 清理节点数据
+        const cleanNodes = currentState.nodes.map(node => ({
+            id: node.id,
+            label: node.label,
+            description: node.description
+        }));
+
+        // 清理边数据
+        const cleanEdges = currentState.edges.map(edge => ({
+            source: edge.source,
+            target: edge.target,
+            label: edge.label || ' '
+        }));
+
+        // 清理历史记录数据
+        const cleanHistory = historyList.value.map(item => ({
+            timestamp: item.timestamp,
+            action: item.action,
+            data: {
+                nodes: item.data.nodes.map(node => ({
+                    id: node.id,
+                    label: node.label,
+                    description: node.description
+                })),
+                edges: item.data.edges.map(edge => ({
+                    source: edge.source,
+                    target: edge.target,
+                    label: edge.label || ' '
+                }))
+            },
+            showInHistoryPanel: item.showInHistoryPanel,
+            isCurrent: item.isCurrent
+        }));
+        
+        console.log('HistoryPanel: 更新后端历史记录');
+        // 更新后端数据
+        await updateGraphHistory(
+            graphId,
+            JSON.stringify(cleanNodes),
+            JSON.stringify(cleanEdges),
+            JSON.stringify(cleanHistory)
+        );
+        console.log('HistoryPanel: 历史记录回滚成功');
+    } catch (error) {
+        console.error('HistoryPanel: 回滚更新失败:', error);
+        console.error('错误详情:', error.message);
+    }
 };
 
 const handleDelete = (index) => {

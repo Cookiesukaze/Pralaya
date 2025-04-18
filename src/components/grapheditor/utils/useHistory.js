@@ -67,23 +67,32 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
 };
 
 const rollbackToHistory = (index) => {
+    console.log('useHistory: 开始回滚到索引', index);
+    
     const historyData = historyList.value[index].data;
     const validNodes = historyData.nodes.filter(node => node && node.id && node.label);
     const validEdges = historyData.edges.filter(edge => edge && edge.source && edge.target);
 
     if (validNodes.length > 0 || validEdges.length > 0) {
+        console.log('useHistory: 清除当前图形数据');
         graph.value.clear();
+        
+        console.log('useHistory: 加载历史数据');
         graph.value.data({ nodes: validNodes, edges: validEdges });
         graphUtils.updateNodesList();
         graph.value.render();
         graphUtils.registerGraphEvents();
         
+        console.log('useHistory: 更新历史记录状态');
         // 更新所有记录的 isCurrent 状态
         historyList.value.forEach((item, i) => {
             item.isCurrent = (i === index);
         });
         
         currentHistoryIndex.value = index;
+        console.log('useHistory: 回滚完成，当前索引:', index);
+    } else {
+        console.warn('useHistory: 无效的历史数据');
     }
 };
 
