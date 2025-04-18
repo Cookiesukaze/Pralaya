@@ -471,21 +471,22 @@ export const updateGraphNodesAndEdges = (id, nodes, edges) => {
 
 // 更新图谱的历史记录、节点和边
 export const updateGraphHistory = (graphId, nodes, edges, history) => {
-    return request({
-        url: `/api/graph/${graphId}/history`,
+    return axios({
+        url: `/graph/${graphId}/history`,
         method: 'put',
         data: {
-            nodes,
-            edges,
-            history
+            // 直接传递字符串,不需要再次 stringify
+            nodes: nodes,
+            edges: edges,
+            history: history
         }
     })
 }
 
 // 获取图谱的历史记录
 export const getGraphHistory = (graphId) => {
-    return request({
-        url: `/api/graph/${graphId}/history`,
+    return axios({
+        url: `/graph/${graphId}/history`,
         method: 'get'
     })
 }

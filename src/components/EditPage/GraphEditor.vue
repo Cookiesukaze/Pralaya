@@ -77,11 +77,11 @@ onMounted(async () => {
       const graphId = props.graphData.id
       const response = await getGraphHistory(graphId)
       
+      // 后端直接返回字符串,需要解析
       if (response.data.history) {
         historyList.value = JSON.parse(response.data.history)
         currentHistoryIndex.value = 0
         
-        // 如果有历史记录,使用最新的状态
         if (historyList.value.length > 0) {
           const currentState = historyList.value[0].data
           graph.value.clear()
@@ -91,7 +91,6 @@ onMounted(async () => {
           })
           graph.value.render()
         } else {
-          // 没有历史记录,使用初始数据
           initializeHistory(props.graphData)
         }
       } else {

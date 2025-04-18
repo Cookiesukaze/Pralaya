@@ -83,7 +83,7 @@ onMounted(() => {
 const route = useRoute(); // 获取路由实例
 
 const saveCurrentHistory = () => {
-  const graphId = route.params.id; // 从路由参数中获取图的 id
+  const graphId = route.params.id;
   if (currentHistoryIndex.value >= 0 && currentHistoryIndex.value < historyList.value.length) {
     const currentState = historyList.value[currentHistoryIndex.value].data;
     const nodes = currentState.nodes.map(node => ({

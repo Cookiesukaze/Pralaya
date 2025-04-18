@@ -13,10 +13,8 @@ let graph = null;
 let graphUtils = null;
 
 const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = false) => {
-    // 如果只是位置更新,不记录历史
     if (isPositionOnly) return
 
-    // 收集当前图的状态
     const currentState = {
         nodes: graph.value.getNodes().map(node => ({
             id: node.getModel().id,
@@ -24,14 +22,13 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
             description: node.getModel().description
         })),
         edges: graph.value.getEdges().map(edge => ({
-            id: edge.getModel().id,
+            // 只保留需要的属性
             source: edge.getModel().source,
             target: edge.getModel().target,
             label: edge.getModel().label || ' '
         })).filter(edge => edge && edge.source && edge.target)
     }
 
-    // 创建新的历史记录
     const newHistory = {
         timestamp: new Date().toLocaleTimeString(),
         action,
@@ -39,14 +36,12 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
         showInHistoryPanel
     }
 
-    // 更新前端状态
     if (currentHistoryIndex.value !== 0) {
         historyList.value = historyList.value.slice(0, currentHistoryIndex.value + 1)
     }
     historyList.value.unshift(newHistory)
     currentHistoryIndex.value = 0
 
-    // 维护最大历史记录数
     const visibleHistoryItems = historyList.value.filter(item => item.showInHistoryPanel)
     if (visibleHistoryItems.length > MAX_HISTORY) {
         const lastVisibleIndex = historyList.value.lastIndexOf(
@@ -55,11 +50,9 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
         historyList.value.splice(lastVisibleIndex, 1)
     }
 
-    // 获取当前路由中的图谱ID
     const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1]
     if (!graphId) return
 
-    // 调用API更新后端数据
     try {
         await updateGraphHistory(
             graphId,
@@ -70,7 +63,7 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
     } catch (error) {
         console.error('Failed to update graph history:', error)
     }
-};
+}
 
 const getCircularReplacer = () => {
     const seen = new WeakSet();
