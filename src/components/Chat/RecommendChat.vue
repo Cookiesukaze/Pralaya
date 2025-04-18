@@ -25,11 +25,33 @@
         <div :class="{'ml-3': message.from !== 'user', 'mr-3': message.from === 'user'}">
           <div
             :class="{'bg-themeGrey25': message.from !== 'user', 'bg-themeBlue text-white': message.from === 'user'}"
-            class="p-2 rounded-lg"
+            class="p-2 rounded-lg relative"
+            :style="{
+              minWidth: message.from !== 'user' && message.isLoading ? '48px' : 'auto',
+              minHeight: message.from !== 'user' && message.isLoading ? '48px' : 'auto'
+            }"
           >
-            <p class="text-sm break-words" :class="{'text-themeFontBlack': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
+            <!-- 加载动画 -->
+            <div v-if="message.isLoading" class="loading-dots absolute top-1/2 left-4 transform -translate-y-1/2">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            
+            <!-- 消息内容 -->
+            <p 
+              class="text-sm break-words" 
+              :class="{
+                'text-themeFontBlack': message.from !== 'user',
+                'pl-16': message.isLoading,
+                'min-h-[24px]': message.isLoading
+              }" 
+              v-html="formatMessage(message.text)"
+            ></p>
           </div>
-          <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
+          <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">
+            {{ message.time }}
+          </span>
         </div>
 
         <div v-if="message.from === 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-themeGrey25">
@@ -83,7 +105,8 @@ export default {
     return {
       messages: [],
       newMessage: '',
-      showInitialBubble: true
+      showInitialBubble: true,
+      isLoading: false
     };
   },
   methods: {
@@ -95,7 +118,6 @@ export default {
   },
     async sendMessage() {
       if (this.newMessage.trim() !== '') {
-        // 隐藏初始气泡和推荐输入
         this.showInitialBubble = false;
 
         this.messages.push({
@@ -108,20 +130,28 @@ export default {
         this.newMessage = '';
         this.scrollToBottom();
 
+        // 立即添加机器人的加载消息
+        const botMessage = reactive({
+          from: 'bot',
+          text: '',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isLoading: true  // 设置加载状态
+        });
+        this.messages.push(botMessage);
+        this.scrollToBottom();
+
         try {
-          let botMessage = null;
           const totalStartTime = performance.now();
           let streamStartTime = null;
 
           await postResourcesChat({
             message: userMessage,
             graphId: this.selectedGraphId,
-            mode: 'knowledge' // 添加模式标识，区分普通聊天
+            mode: 'knowledge'
           }, (chunk) => {
-            if (!botMessage) {
-              botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-              this.messages.push(botMessage);
+            if (!streamStartTime) {
               streamStartTime = performance.now();
+              botMessage.isLoading = false;  // 收到第一个响应时关闭加载动画
             }
             botMessage.text += chunk;
             this.scrollToBottom();
@@ -129,16 +159,13 @@ export default {
 
           const totalEndTime = performance.now();
           if (streamStartTime) {
-            console.log(`KnowledgeChat: 流式传输时长: ${(totalEndTime - streamStartTime).toFixed(2)} ms`);
+            console.log(`RecommendChat: 流式传输时长: ${(totalEndTime - streamStartTime).toFixed(2)} ms`);
           }
-          console.log(`KnowledgeChat: 总响应时长: ${(totalEndTime - totalStartTime).toFixed(2)} ms`);
+          console.log(`RecommendChat: 总响应时长: ${(totalEndTime - totalStartTime).toFixed(2)} ms`);
         } catch (error) {
-          console.error('KnowledgeChat: Error fetching bot reply:', error);
-          this.messages.push({
-            from: 'bot',
-            text: "抱歉，出错了，暂时无法响应。",
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          });
+          console.error('RecommendChat: Error fetching bot reply:', error);
+          botMessage.isLoading = false;
+          botMessage.text = "抱歉，出错了，暂时无法响应。";
         }
       }
     },
@@ -233,5 +260,45 @@ export default {
 
 .bg-white {
   max-height: 100vh; /* 限制组件最大高度为屏幕高度 */
+}
+
+.loading-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #666;
+  animation: dot-flashing 1s infinite linear alternate;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-flashing {
+  0% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-bubble {
+  transition: all 0.3s ease;
 }
 </style>

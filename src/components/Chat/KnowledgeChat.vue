@@ -26,12 +26,33 @@
         <div :class="{'ml-3': message.from !== 'user', 'mr-3': message.from === 'user'}">
           <div
             :class="{'bg-themeGrey25': message.from !== 'user', 'bg-themeBlue text-white': message.from === 'user'}"
-            class="p-2 rounded-lg"
+            class="p-2 rounded-lg relative"
+            :style="{
+              minWidth: message.from !== 'user' && message.isLoading ? '48px' : 'auto',
+              minHeight: message.from !== 'user' && message.isLoading ? '48px' : 'auto'
+            }"
           >
-            <!-- 使用 v-html 渲染消息内容，支持 HTML -->
-            <p class="text-sm break-words" :class="{'text-themeFontBlack': message.from !== 'user'}" v-html="formatMessage(message.text)"></p>
+            <!-- 加载动画 -->
+            <div v-if="message.isLoading" class="loading-dots absolute top-1/2 left-4 transform -translate-y-1/2">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            
+            <!-- 消息内容 -->
+            <p 
+              class="text-sm break-words" 
+              :class="{
+                'text-themeFontBlack': message.from !== 'user',
+                'pl-16': message.isLoading, // 为加载动画留出空间
+                'min-h-[24px]': message.isLoading
+              }" 
+              v-html="formatMessage(message.text)"
+            ></p>
           </div>
-          <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">{{ message.time }}</span>
+          <span class="text-xs text-themeFontGrey" :class="{'flex justify-end': message.from === 'user'}">
+            {{ message.time }}
+          </span>
         </div>
 
         <div v-if="message.from === 'user'" class="flex-shrink-0 h-8 w-8 rounded-full bg-themeGrey25">
@@ -89,7 +110,8 @@ export default {
       newMessage: '',
       showInitialBubble: true, // 控制初始气泡和推荐输入的显示
       graphKnowledgeBaseId: null, // 存储知识库ID
-      conversationId: `chat_${Date.now()}${Math.floor(Math.random() * 1000000)}` // 生成唯一会话ID
+      conversationId: `chat_${Date.now()}${Math.floor(Math.random() * 1000000)}`, // 生成唯一会话ID
+      isLoading: false  // 新增加载状态
     };
   },
 
@@ -118,9 +140,9 @@ export default {
   },
     async sendMessage() {
       if (this.newMessage.trim() !== '') {
-        // 隐藏初始气泡和推荐输入
         this.showInitialBubble = false;
 
+        // 添加用户消息
         this.messages.push({
           from: 'user',
           text: this.newMessage,
@@ -131,6 +153,16 @@ export default {
         this.newMessage = '';
         this.scrollToBottom();
 
+        // 立即添加机器人的加载消息
+        const botMessage = reactive({
+          from: 'bot',
+          text: '',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isLoading: true  // 设置加载状态
+        });
+        this.messages.push(botMessage);
+        this.scrollToBottom();
+
         try {
           // 如果没有获取到知识库ID，尝试再次获取
           if (!this.graphKnowledgeBaseId && this.selectedGraphId) {
@@ -138,14 +170,12 @@ export default {
               const response = await getGraphById(this.selectedGraphId);
               if (response && response.data && response.data.knowledgeBaseId) {
                 this.graphKnowledgeBaseId = response.data.knowledgeBaseId;
-                console.log('KnowledgeChat: 重新获取到知识库ID:', this.graphKnowledgeBaseId);
               }
             } catch (error) {
               console.error('KnowledgeChat: 重新获取知识库ID时出错:', error);
             }
           }
 
-          let botMessage = null;
           const totalStartTime = performance.now();
           let streamStartTime = null;
 
@@ -154,11 +184,9 @@ export default {
             graphKnowledgeBaseId: this.graphKnowledgeBaseId,
             conversation_id: this.conversationId
           }, (chunk) => {
-            console.log('Received chunk:', chunk); // 添加调试日志
-            if (!botMessage) {
-              botMessage = reactive({ from: 'bot', text: '', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-              this.messages.push(botMessage);
+            if (!streamStartTime) {
               streamStartTime = performance.now();
+              botMessage.isLoading = false;  // 收到第一个响应时关闭加载动画
             }
             botMessage.text += chunk;
             this.scrollToBottom();
@@ -171,6 +199,9 @@ export default {
           console.log(`KnowledgeChat: 总响应时长: ${(totalEndTime - totalStartTime).toFixed(2)} ms`);
         } catch (error) {
           console.error('消息发送错误:', error);
+          // 发生错误时更新消息
+          botMessage.isLoading = false;
+          botMessage.text = "抱歉，出错了，暂时无法响应。";
         }
       }
     },
@@ -276,5 +307,62 @@ export default {
 
 .bg-white {
   max-height: 100vh;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 6px; /* 稍微增加点之间的间距 */
+}
+
+.loading-dots span {
+  width: 8px; /* 稍微增加点的大小 */
+  height: 8px;
+  border-radius: 50%;
+  background-color: #666;
+  animation: dot-flashing 1s infinite linear alternate;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-flashing {
+  0% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 让加载动画更平滑 */
+@keyframes dot-flashing {
+  0% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 确保气泡有平滑的过渡效果 */
+.message-bubble {
+  transition: all 0.3s ease;
 }
 </style>
