@@ -2,10 +2,11 @@
 import { nodeForm, selectedNode } from './store';  // 从 store.js 导入全局状态
 import useGraph from './useGraph';
 import useHistory from './useHistory';
+import { updateGraphHistory } from '../../../api/method';
 
 export default function useNodeForm() {
     const { graph, updateNodesList, clearSelectedState } = useGraph();
-    const { addToHistory } = useHistory();
+    const { addToHistory, historyList } = useHistory();
 
     // 添加节点
     const addNode = () => {
@@ -31,22 +32,53 @@ export default function useNodeForm() {
     };
 
     // 更新节点
-    const updateNode = () => {
+    const updateNode = async () => {
         if (!selectedNode.value || !nodeForm.value.label) return;
 
         const nodeId = selectedNode.value.getID();
         const node = graph.value.findById(nodeId);
 
-        if (!node) {
-            // console.error('Node not found:', nodeId);
-            return;
-        }
+        if (!node) return;
 
         const oldLabel = node.get('model').label;
         graph.value.updateItem(nodeId, nodeForm.value);
 
-        addToHistory(`更新节点 "${oldLabel}" → "${nodeForm.value.label}"`);
-        clearSelectedState();  // 清除选中状态
+        // 获取当前所有节点和边的数据
+        const currentNodes = graph.value.getNodes().map(node => ({
+            id: node.getModel().id,
+            label: node.getModel().label,
+            description: node.getModel().description
+        }));
+
+        const currentEdges = graph.value.getEdges().map(edge => ({
+            source: edge.getModel().source,
+            target: edge.getModel().target,
+            label: edge.getModel().label || ' '
+        }));
+
+        // 从URL中获取图谱ID
+        const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1];
+        if (!graphId) return;
+
+        try {
+            // 添加到历史记录
+            addToHistory(`更新节点 "${oldLabel}" → "${nodeForm.value.label}"`);
+
+            // 更新到后端
+            await updateGraphHistory(
+                graphId,
+                JSON.stringify(currentNodes),
+                JSON.stringify(currentEdges),
+                JSON.stringify(historyList.value)
+            );
+
+            clearSelectedState();  // 清除选中状态
+
+        } catch (error) {
+            console.error('Failed to update node:', error);
+            // 可以在这里添加错误处理，比如回滚节点更新
+            // graph.value.updateItem(nodeId, { label: oldLabel });
+        }
     };
 
     // 删除节点
