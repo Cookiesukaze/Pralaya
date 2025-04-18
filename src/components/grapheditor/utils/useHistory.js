@@ -41,14 +41,14 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
     // 将所有现有记录的 isCurrent 设置为 false
     historyList.value.forEach(item => item.isCurrent = false);
     
-    // 无论是否是第一次操作，都将新记录添加到开头
+    // 如果已达到最大记录数，删除最后一条（最早的）记录
+    if (historyList.value.length >= MAX_HISTORY) {
+        historyList.value.pop(); // 删除数组最后一个元素
+    }
+    
+    // 将新记录添加到开头
     historyList.value.unshift(newHistory);
     currentHistoryIndex.value = 0;
-
-    // 限制历史记录数量
-    if (historyList.value.length > MAX_HISTORY) {
-        historyList.value = historyList.value.slice(0, MAX_HISTORY);
-    }
 
     // 更新后端
     const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1];
