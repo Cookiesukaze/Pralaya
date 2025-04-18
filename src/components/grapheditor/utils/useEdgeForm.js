@@ -1,10 +1,11 @@
-import { edgeForm, selectedEdge } from './store';  // 从 store.js 导入全局状态
+import { edgeForm, selectedEdge } from './store';
 import useGraph from './useGraph';
 import useHistory from './useHistory';
+import { updateGraphHistory } from '../../../api/method';
 
 export default function useEdgeForm() {
-    const { graph, nodes, updateNodesList, clearSelectedState } = useGraph();  // 确保 nodes 被传递
-    const { addToHistory } = useHistory();
+    const { graph, updateNodesList, clearSelectedState, nodes } = useGraph();
+    const { addToHistory, historyList } = useHistory();
 
     // 添加边
     const addEdge = () => {
@@ -32,37 +33,51 @@ export default function useEdgeForm() {
         clearSelectedState();
     };
 
-    const updateEdge = () => {
-        // 防御性检查，确保 selectedEdge.value 存在
-        if (!selectedEdge.value) {
-            console.error('No edge is selected.');
-            return;
-        }
+    const updateEdge = async () => {
+        if (!selectedEdge.value || !edgeForm.value.label) return;
 
-        const edgeId = selectedEdge.value.getID ? selectedEdge.value.getID() : selectedEdge.value;
+        const edgeId = selectedEdge.value.getID();
         const edge = graph.value.findById(edgeId);
 
-        if (!edge) {
-            console.error(`Edge not found with ID: ${edgeId}`);
-            return;
+        if (!edge) return;
+
+        const oldLabel = edge.get('model').label;
+        graph.value.updateItem(edgeId, edgeForm.value);
+
+        // 获取当前所有节点和边的数据
+        const currentNodes = graph.value.getNodes().map(node => ({
+            id: node.getModel().id,
+            label: node.getModel().label,
+            description: node.getModel().description
+        }));
+
+        const currentEdges = graph.value.getEdges().map(edge => ({
+            source: edge.getModel().source,
+            target: edge.getModel().target,
+            label: edge.getModel().label || ' '
+        }));
+
+        // 从URL中获取图谱ID
+        const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1];
+        if (!graphId) return;
+
+        try {
+            // 添加到历史记录
+            addToHistory(`更新关系 "${oldLabel}" → "${edgeForm.value.label}"`);
+
+            // 更新到后端
+            await updateGraphHistory(
+                graphId,
+                JSON.stringify(currentNodes),
+                JSON.stringify(currentEdges),
+                JSON.stringify(historyList.value)
+            );
+
+            clearSelectedState();  // 清除选中状态
+
+        } catch (error) {
+            console.error('Failed to update edge:', error);
         }
-
-        const model = edge.getModel();
-        const oldLabel = model.label;
-
-        // 获取 source 和 target 节点的标签
-        const sourceNode = graph.value.findById(model.source);
-        const targetNode = graph.value.findById(model.target);
-
-        const sourceLabel = sourceNode ? sourceNode.get('model').label : model.source;
-        const targetLabel = targetNode ? targetNode.get('model').label : model.target;
-
-        graph.value.updateItem(edgeId, { label: edgeForm.value.label });
-
-        // 添加到历史记录，显示节点的标签
-        addToHistory(`更新关系: "${sourceLabel}" 的关系从 "${oldLabel}" 改为 "${edgeForm.value.label}" "${targetLabel}"`);
-
-        clearSelectedState();
     };
 
     const deleteEdge = () => {
@@ -102,5 +117,10 @@ export default function useEdgeForm() {
     };
 
     // 返回节点列表供边表单使用
-    return { addEdge, updateEdge, deleteEdge, nodes };  // 返回 nodes 列表
+    return { 
+        addEdge, 
+        updateEdge, 
+        deleteEdge, 
+        nodes  // 从 useGraph 中解构出来的 nodes
+    };
 }
