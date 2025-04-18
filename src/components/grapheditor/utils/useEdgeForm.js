@@ -80,9 +80,7 @@ export default function useEdgeForm() {
         }
     };
 
-    const deleteEdge = () => {
-        // console.log('Delete button clicked!');  // 确认按钮点击后触发了该函数
-
+    const deleteEdge = async () => {
         if (!selectedEdge.value) {
             console.error('No edge is selected.');
             return;
@@ -96,24 +94,46 @@ export default function useEdgeForm() {
             return;
         }
 
-        // console.log('Deleting edge:', edgeId);  // 输出要删除的边ID
-
-        // 获取边的标签
-        const edgeLabel = edge.get('model').label;
-
+        // 获取边的信息用于历史记录
+        const edgeModel = edge.getModel();
+        const sourceNode = graph.value.findById(edgeModel.source);
+        const targetNode = graph.value.findById(edgeModel.target);
+        
+        const sourceLabel = sourceNode ? sourceNode.getModel().label : edgeModel.source;
+        const targetLabel = targetNode ? targetNode.getModel().label : edgeModel.target;
+        
         // 删除边
         graph.value.removeItem(edgeId);
-        updateNodesList();  // 更新节点列表
-
-        // console.log('Edge deleted, clearing state');
-        clearSelectedState();  // 清除选中状态
+        
+        // 更新节点列表
+        updateNodesList();
 
         // 添加到历史记录
-        addToHistory(`删除关系: "${edgeLabel}"`);
+        addToHistory(`删除关系: "${sourceLabel}" ${edgeModel.label} "${targetLabel}"`);
 
-        // 确保销毁后将 selectedEdge 设置为 null
-        selectedEdge.value = null;  // 确保边删除后，selectedEdge 清空
-        // console.log('After clearing state, selectedEdge:', selectedEdge.value);  // 再次检查 selectedEdge 是否为 null
+        // 获取当前图的所有节点和边
+        const currentNodes = graph.value.getNodes().map(node => node.getModel());
+        const currentEdges = graph.value.getEdges().map(edge => edge.getModel());
+
+        // 从URL中获取图谱ID
+        const graphId = window.location.hash.match(/\/edit\/(\d+)/)?.[1];
+        if (graphId) {
+            try {
+                // 更新到后端
+                await updateGraphHistory(
+                    graphId,
+                    JSON.stringify(currentNodes),
+                    JSON.stringify(currentEdges),
+                    JSON.stringify(historyList.value)
+                );
+            } catch (error) {
+                console.error('Failed to update after edge deletion:', error);
+            }
+        }
+
+        // 清除选中状态 - 移到最后执行
+        selectedEdge.value = null;
+        clearSelectedState();
     };
 
     // 返回节点列表供边表单使用
