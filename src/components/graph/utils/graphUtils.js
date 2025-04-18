@@ -44,92 +44,226 @@ export const initializeGraph = (container, graphData, options = {}) => {
 export const parseTreeGraphData = (nodesData, edgesData) => {
     const nodes = typeof nodesData === 'string' ? JSON.parse(nodesData) : nodesData;
     const edges = typeof edgesData === 'string' ? JSON.parse(edgesData) : edgesData;
-    const processNode = (nodeData) => {
+    
+    // 使用Set来跟踪已处理的节点ID，防止循环引用
+    const processedNodeIds = new Set();
+    // 存储已使用的ID，用于检测重复ID
+    const usedIds = new Set();
+    
+    const processNode = (nodeData, parentPath = '') => {
+        // 如果节点已处理过，直接返回一个带有唯一ID的引用节点
+        if (processedNodeIds.has(nodeData.id)) {
+            // 为重复节点创建唯一ID: 原ID + 父节点路径
+            const uniqueId = `${nodeData.id}_ref_${parentPath}`;
+            return {
+                id: uniqueId,  // 使用唯一ID
+                originId: nodeData.id, // 保留原始ID
+                label: nodeData.label,
+                description: nodeData.description,
+                isReference: true // 标记为引用节点
+            };
+        }
+        
+        // 记录当前节点已被处理
+        processedNodeIds.add(nodeData.id);
+        
+        // 构建当前节点路径，用于生成子节点唯一ID
+        const currentPath = parentPath ? `${parentPath}_${nodeData.id}` : `${nodeData.id}`;
+        
         const node = {
             id: nodeData.id,
             label: nodeData.label,
             description: nodeData.description,
             children: []
         };
+        
+        // 添加节点ID到已使用集合
+        usedIds.add(nodeData.id);
+        
         const childEdges = edges.filter(edge => edge.source === nodeData.id);
         childEdges.forEach(edge => {
             const childNode = nodes.find(n => n.id === edge.target);
             if (childNode) {
-                node.children.push(processNode(childNode));
+                node.children.push(processNode(childNode, currentPath));
             }
         });
         return node;
     };
+    
+    // 寻找根节点 - 没有指向它的边的节点
     const rootNode = nodes.find(node => !edges.some(edge => edge.target === node.id));
-    return processNode(rootNode);
+    
+    // 如果没有找到根节点，则使用第一个节点作为起点
+    if (!rootNode && nodes.length > 0) {
+        console.warn('没有找到明确的根节点，使用第一个节点作为起点');
+        return processNode(nodes[0]);
+    }
+    
+    return rootNode ? processNode(rootNode) : null;
 };
 
 export const initializeTreeGraph = (container, graphData, options = {}) => {
     addTooltipStyles();
+    
+    // 检查graphData是否有效
+    if (!graphData) {
+        console.error('无效的图表数据');
+        return null;
+    }
+    
+    // 确保container有效
+    if (!container || !container.clientWidth) {
+        console.error('无效的容器元素');
+        return null;
+    }
 
-    const graph = new G6.TreeGraph({
-        ...getCommonConfig(container),
-        modes: {
-            default: [
-                'drag-canvas',
-                'zoom-canvas',
-                getTooltipBehavior(),
-                getEdgeTooltipBehavior()
-            ]
-        },
-        layout: {
-            type: 'compactBox',
-            direction: 'TB',
-            getId: d => d.id,
-            getHeight: () => 16,
-            getWidth: () => 16,
-            getVGap: () => 40,
-            getHGap: () => 60,
-        },
-        defaultEdge: {
-            type: 'cubic-horizontal',
-            style: {
-                stroke: '#e2e2e2',
-                endArrow: true,
-                lineAppendWidth: 5
+    try {
+        const graph = new G6.TreeGraph({
+            ...getCommonConfig(container),
+            modes: {
+                default: [
+                    'drag-canvas',
+                    'zoom-canvas',
+                    getTooltipBehavior(),
+                    getEdgeTooltipBehavior()
+                ]
             },
-            labelCfg: {
-                position: 'middle',
+            layout: {
+                type: 'compactBox',
+                direction: 'TB',
+                getId: d => d.id,
+                getHeight: () => 16,
+                getWidth: () => 16,
+                getVGap: () => 40,
+                getHGap: () => 60,
+            },
+            defaultEdge: {
+                type: 'cubic-horizontal',
                 style: {
-                    fontSize: 12,
-                    fill: '#666',
-                    background: {
-                        fill: '#fff',
-                        padding: [2, 4, 2, 4],
-                        radius: 2,
+                    stroke: '#e2e2e2',
+                    endArrow: true,
+                    lineAppendWidth: 5
+                },
+                labelCfg: {
+                    position: 'middle',
+                    style: {
+                        fontSize: 12,
+                        fill: '#666',
+                        background: {
+                            fill: '#fff',
+                            padding: [2, 4, 2, 4],
+                            radius: 2,
+                        },
                     },
                 },
             },
-        },
-        ...options
-    });
+            ...options
+        });
 
-    bindCommonEvents(graph);
+        bindCommonEvents(graph);
 
-    graph.edge(edge => {
-        const config = { ...edge };
-        const targetNode = graph.findById(edge.target).getModel();
-        if (targetNode.edgeLabel) {
-            config.label = targetNode.edgeLabel;
-        }
-        if (targetNode.edge?.description) {
-            config.description = targetNode.edge.description;
-        }
-        return config;
-    });
+        graph.edge(edge => {
+            const config = { ...edge };
+            try {
+                const targetNode = graph.findById(edge.target)?.getModel();
+                if (targetNode) {
+                    if (targetNode.edgeLabel) {
+                        config.label = targetNode.edgeLabel;
+                    }
+                    if (targetNode.edge?.description) {
+                        config.description = targetNode.edge.description;
+                    }
+                }
+            } catch (err) {
+                console.warn('处理边属性时出错:', err);
+            }
+            return config;
+        });
 
-    graph.data(graphData);
-    graph.render();
-    graph.fitView();
+        graph.data(graphData);
+        graph.render();
+        graph.fitView();
 
-    return graph;
+        return graph;
+    } catch (error) {
+        console.error('初始化树形图表时出错:', error);
+        return null;
+    }
 };
 
+// 创建一个简化版的树形图，用于处理复杂或有问题的数据
+export const createSimpleTreeGraph = (container, nodesData, edgesData) => {
+    addTooltipStyles();
+    
+    if (!container || !nodesData || !edgesData) {
+        return null;
+    }
+    
+    try {
+        // 简化数据处理，不构建完整的树结构
+        const nodes = typeof nodesData === 'string' ? JSON.parse(nodesData) : nodesData;
+        const edges = typeof edgesData === 'string' ? JSON.parse(edgesData) : edgesData;
+        
+        // 为每个节点添加唯一ID
+        const processedNodes = nodes.map((node, index) => ({
+            ...node,
+            id: `node-${node.id}-${index}`, // 确保ID唯一
+            label: node.label || '未命名节点'
+        }));
+        
+        // 创建新的边，连接处理过的节点
+        const processedEdges = [];
+        edges.forEach((edge, index) => {
+            const sourceNode = processedNodes.find(n => n.originId === edge.source || `node-${edge.source}` === n.id);
+            const targetNode = processedNodes.find(n => n.originId === edge.target || `node-${edge.target}` === n.id);
+            
+            if (sourceNode && targetNode) {
+                processedEdges.push({
+                    id: `edge-${index}`,
+                    source: sourceNode.id,
+                    target: targetNode.id,
+                    label: edge.label || ''
+                });
+            }
+        });
+        
+        // 使用常规图而非树图
+        const graph = new G6.Graph({
+            ...getCommonConfig(container),
+            modes: {
+                default: [
+                    'drag-canvas',
+                    'zoom-canvas',
+                    'drag-node',
+                    getTooltipBehavior(),
+                    getEdgeTooltipBehavior()
+                ]
+            },
+            layout: {
+                type: 'dagre',
+                rankdir: 'TB',
+                align: 'UL',
+                nodesepFunc: () => 50,
+                ranksepFunc: () => 50,
+            }
+        });
+        
+        bindCommonEvents(graph);
+        
+        graph.data({
+            nodes: processedNodes,
+            edges: processedEdges
+        });
+        
+        graph.render();
+        graph.fitView();
+        
+        return graph;
+    } catch (error) {
+        console.error('创建简化树形图失败:', error);
+        return null;
+    }
+};
 
 //
 // 公共图样式

@@ -14,7 +14,7 @@
 <script setup>
 import {defineProps, defineExpose, ref, onMounted, onBeforeUnmount, watch, nextTick, toRefs} from 'vue';
 import {createDebouncedFullscreenToggle, handleFullscreenChange, toggleFullscreen} from './utils/fullscreenUtils';
-import {GraphSearchUtil, initializeTreeGraph, parseTreeGraphData, updateGraphSize} from './utils/graphUtils';
+import {GraphSearchUtil, initializeTreeGraph, parseTreeGraphData, updateGraphSize, createSimpleTreeGraph} from './utils/graphUtils';
 import G6 from '@antv/g6';
 import GraphToolbar from './GraphToolbar.vue';
 import GraphSearch from './GraphSearch.vue';
@@ -63,13 +63,55 @@ const loadGraphData = async () => {
       edgesData = edgesData.default;
       console.log('TreeGraph: 使用 本地文件的 json');
     }
-    if (graph) {
-      graph.destroy();
+    
+    // 检查数据有效性
+    if (!nodesData || !nodesData.length || !edgesData || !edgesData.length) {
+      console.warn('TreeGraph: 图表数据为空或无效');
+      return;
     }
-    const graphData = parseTreeGraphData(nodesData, edgesData);
-    graph = initializeTreeGraph(treeGraphRef.value, graphData);
+    
+    // 销毁旧图表
+    if (graph) {
+      try {
+        graph.destroy();
+      } catch (err) {
+        console.warn('TreeGraph: 销毁旧图表时出错:', err);
+      }
+      graph = null;
+    }
+    
+    try {
+      // 尝试使用标准树形图渲染
+      const graphData = parseTreeGraphData(nodesData, edgesData);
+      
+      if (!graphData) {
+        throw new Error('无法解析树形数据');
+      }
+      
+      graph = initializeTreeGraph(treeGraphRef.value, graphData);
+    } catch (treeError) {
+      console.warn('TreeGraph: 标准树形图渲染失败，尝试使用简化版本:', treeError);
+      
+      // 如果标准树形图失败，尝试使用简化版本
+      try {
+        graph = createSimpleTreeGraph(treeGraphRef.value, nodesData, edgesData);
+        if (!graph) {
+          throw new Error('简化树形图也创建失败');
+        }
+        console.log('TreeGraph: 使用简化树形图渲染成功');
+      } catch (simpleError) {
+        console.error('TreeGraph: 所有渲染方法都失败:', simpleError);
+        if (treeGraphRef.value) {
+          treeGraphRef.value.innerHTML = '<div class="error-message">无法渲染图表，数据结构可能不适合树形展示</div>';
+        }
+      }
+    }
   } catch (error) {
     console.error('TreeGraph: 加载图表数据出错:', error);
+    // 不要让错误传播，但确保UI知道发生了错误
+    if (treeGraphRef.value) {
+      treeGraphRef.value.innerHTML = '<div class="error-message">加载图表数据时出错</div>';
+    }
   }
 };
 
@@ -140,9 +182,18 @@ onBeforeUnmount(() => {
 // 监听 jsonPath 的变化
 watch(() => props.jsonPath, (newPath) => {
   if (newPath) {
+    console.log('TreeGraph: jsonPath changed to:', newPath);
     loadGraphData();
   }
 });
+
+// 监听 graphs 的变化
+watch(() => props.graphs, (newGraphs) => {
+  if (newGraphs && newGraphs.length > 0 && props.jsonPath) {
+    console.log('TreeGraph: graphs changed, refreshing graph data');
+    loadGraphData();
+  }
+}, { deep: true });
 </script>
 
 <style>

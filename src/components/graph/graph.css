@@ -58,3 +58,18 @@ input {
 .graph-container::backdrop {
     background-color: transparent; /* 使 backdrop 透明 */
 }
+
+/* 错误消息样式 */
+.error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 20px;
+    text-align: center;
+    color: #f56c6c;
+    font-size: 16px;
+    background-color: rgba(245, 108, 108, 0.1);
+    border: 1px dashed #f56c6c;
+    border-radius: 4px;
+}
