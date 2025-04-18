@@ -15,24 +15,20 @@ const graphContainer = ref(null)
 const props = defineProps(['graphData'])
 
 // 使用 defineEmits 定义事件
-const emit = defineEmits(['tab-change']);
+const emit = defineEmits(['tab-change'])
 
-const { loadFromLocalStorage, addToHistory, getLocalStorageSize, historyList, currentHistoryIndex, updateCurrentHistory } = useHistory();
+const { historyList, currentHistoryIndex, addToHistory } = useHistory()
 
 const { graph, initGraph, clearSelectedState, updateNodesList, registerGraphEvents } = useGraph(
-    graphContainer,     // graphContainer
-    selectedNode,       // selectedNode
-    selectedEdge,       // selectedEdge
-    nodeForm,           // nodeForm
-    edgeForm,           // edgeForm
-    null,               // currentTab，暂时设为 null
-    historyList,        // 传入 historyList
-    currentHistoryIndex,// 传入 currentHistoryIndex
-    addToHistory,       // addToHistory
-    updateCurrentHistory   // 传入 updateCurrentHistory 函数
+    graphContainer,
+    selectedNode,
+    selectedEdge,
+    nodeForm,
+    edgeForm,
+    null,
+    historyList,
+    currentHistoryIndex
 );
-
-console.log('调用 useGraph 函数，来源: GraphContainer.vue');
 
 onMounted(() => {
   nextTick(() => {
@@ -47,20 +43,15 @@ watch(
   () => props.graphData,
   async (newData) => {
     if (newData) {
-      console.log('GraphContainer:get data:', newData)
       nextTick(() => {
         initGraph();
         nextTick(async () => {
           if (graph.value) {
             let nodes, edges;
             try {
-              // 确保从后端数据加载
               nodes = JSON.parse(newData.nodes);
               edges = JSON.parse(newData.edges);
               
-              console.log('Loading nodes from backend:', nodes);
-              console.log('Loading edges from backend:', edges);
-
               graph.value.clear();
               graph.value.data({ nodes, edges });
               graph.value.render();

@@ -4,12 +4,6 @@ import G6 from '@antv/g6'
 const graph = ref(null)
 const nodes = ref([])
 
-const getRouteKey = () => {
-    const route = window.location.pathname;
-    console.log(`Current route: ${route}`); // 输出当前路由
-    return `graphHistory_${route}`;
-};
-
 export default function useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex) {
     const initGraph = () => {
         const width = graphContainer.value.offsetWidth
@@ -34,14 +28,14 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                 default: [
                     'drag-canvas',
                     'zoom-canvas',
-                    { type: 'drag-node', delegate: true } // 改为委托拖拽模式
+                    { type: 'drag-node', delegate: true }
                 ]
             },
             layout: {
                 type: 'dagre',
-                rankdir: 'LR', // 从左到右布局
-                nodesep: 20, // 节点之间的间距
-                ranksep: 20 // 层级之间的间距
+                rankdir: 'LR',
+                nodesep: 20,
+                ranksep: 20
             },
             defaultNode: {
                 type: 'circle',
@@ -56,7 +50,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                 }
             },
             defaultEdge: {
-                type: 'quadratic', // 修改为弯曲边
+                type: 'quadratic',
                 style: {
                     stroke: '#91d5ff',
                     lineWidth: 2,
@@ -69,7 +63,6 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                     }
                 }
             },
-            // 定义选中状态的样式
             nodeStateStyles: {
                 selected: {
                     fill: '#f6ffed',
@@ -89,22 +82,11 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             }
         });
 
-        // console.log('Graph initialized with container:', graphContainer.value);
-
-        // 注册事件
         registerGraphEvents();
-
-        // 初始化时更新节点列表
         updateNodesList();
-
-        // 加载保存的数据
-        nextTick(() => {
-            loadFromLocalStorage();
-        });
     };
 
     const registerGraphEvents = () => {
-        // console.log('Registering graph events'); 
         graph.value.off('node:click', handleNodeClick);
         graph.value.off('edge:click', handleEdgeClick);
         graph.value.off('canvas:click', handleCanvasClick);
@@ -114,63 +96,15 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         graph.value.on('edge:click', handleEdgeClick);
         
         graph.value.on('click', (e) => {
-            // console.log('Global click event:', e); 
-            // console.log('Clicked element:', e.target); 
             if (e.target && e.target.isCanvas && e.target.isCanvas()) {
-                clearSelectedState();  // Clear selection when canvas is clicked
-                // console.log('Canvas clicked, cleared selection');
+                clearSelectedState();
                 nextTick(() => {
-                    graph.value.refresh();  // 使用 refresh 方法重新渲染图表以更新选中状态
+                    graph.value.refresh();
                 });
-            } else {
-                // console.log('Click was not on the canvas');
             }
         });
 
-        graph.value.on('node:dragend', handleNodeDragEnd);  // 监听节点拖动结束事件
-    };
-
-    const loadFromLocalStorage = () => {
-        try {
-            const routeKey = getRouteKey();
-            console.log(`Loading history from localStorage with key: ${routeKey}`); // 输出加载的键名
-            const savedHistory = localStorage.getItem(routeKey);
-            const savedIndex = localStorage.getItem(`${routeKey}_index`);
-
-            if (savedHistory) {
-                const parsedHistory = JSON.parse(savedHistory);
-                if (Array.isArray(parsedHistory)) {
-                    historyList.value = parsedHistory;
-                    currentHistoryIndex.value = savedIndex ? parseInt(savedIndex) : -1;
-                    console.log(`Loaded history:`, parsedHistory); // 输出加载的历史记录
-
-                    if (historyList.value.length > 0 && currentHistoryIndex.value >= 0) {
-                        const currentState = historyList.value[currentHistoryIndex.value].data;
-                        if (graph.value) {
-                            const validNodes = currentState.nodes.filter(node => node && node.id && node.label);
-                            const validEdges = currentState.edges.filter(edge => edge && edge.source && edge.target);
-
-                            if (validNodes.length > 0 || validEdges.length > 0) {
-                                graph.value.clear();
-                                graph.value.data({ nodes: validNodes, edges: validEdges });
-                                updateNodesList();
-                                graph.value.render();
-                                nextTick(() => {
-                                    registerGraphEvents(); // 确保事件在加载历史数据后重新注册
-                                    clearSelectedState(); // 确保清除选中状态
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load history from localStorage:', error);
-            // 清空错误的本地存储数据
-            const routeKey = getRouteKey();
-            localStorage.removeItem(routeKey);
-            localStorage.removeItem(`${routeKey}_index`);
-        }
+        graph.value.on('node:dragend', handleNodeDragEnd);
     };
 
     // 更新节点列表
@@ -182,17 +116,13 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                     id: model.id,
                     label: model.label
                 };
-            } else {
-                console.error('Node model is null:', node);
-                return null;
             }
+            return null;
         }).filter(node => node !== null);
-        // console.log('Nodes list updated:', nodes.value);
     };
 
     // 清除当前选中的节点或边状态
     const clearSelectedState = () => {
-        // console.log('Clearing selected state');
         if (selectedNode && selectedNode.value) {
             const node = graph.value.findById(selectedNode.value.getID ? selectedNode.value.getID() : selectedNode.value);
             if (node) {
@@ -211,7 +141,6 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             selectedEdge.value = null;
         }
 
-        // 清空表单
         if (nodeForm && typeof nodeForm === 'object' && 'value' in nodeForm) {
             nodeForm.value = { label: '', description: '' };
         }
@@ -220,20 +149,16 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             edgeForm.value = { source: '', target: '', label: '' };
         }
 
-        // 添加延迟，确保选中状态 UI 能够及时更新
         nextTick(() => {
-            graph.value.refresh();  // 使用 refresh 方法重新渲染图表以更新选中状态
-            // console.log('Graph refreshed after clearing selection');
+            graph.value.refresh();
         });
     };
 
     const handleNodeClick = (e) => {
-        // console.log('Node clicked:', e); // 添加调试信息
         const node = e.item;
-        clearSelectedState();  // 清除之前选中的边或节点状态
+        clearSelectedState();
 
         if (!selectedNode || !nodeForm) {
-            // console.error('selectedNode or nodeForm is not defined');
             return;
         }
 
@@ -248,13 +173,10 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         if (currentTab && currentTab.value !== undefined) {
             currentTab.value = 'node';
         }
-
-        // console.log('Selected node:', JSON.stringify(model, null, 2));
     };
 
     const handleEdgeClick = (e) => {
-        // console.log('Edge clicked:', e); // 添加调试信息
-        clearSelectedState();  // 清除之前的选中状态
+        clearSelectedState();
 
         if (!selectedEdge || !edgeForm) {
             console.error('selectedEdge or edgeForm is not defined');
@@ -275,27 +197,15 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         if (currentTab && currentTab.value !== undefined) {
             currentTab.value = 'edge';
         }
-
-        // console.log('Selected edge:', JSON.stringify(model, null, 2));
     };
 
-    // 处理画布点击事件（取消选中）
     const handleCanvasClick = (e) => {
-        // console.log('Canvas clicked:', e); // Debug info
-        // console.log('Clicked element:', e.target); // Debug info
-        // Ensure the target is the canvas
         if (e.target && e.target.isCanvas && e.target.isCanvas()) {
-            clearSelectedState();  // Clear selection when canvas is clicked
-            // console.log('Canvas clicked, cleared selection');
-        } else {
-            // console.log('Click was not on the canvas');
+            clearSelectedState();
         }
     };
 
     const handleNodeDragEnd = (e) => {
-        // ...existing code...
-
-        // 触发自定义事件，不再调用 addToHistory
         if (graph.value) {
             graph.value.emit('node:dragend:history', e);
         } else {
@@ -314,8 +224,7 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         nodes, 
         initGraph, 
         updateNodesList, 
-        clearSelectedState, 
-        loadFromLocalStorage, 
+        clearSelectedState,
         registerGraphEvents 
     };
 }

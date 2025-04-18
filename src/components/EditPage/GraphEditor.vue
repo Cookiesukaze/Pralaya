@@ -40,14 +40,8 @@ import { currentTab } from '../grapheditor/utils/store'
 import useHistory from '../grapheditor/utils/useHistory'
 import { getGraphHistory } from '../../api/method'
 
-// 当前选中的标签页
 const props = defineProps(['graphData'])
-// const currentTab = ref('node')
-
-// 打印传递过来的 graphData
-watch(() => props.graphData, (newGraphData) => {
-  console.log("GraphEditor:", newGraphData)
-})
+const { historyList, currentHistoryIndex, graph } = useHistory()
 
 // 计算属性判断图谱是否不可用
 const isGraphUnavailable = computed(() => {
@@ -61,45 +55,43 @@ const tabs = [
   { id: 'history', name: '历史' }
 ]
 
-const { loadFromLocalStorage, initializeHistory } = useHistory()
-
-// 监听 currentTab 的变化，当切换到历史记录面板时重新加载历史记录
-watch(() => currentTab.value, (newTab) => {
-  if (newTab === 'history') {
-    loadFromLocalStorage(); // 加载历史记录
-  }
-});
-
-// 初始化时从后端获取历史记录
-onMounted(async () => {
+// 从后端加载历史记录
+const loadHistoryFromBackend = async () => {
   if (props.graphData) {
     try {
       const graphId = props.graphData.id
       const response = await getGraphHistory(graphId)
       
-      // 后端直接返回字符串,需要解析
       if (response.data.history) {
-        historyList.value = JSON.parse(response.data.history)
+        const parsedHistory = JSON.parse(response.data.history)
+        historyList.value = parsedHistory
         currentHistoryIndex.value = 0
         
-        if (historyList.value.length > 0) {
-          const currentState = historyList.value[0].data
+        if (parsedHistory.length > 0) {
+          const currentState = parsedHistory[0].data
           graph.value.clear()
           graph.value.data({
             nodes: currentState.nodes,
             edges: currentState.edges
           })
           graph.value.render()
-        } else {
-          initializeHistory(props.graphData)
         }
-      } else {
-        initializeHistory(props.graphData)
       }
     } catch (error) {
       console.error('Failed to load graph history:', error)
-      initializeHistory(props.graphData)
     }
   }
+}
+
+// 监听 currentTab 的变化
+watch(() => currentTab.value, (newTab) => {
+  if (newTab === 'history') {
+    loadHistoryFromBackend()
+  }
+})
+
+// 组件挂载时加载历史记录
+onMounted(() => {
+  loadHistoryFromBackend()
 })
 </script>

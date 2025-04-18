@@ -52,11 +52,12 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import useHistory from './utils/useHistory'
-import { currentTab } from './utils/store' // 确保导入 currentTab
-import { updateGraphNodesAndEdges } from '../../api/method.js' // 导入 updateGraphNodesAndEdges 函数
-import { useRoute } from 'vue-router' // 导入 useRoute 函数
+import { currentTab } from './utils/store'
+import { getGraphHistory, updateGraphHistory } from '../../api/method.js'
+import { useRoute } from 'vue-router'
 
-const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter, loadFromLocalStorage } = useHistory()
+const route = useRoute()
+const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter } = useHistory()
 
 // 计算属性，过滤显示在 UI 中的历史记录
 const displayedHistoryList = computed(() => {
@@ -69,48 +70,60 @@ const isCurrentVersion = (index) => {
     return currentHistoryIndex.value === actualIndex;
 }
 
-// 监听 currentTab 的变化，当切换到历史记录面板时重新加载历史记录
+// 从后端加载历史记录
+const loadHistoryFromBackend = async () => {
+    const graphId = route.params.id;
+    if (!graphId) return;
+
+    try {
+        const response = await getGraphHistory(graphId);
+        if (response.data.history) {
+            const parsedHistory = JSON.parse(response.data.history);
+            if (parsedHistory && parsedHistory.length > 0) {
+                historyList.value = parsedHistory;
+                currentHistoryIndex.value = 0;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load history from backend:', error);
+    }
+};
+
+// 监听 currentTab 的变化，当切换到历史记录面板时从后端加载历史记录
 watch(() => currentTab.value, (newTab) => {
-  if (newTab === 'history') {
-    loadFromLocalStorage(); // 加载历史记录
-  }
+    if (newTab === 'history') {
+        loadHistoryFromBackend();
+    }
 });
 
+// 组件挂载时加载历史记录
 onMounted(() => {
-  loadFromLocalStorage(); // 加载历史记录
+    loadHistoryFromBackend();
 });
 
-const route = useRoute(); // 获取路由实例
-
-const saveCurrentHistory = () => {
-  const graphId = route.params.id;
-  if (currentHistoryIndex.value >= 0 && currentHistoryIndex.value < historyList.value.length) {
-    const currentState = historyList.value[currentHistoryIndex.value].data;
-    const nodes = currentState.nodes.map(node => ({
-      id: node.id,
-      label: node.label,
-      description: node.description
-    }));
-    const edges = currentState.edges.map(edge => ({
-      source: edge.source,
-      target: edge.target,
-      label: edge.label
-    }));
-    updateGraphNodesAndEdges(graphId, JSON.stringify(nodes), JSON.stringify(edges))
-      .then(response => {
-        console.log('保存成功:', response);
-      })
-      .catch(error => {
-        console.error('保存失败:', error);
-      });
-  } else {
-    console.error('无效的历史记录索引:', currentHistoryIndex.value);
-  }
+const saveCurrentHistory = async () => {
+    const graphId = route.params.id;
+    if (currentHistoryIndex.value >= 0 && currentHistoryIndex.value < historyList.value.length) {
+        const currentState = historyList.value[currentHistoryIndex.value].data;
+        try {
+            await updateGraphHistory(
+                graphId,
+                JSON.stringify(currentState.nodes),
+                JSON.stringify(currentState.edges),
+                JSON.stringify(historyList.value)
+            );
+            console.log('历史记录保存成功');
+        } catch (error) {
+            console.error('保存失败:', error);
+        }
+    } else {
+        console.error('无效的历史记录索引:', currentHistoryIndex.value);
+    }
 };
 
 const clearHistory = () => {
-  localStorage.clear();
-  location.reload();
+    localStorage.clear();
+    location.reload();
 };
 </script>
 
