@@ -6,8 +6,8 @@ const nodes = ref([])
 
 export default function useGraph(graphContainer, selectedNode, selectedEdge, nodeForm, edgeForm, currentTab, historyList, currentHistoryIndex) {
     const initGraph = () => {
-        const width = graphContainer.value.offsetWidth
-        const height = graphContainer.value.offsetHeight
+        const width = graphContainer.value.offsetWidth;
+        const height = graphContainer.value.offsetHeight;
 
         // 清除容器中的所有子元素
         while (graphContainer.value.firstChild) {
@@ -54,7 +54,9 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                 style: {
                     stroke: '#91d5ff',
                     lineWidth: 2,
-                    endArrow: true
+                    endArrow: true,
+                    // 增加边的可点击区域
+                    lineAppendWidth: 10
                 },
                 labelCfg: {
                     autoRotate: true,
@@ -63,17 +65,22 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
                     }
                 }
             },
+            // 优化节点和边的状态样式
             nodeStateStyles: {
                 selected: {
                     fill: '#f6ffed',
                     stroke: '#52c41a',
-                    lineWidth: 3
+                    lineWidth: 3,
+                    shadowColor: '#52c41a',
+                    shadowBlur: 10
                 }
             },
             edgeStateStyles: {
                 selected: {
                     stroke: '#52c41a',
                     lineWidth: 3,
+                    shadowColor: '#52c41a',
+                    shadowBlur: 10,
                     endArrow: {
                         path: G6.Arrow.triangle(10, 10, 10),
                         fill: '#52c41a'
@@ -123,43 +130,48 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
 
     // 清除当前选中的节点或边状态
     const clearSelectedState = () => {
-        if (selectedNode && selectedNode.value) {
-            const node = graph.value.findById(selectedNode.value.getID ? selectedNode.value.getID() : selectedNode.value);
-            if (node) {
-                graph.value.setItemState(node, 'selected', false);
-                console.log('Node deselected:', node.getID());
-            }
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false);
             selectedNode.value = null;
         }
 
-        if (selectedEdge && selectedEdge.value) {
-            const edge = graph.value.findById(selectedEdge.value.getID ? selectedEdge.value.getID() : selectedEdge.value);
-            if (edge) {
-                graph.value.setItemState(edge, 'selected', false);
-                console.log('Edge deselected:', edge.getID());
-            }
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false);
             selectedEdge.value = null;
         }
 
-        if (nodeForm && typeof nodeForm === 'object' && 'value' in nodeForm) {
+        // 只在表单有值时才重置
+        if (nodeForm?.value?.label || nodeForm?.value?.description) {
             nodeForm.value = { label: '', description: '' };
         }
 
-        if (edgeForm && typeof edgeForm === 'object' && 'value' in edgeForm) {
+        if (edgeForm?.value?.source || edgeForm?.value?.target || edgeForm?.value?.label) {
             edgeForm.value = { source: '', target: '', label: '' };
         }
 
-        nextTick(() => {
-            graph.value.refresh();
-        });
+        // 避免不必要的刷新
+        if (selectedNode.value || selectedEdge.value) {
+            nextTick(() => {
+                graph.value.refresh();
+            });
+        }
     };
 
     const handleNodeClick = (e) => {
         const node = e.item;
-        clearSelectedState();
+        const currentNodeId = selectedNode.value?.getID();
+        const clickedNodeId = node.getID();
 
-        if (!selectedNode || !nodeForm) {
-            return;
+        // 如果点击的是同一个节点，不做处理
+        if (currentNodeId === clickedNodeId) return;
+
+        // 只清除必要的状态
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false);
+        }
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false);
+            selectedEdge.value = null;
         }
 
         graph.value.setItemState(node, 'selected', true);
@@ -170,20 +182,29 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
             label: model.label,
             description: model.description || ''
         };
-        if (currentTab && currentTab.value !== undefined) {
+        
+        if (currentTab?.value !== undefined) {
             currentTab.value = 'node';
         }
     };
 
     const handleEdgeClick = (e) => {
-        clearSelectedState();
+        const edge = e.item;
+        const currentEdgeId = selectedEdge.value?.getID();
+        const clickedEdgeId = edge.getID();
 
-        if (!selectedEdge || !edgeForm) {
-            console.error('selectedEdge or edgeForm is not defined');
-            return;
+        // 如果点击的是同一条边，不做处理
+        if (currentEdgeId === clickedEdgeId) return;
+
+        // 只清除必要的状态
+        if (selectedNode.value) {
+            graph.value.setItemState(selectedNode.value, 'selected', false);
+            selectedNode.value = null;
+        }
+        if (selectedEdge.value) {
+            graph.value.setItemState(selectedEdge.value, 'selected', false);
         }
 
-        const edge = e.item;
         graph.value.setItemState(edge, 'selected', true);
         selectedEdge.value = edge;
 
@@ -191,10 +212,10 @@ export default function useGraph(graphContainer, selectedNode, selectedEdge, nod
         edgeForm.value = {
             source: model.source,
             target: model.target,
-            label: model.label
+            label: model.label || ''
         };
 
-        if (currentTab && currentTab.value !== undefined) {
+        if (currentTab?.value !== undefined) {
             currentTab.value = 'edge';
         }
     };
