@@ -12,13 +12,13 @@
       <div class="flex items-center justify-between">
         <span class="text-sm text-gray-600">{{ item.timestamp }}</span>
         <button
-            @click="rollbackToHistory(index)"
+            @click="handleRollback(index)"
             class="text-blue-500 hover:underline"
         >
           回滚
         </button>
         <button
-            @click="deleteHistoryAfter(index)"
+            @click="handleDelete(index)"
             class="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           删除
@@ -61,16 +61,28 @@ const { historyList, currentHistoryIndex, rollbackToHistory, deleteHistoryAfter 
 
 // 计算属性，过滤显示在 UI 中的历史记录
 const displayedHistoryList = computed(() => {
+    // 直接返回过滤后的列表，不需要反转顺序，因为新记录本来就在前面
     return historyList.value.filter(item => item.showInHistoryPanel);
 });
 
-// 修改 isCurrentVersion 函数，根据实际的历史记录索引进行判断
+// 修改 isCurrentVersion 函数
 const isCurrentVersion = (index) => {
-    const actualIndex = historyList.value.findIndex(item => item === displayedHistoryList.value[index]);
-    return currentHistoryIndex.value === actualIndex;
-}
+    // 直接使用当前索引，因为显示顺序和实际顺序一致
+    return historyList.value[index].isCurrent;
+};
 
-// 从后端加载历史记录
+// 修改回滚和删除的处理
+const handleRollback = (index) => {
+    // 直接使用当前索引
+    rollbackToHistory(index);
+};
+
+const handleDelete = (index) => {
+    // 直接使用当前索引
+    deleteHistoryAfter(index);
+};
+
+// 从后端加载历史记录时，确保设置正确的 isCurrent
 const loadHistoryFromBackend = async () => {
     const graphId = route.params.id;
     if (!graphId) return;
@@ -80,8 +92,17 @@ const loadHistoryFromBackend = async () => {
         if (response.data.history) {
             const parsedHistory = JSON.parse(response.data.history);
             if (parsedHistory && parsedHistory.length > 0) {
+                // 如果后端数据没有 isCurrent 字段，根据 currentHistoryIndex 设置
+                if (!parsedHistory.some(item => item.isCurrent)) {
+                    parsedHistory.forEach((item, index) => {
+                        item.isCurrent = (index === 0);
+                    });
+                }
                 historyList.value = parsedHistory;
-                currentHistoryIndex.value = 0;
+                currentHistoryIndex.value = parsedHistory.findIndex(item => item.isCurrent);
+                if (currentHistoryIndex.value === -1) {
+                    currentHistoryIndex.value = 0;
+                }
             }
         }
     } catch (error) {

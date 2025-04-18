@@ -34,9 +34,14 @@ const addToHistory = async (action, showInHistoryPanel = true, isPositionOnly = 
         timestamp: new Date().toLocaleTimeString(),
         action,
         data: currentState,
-        showInHistoryPanel
+        showInHistoryPanel,
+        isCurrent: true
     };
 
+    // 将所有现有记录的 isCurrent 设置为 false
+    historyList.value.forEach(item => item.isCurrent = false);
+    
+    // 无论是否是第一次操作，都将新记录添加到开头
     historyList.value.unshift(newHistory);
     currentHistoryIndex.value = 0;
 
@@ -72,6 +77,12 @@ const rollbackToHistory = (index) => {
         graphUtils.updateNodesList();
         graph.value.render();
         graphUtils.registerGraphEvents();
+        
+        // 更新所有记录的 isCurrent 状态
+        historyList.value.forEach((item, i) => {
+            item.isCurrent = (i === index);
+        });
+        
         currentHistoryIndex.value = index;
     }
 };
@@ -81,6 +92,11 @@ const deleteHistoryAfter = (index) => {
     if (currentHistoryIndex.value >= historyList.value.length) {
         currentHistoryIndex.value = historyList.value.length - 1;
     }
+    
+    // 确保被选中的版本标记为当前版本
+    historyList.value.forEach((item, i) => {
+        item.isCurrent = (i === currentHistoryIndex.value);
+    });
     
     // 清除选中状态
     selectedNode.value = null;
