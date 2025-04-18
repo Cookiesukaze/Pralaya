@@ -142,9 +142,30 @@ const saveCurrentHistory = async () => {
     }
 };
 
-const clearHistory = () => {
-    localStorage.clear();
-    location.reload();
+const clearHistory = async () => {
+    // 找到当前版本
+    const currentVersion = historyList.value.find(item => item.isCurrent);
+    if (!currentVersion) return;
+
+    // 只保留当前版本
+    historyList.value = [currentVersion];
+    currentHistoryIndex.value = 0;
+
+    // 获取图谱ID并更新后端
+    const graphId = route.params.id;
+    if (!graphId) return;
+
+    try {
+        await updateGraphHistory(
+            graphId,
+            JSON.stringify(currentVersion.data.nodes),
+            JSON.stringify(currentVersion.data.edges),
+            JSON.stringify(historyList.value)
+        );
+        console.log('历史记录清除成功，仅保留当前版本');
+    } catch (error) {
+        console.error('清除历史记录失败:', error);
+    }
 };
 </script>
 
